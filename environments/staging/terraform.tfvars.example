@@ -1,0 +1,10 @@
+aws_region           = "eu-north-1"
+aws_profile          = "fiscora-admin"
+project_name         = "fiscora"
+environment          = "staging"
+availability_zone    = "eu-north-1a"
+instance_type        = "t3.medium"
+root_volume_size     = 30
+vpc_cidr             = "10.20.0.0/16"
+public_subnet_cidr   = "10.20.10.0/24"
+
