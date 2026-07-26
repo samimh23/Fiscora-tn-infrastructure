@@ -1,0 +1,52 @@
+name: Terraform checks
+
+on:
+  pull_request:
+    paths:
+      - "**/*.tf"
+      - "**/*.tfvars.example"
+      - ".github/workflows/terraform-check.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.tf"
+      - "**/*.tfvars.example"
+      - ".github/workflows/terraform-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Format and validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.8
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive
+
+      - name: Initialize state bootstrap
+        working-directory: bootstrap
+        run: terraform init -backend=false -input=false
+
+      - name: Validate state bootstrap
+        working-directory: bootstrap
+        run: terraform validate
+
+      - name: Initialize staging
+        working-directory: environments/staging
+        run: terraform init -backend=false -input=false
+
+      - name: Validate staging
+        working-directory: environments/staging
+        run: terraform validate
+
