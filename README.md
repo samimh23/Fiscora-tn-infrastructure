@@ -48,19 +48,28 @@ aws sso login --profile fiscora-admin
 ## Bootstrap remote state
 
 This is a one-time operation and creates only the protected Terraform state
-bucket:
+bucket. The first initialization deliberately disables the remote backend
+because the bucket does not exist yet:
 
 ```powershell
 cd bootstrap
-terraform init
+terraform init -backend=false
 terraform plan -var="aws_profile=fiscora-admin"
 terraform apply -var="aws_profile=fiscora-admin"
 terraform output -raw state_bucket_name
 ```
 
-Copy `environments/staging/backend.hcl.example` to
-`environments/staging/backend.hcl`, replace the bucket placeholder with the
-output above, and keep `backend.hcl` uncommitted.
+Copy `bootstrap/backend.hcl.example` to `bootstrap/backend.hcl`, replace the
+bucket placeholder with the output above, and migrate the bootstrap state into
+the protected bucket:
+
+```powershell
+terraform init -migrate-state -backend-config=backend.hcl
+```
+
+Then copy `environments/staging/backend.hcl.example` to
+`environments/staging/backend.hcl`, use the same bucket name, and keep both
+`backend.hcl` files uncommitted.
 
 ## Review staging without deploying
 
@@ -74,4 +83,3 @@ terraform plan -out=staging.tfplan
 Review the complete plan and its estimated AWS costs before running any apply.
 GitHub OIDC, deployment workflows, application secrets, DNS and HTTPS for the
 backend will be added before staging is deployed.
-
