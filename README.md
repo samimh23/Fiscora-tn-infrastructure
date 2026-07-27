@@ -28,6 +28,7 @@ modules/registry/          Backend ECR repository
 modules/storage/           Document and web buckets, CloudFront
 modules/compute/           EC2, SSM, IAM and security group
 scripts/validate.ps1       Local format and validation checks
+.github/workflows/         Validation and authenticated plan automation
 ```
 
 ## Safety
@@ -81,5 +82,22 @@ terraform plan -out=staging.tfplan
 ```
 
 Review the complete plan and its estimated AWS costs before running any apply.
-GitHub OIDC, deployment workflows, application secrets, DNS and HTTPS for the
-backend will be added before staging is deployed.
+The current always-on defaults exceed a $20 monthly budget; see
+[`COSTS.md`](COSTS.md) for the dated estimate and lower-cost development
+options.
+
+## GitHub Actions authentication
+
+The bootstrap also creates a GitHub OIDC provider and the
+`fiscora-github-terraform-plan` role. Its trust policy accepts only the
+immutable GitHub owner/repository IDs for this repository and only the `main`
+branch. GitHub receives temporary AWS credentials; no AWS access key is stored
+in repository secrets.
+
+The `Terraform staging plan` workflow is read-only. It runs after relevant
+changes reach `main` and can also be started manually from the repository
+Actions page. It may read the staging state and create/delete only the native
+S3 lock file. It cannot apply a plan or change application resources.
+
+Application deployment roles, secrets, DNS and HTTPS will be added before
+staging is deployed.

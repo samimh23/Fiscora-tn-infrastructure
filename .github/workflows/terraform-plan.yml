@@ -1,0 +1,61 @@
+name: Terraform staging plan
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "environments/staging/**"
+      - "modules/**"
+      - ".github/workflows/terraform-plan.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: terraform-staging-plan
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Plan staging in eu-north-1
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      AWS_REGION: eu-north-1
+      TF_IN_AUTOMATION: "true"
+      TF_INPUT: "false"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure temporary AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::720860282759:role/fiscora-github-terraform-plan
+          role-session-name: fiscora-terraform-plan
+          allowed-account-ids: "720860282759"
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.8
+
+      - name: Initialize staging state
+        working-directory: environments/staging
+        run: >-
+          terraform init
+          -backend-config="bucket=fiscora-terraform-state-720860282759"
+          -backend-config="key=staging/terraform.tfstate"
+          -backend-config="region=eu-north-1"
+          -backend-config="encrypt=true"
+          -backend-config="use_lockfile=true"
+
+      - name: Create staging plan
+        working-directory: environments/staging
+        run: terraform plan -lock-timeout=60s -no-color
