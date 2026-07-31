@@ -41,6 +41,11 @@ declared application resources. Only `terraform apply` changes AWS.
 Do not commit `backend.hcl`, `terraform.tfvars`, Terraform state, plans or
 credentials. Human access uses the `fiscora-admin` AWS SSO profile.
 
+The staging S3 buckets and ECR repository intentionally allow forced deletion.
+Running `terraform destroy` for staging permanently removes its database,
+documents, web artifacts and container images. Production storage must use a
+separate retention and recovery policy.
+
 ## Validate locally
 
 ```powershell

@@ -1,6 +1,7 @@
 resource "aws_ecr_repository" "backend" {
   name                 = "${var.name_prefix}-backend"
   image_tag_mutability = "IMMUTABLE"
+  force_delete         = true
 
   encryption_configuration {
     encryption_type = "AES256"
@@ -31,4 +32,3 @@ resource "aws_ecr_lifecycle_policy" "backend" {
     ]
   })
 }
-

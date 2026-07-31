@@ -4,7 +4,8 @@ locals {
 }
 
 resource "aws_s3_bucket" "documents" {
-  bucket = local.documents_bucket_name
+  bucket        = local.documents_bucket_name
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_public_access_block" "documents" {
@@ -50,7 +51,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "documents" {
 }
 
 resource "aws_s3_bucket" "web" {
-  bucket = local.web_bucket_name
+  bucket        = local.web_bucket_name
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_public_access_block" "web" {
@@ -165,4 +167,3 @@ resource "aws_s3_bucket_policy" "web" {
   bucket = aws_s3_bucket.web.id
   policy = data.aws_iam_policy_document.web.json
 }
-
