@@ -33,8 +33,9 @@ module "compute" {
   vpc_id               = module.network.vpc_id
   public_subnet_id     = module.network.public_subnet_id
   instance_type        = var.instance_type
+  ami_ssm_parameter    = var.ami_ssm_parameter
   root_volume_size     = var.root_volume_size
   ecr_repository_arn   = module.registry.repository_arn
   documents_bucket_arn = module.storage.documents_bucket_arn
+  web_bucket_arn       = module.storage.web_bucket_arn
 }
-

@@ -7,11 +7,13 @@ Terraform configuration for Fiscora's AWS environments.
 The first environment is a low-cost staging platform in `eu-north-1`:
 
 - one VPC and public application subnet;
-- one Amazon Linux EC2 Docker host with no SSH port;
+- one ARM Amazon Linux EC2 Docker host with a stable Elastic IP and no SSH port;
 - AWS Systems Manager access for administration;
 - one ECR repository for immutable backend images;
 - one private, encrypted S3 bucket for accounting documents;
-- one private S3 bucket and CloudFront distribution for the React application.
+- one private S3 bucket and CloudFront distribution for build artifacts;
+- Caddy on the Docker host for the public React application, API routing and
+  automatic HTTPS at `app.fiscora.me`.
 
 PostgreSQL will initially run in Docker on the staging host. This topology is
 for development, demonstrations and pilot testing only. Production will use a
@@ -82,9 +84,32 @@ terraform plan -out=staging.tfplan
 ```
 
 Review the complete plan and its estimated AWS costs before running any apply.
-The current always-on defaults exceed a $20 monthly budget; see
-[`COSTS.md`](COSTS.md) for the dated estimate and lower-cost development
-options.
+The deployed staging defaults target the $20 monthly budget; see
+[`COSTS.md`](COSTS.md) for the dated estimate and its limitations.
+
+## Deployed staging
+
+The current staging environment uses `t4g.small`, 20 GB gp3 and Elastic IP
+`51.21.164.16`. Runtime definitions are stored in `deploy/`. Application
+secrets are generated on the host in `/opt/fiscora/.env`; they are not stored
+in Git or Terraform state.
+
+After building the backend as a Linux ARM64 image and uploading the frontend
+bundle to the private web bucket, deploy through AWS Systems Manager. The host
+pulls the artifacts and runs PostgreSQL, MinIO, NestJS and Caddy with Docker
+Compose. Port 22 remains closed.
+
+Namecheap must contain this record before Caddy can issue the TLS certificate:
+
+```text
+Type: A Record
+Host: app
+Value: 51.21.164.16
+```
+
+Do not use this staging topology for real customer data. Malware scanning is
+disabled on the 2 GB host and Amazon SES invitation delivery remains disabled
+until production sending access is approved.
 
 ## GitHub Actions authentication
 
@@ -99,5 +124,6 @@ changes reach `main` and can also be started manually from the repository
 Actions page. It may read the staging state and create/delete only the native
 S3 lock file. It cannot apply a plan or change application resources.
 
-Application deployment roles, secrets, DNS and HTTPS will be added before
-staging is deployed.
+Application deployment automation can be tightened further with dedicated
+GitHub OIDC roles for the backend and frontend repositories. No long-lived AWS
+access key is required.

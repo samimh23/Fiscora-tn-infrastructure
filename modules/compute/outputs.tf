@@ -9,12 +9,11 @@ output "public_dns" {
 }
 
 output "public_ip" {
-  description = "Temporary public IP of the staging Docker host."
-  value       = aws_instance.docker.public_ip
+  description = "Stable Elastic IP of the staging Docker host."
+  value       = aws_eip.docker.public_ip
 }
 
 output "security_group_id" {
   description = "Security group protecting the staging host."
   value       = aws_security_group.web.id
 }
-

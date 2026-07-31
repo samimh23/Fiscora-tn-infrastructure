@@ -49,13 +49,19 @@ variable "availability_zone" {
 variable "instance_type" {
   description = "EC2 instance type for the staging Docker host."
   type        = string
-  default     = "t3.medium"
+  default     = "t4g.small"
+}
+
+variable "ami_ssm_parameter" {
+  description = "Public SSM parameter containing the Amazon Linux AMI for the instance architecture."
+  type        = string
+  default     = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
 }
 
 variable "root_volume_size" {
   description = "Encrypted root volume size in GiB."
   type        = number
-  default     = 30
+  default     = 20
 
   validation {
     condition     = var.root_volume_size >= 20

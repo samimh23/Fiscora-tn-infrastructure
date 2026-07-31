@@ -1,5 +1,5 @@
 data "aws_ssm_parameter" "amazon_linux_2023" {
-  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+  name = var.ami_ssm_parameter
 }
 
 data "aws_iam_policy_document" "assume_ec2" {
@@ -64,6 +64,20 @@ data "aws_iam_policy_document" "application" {
     ]
     resources = ["${var.documents_bucket_arn}/*"]
   }
+
+  statement {
+    sid       = "ListWebArtifacts"
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = [var.web_bucket_arn]
+  }
+
+  statement {
+    sid       = "ReadWebArtifacts"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${var.web_bucket_arn}/*"]
+  }
 }
 
 resource "aws_iam_role_policy" "application" {
@@ -118,7 +132,7 @@ resource "aws_instance" "docker" {
   vpc_security_group_ids      = [aws_security_group.web.id]
   iam_instance_profile        = aws_iam_instance_profile.this.name
   associate_public_ip_address = true
-  user_data_replace_on_change = true
+  user_data_replace_on_change = false
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -137,11 +151,28 @@ resource "aws_instance" "docker" {
     set -euxo pipefail
 
     dnf update -y
-    dnf install -y docker
+    dnf install -y docker openssl
     systemctl enable --now docker
     usermod -aG docker ec2-user
 
-    install -d -m 0750 -o ec2-user -g ec2-user /opt/fiscora
+    install -d -m 0755 /usr/local/lib/docker/cli-plugins
+    machine_arch="$(uname -m)"
+    if [ "$machine_arch" = "aarch64" ]; then
+      compose_arch="aarch64"
+    else
+      compose_arch="x86_64"
+    fi
+    curl -fsSL "https://github.com/docker/compose/releases/download/v2.38.2/docker-compose-linux-$compose_arch" \
+      -o /usr/local/lib/docker/cli-plugins/docker-compose
+    chmod 0755 /usr/local/lib/docker/cli-plugins/docker-compose
+
+    fallocate -l 1G /swapfile
+    chmod 0600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+    install -d -m 0750 -o ec2-user -g ec2-user /opt/fiscora /opt/fiscora/web
     cat > /opt/fiscora/DEPLOYMENT_PENDING <<'EOF'
     The host is ready. The backend GitHub Actions deployment will install
     the runtime compose file and start Fiscora after OIDC is configured.
@@ -155,3 +186,15 @@ resource "aws_instance" "docker" {
   }
 }
 
+resource "aws_eip" "docker" {
+  domain = "vpc"
+
+  tags = {
+    Name = "${var.name_prefix}-app"
+  }
+}
+
+resource "aws_eip_association" "docker" {
+  allocation_id = aws_eip.docker.id
+  instance_id   = aws_instance.docker.id
+}

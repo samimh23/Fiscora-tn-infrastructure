@@ -39,12 +39,11 @@ output "backend_instance_id" {
 }
 
 output "backend_public_dns" {
-  description = "Temporary backend hostname before a domain is configured."
+  description = "Public hostname of the staging Docker host."
   value       = module.compute.public_dns
 }
 
 output "backend_public_ip" {
-  description = "Temporary backend public IP."
+  description = "Stable Elastic IP to configure as app.fiscora.me in DNS."
   value       = module.compute.public_ip
 }
-
