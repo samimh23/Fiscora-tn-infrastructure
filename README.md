@@ -113,8 +113,9 @@ Value: 51.21.164.16
 ```
 
 Do not use this staging topology for real customer data. Malware scanning is
-disabled on the 2 GB host and Amazon SES invitation delivery remains disabled
-until production sending access is approved.
+disabled on the 2 GB host. Transactional email can use Brevo SMTP while Amazon
+SES production access is still unavailable; keep SMTP credentials in the host
+environment or a secret manager, never in Git.
 
 ## GitHub Actions authentication
 

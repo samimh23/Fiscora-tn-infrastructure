@@ -58,8 +58,13 @@ services:
       MINIO_BUCKET: accounting-documents
       MALWARE_SCAN_ENABLED: "false"
       APP_PUBLIC_URL: https://app.fiscora.me
-      INVITATION_EXPOSE_LINK: "true"
-      SMTP_FROM: Fiscora <invitations@fiscora.me>
+      INVITATION_EXPOSE_LINK: "${INVITATION_EXPOSE_LINK:-true}"
+      SMTP_HOST: "${SMTP_HOST:-}"
+      SMTP_PORT: "${SMTP_PORT:-587}"
+      SMTP_SECURE: "${SMTP_SECURE:-false}"
+      SMTP_USER: "${SMTP_USER:-}"
+      SMTP_PASSWORD: "${SMTP_PASSWORD:-}"
+      SMTP_FROM: "${SMTP_FROM:-Fiscora <invitations@fiscora.me>}"
     depends_on:
       postgres:
         condition: service_healthy
