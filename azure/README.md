@@ -8,6 +8,8 @@ independent until data migration, smoke tests and DNS cutover have passed.
 
 - Azure Static Web Apps (Free) hosts the React frontend.
 - Azure Container Apps runs the NestJS API and can scale to zero in staging.
+- ClamAV runs as an API sidecar. Document uploads fail closed when the scanner
+  is unavailable and infected files are rejected before Blob Storage.
 - Azure Database for PostgreSQL Flexible Server stores relational data on a
   private delegated subnet.
 - Azure Blob Storage stores accounting documents with versioning and 30-day
@@ -17,8 +19,9 @@ independent until data migration, smoke tests and DNS cutover have passed.
 - Azure Key Vault stores the generated database password, JWT signing key and
   the manually supplied Brevo SMTP key.
 - Azure Container Registry stores immutable backend images.
-- Log Analytics is capped at 0.5 GB/day and a resource-group budget notifies at
-  25%, 50%, 75% actual usage and 90% forecasted usage.
+- Log Analytics is capped at 0.1 GB/day with 25% Application Insights sampling.
+  A USD 40 monthly resource-group budget notifies at 25%, 50% and 75% actual
+  usage and 90% forecasted usage.
 - GitHub Actions authenticates through workload identity federation rather
   than an Azure client secret.
 
@@ -55,7 +58,11 @@ az login
 az account list --output table
 az account set --subscription <subscription-id>
 az account show --output table
+./azure/scripts/register-resource-providers.ps1 -SubscriptionId <subscription-id>
 ```
+
+The registration script is idempotent and must complete before the first
+staging apply. Provider registration does not deploy the Fiscora application.
 
 ## 1. Bootstrap remote state
 
@@ -119,9 +126,10 @@ the second apply.
 The backend's manual `Deploy backend to Azure staging` workflow supports this
 bootstrap: leave `update_container_app` false to push the first image, then copy
 the digest shown in the workflow summary into `backend_image`. After Terraform
-has created the Container App, later runs can set the input to true. Store the
-staging output `github_deployment_client_id` as `AZURE_CLIENT_ID` in both the
-backend and frontend repository variables; this is the CI identity, not the
+has created the Container App, later runs can set the input to true. Store
+`github_backend_client_id` as `AZURE_CLIENT_ID` in the backend repository and
+`github_frontend_client_id` as `AZURE_CLIENT_ID` in the frontend repository.
+The identities are deliberately separate and narrowly scoped; neither is the
 runtime application's managed identity.
 
 ## 4. Frontend and DNS
@@ -150,9 +158,9 @@ operation.
 
 ## Current staging limitations
 
-- Malware scanning is disabled to preserve the small staging footprint. Do not
-  accept real customer documents until an asynchronous scanning service and
-  quarantine flow are deployed.
+- Malware scanning is enabled when the API is deployed. Use synthetic files
+  until the ClamAV health probe and an EICAR rejection smoke test pass. Pin the
+  ClamAV image by digest before production.
 - The PostgreSQL administrator password exists in encrypted Terraform state.
   Production should move the application to Microsoft Entra database
   authentication and use a separate migration identity.

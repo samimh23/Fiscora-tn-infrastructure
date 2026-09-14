@@ -10,7 +10,7 @@ resource "azurerm_postgresql_flexible_server" "this" {
   administrator_password        = var.administrator_password
   sku_name                      = var.sku_name
   storage_mb                    = var.storage_mb
-  auto_grow_enabled             = true
+  auto_grow_enabled             = false
   backup_retention_days         = 7
   geo_redundant_backup_enabled  = false
   tags                          = var.tags

@@ -9,6 +9,12 @@ resource "azurerm_static_web_app" "this" {
   tags                               = var.tags
 }
 
+resource "azurerm_role_assignment" "deployment" {
+  scope                = azurerm_static_web_app.this.id
+  role_definition_name = "Contributor"
+  principal_id         = var.deployment_principal_id
+}
+
 resource "azurerm_static_web_app_custom_domain" "this" {
   count = var.enable_custom_domain ? 1 : 0
 

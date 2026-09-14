@@ -30,6 +30,8 @@ variable "smtp_host" { type = string }
 variable "smtp_port" { type = number }
 variable "smtp_user" { type = string }
 variable "smtp_from" { type = string }
+variable "malware_scan_enabled" { type = bool }
+variable "clamav_image" { type = string }
 variable "application_insights_connection_string" {
   type      = string
   sensitive = true

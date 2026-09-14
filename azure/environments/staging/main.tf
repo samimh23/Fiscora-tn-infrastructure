@@ -33,7 +33,7 @@ module "monitoring" {
   name_prefix         = local.name_prefix
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
-  daily_quota_gb      = 0.5
+  daily_quota_gb      = 0.1
   tags                = local.tags
 }
 
@@ -52,16 +52,14 @@ module "security" {
 module "ci" {
   source = "../../modules/ci"
 
-  name_prefix         = local.name_prefix
-  resource_group_name = azurerm_resource_group.this.name
-  resource_group_id   = azurerm_resource_group.this.id
-  location            = azurerm_resource_group.this.location
-  github_owner        = var.github_owner
-  github_repositories = [
-    var.github_backend_repository,
-    var.github_frontend_repository,
-  ]
-  tags = local.tags
+  name_prefix                = local.name_prefix
+  resource_group_name        = azurerm_resource_group.this.name
+  resource_group_id          = azurerm_resource_group.this.id
+  location                   = azurerm_resource_group.this.location
+  github_owner               = var.github_owner
+  github_backend_repository  = var.github_backend_repository
+  github_frontend_repository = var.github_frontend_repository
+  tags                       = local.tags
 }
 
 module "registry" {
@@ -71,7 +69,7 @@ module "registry" {
   resource_group_name      = azurerm_resource_group.this.name
   location                 = azurerm_resource_group.this.location
   application_principal_id = module.security.application_identity_principal_id
-  deployment_principal_id  = module.ci.principal_id
+  deployment_principal_id  = module.ci.backend_principal_id
   tags                     = local.tags
 }
 
@@ -107,12 +105,13 @@ module "database" {
 module "frontend" {
   source = "../../modules/frontend"
 
-  name                 = "swa-${local.name_prefix}-${var.deployment_suffix}"
-  resource_group_name  = azurerm_resource_group.this.name
-  location             = var.static_web_app_location
-  enable_custom_domain = var.enable_custom_domains
-  custom_domain        = var.frontend_custom_domain
-  tags                 = local.tags
+  name                    = "swa-${local.name_prefix}-${var.deployment_suffix}"
+  resource_group_name     = azurerm_resource_group.this.name
+  location                = var.static_web_app_location
+  deployment_principal_id = module.ci.frontend_principal_id
+  enable_custom_domain    = var.enable_custom_domains
+  custom_domain           = var.frontend_custom_domain
+  tags                    = local.tags
 }
 
 module "application" {
@@ -141,6 +140,8 @@ module "application" {
   smtp_port                              = var.smtp_port
   smtp_user                              = var.smtp_user
   smtp_from                              = var.smtp_from
+  malware_scan_enabled                   = var.malware_scan_enabled
+  clamav_image                           = var.clamav_image
   application_insights_connection_string = module.monitoring.application_insights_connection_string
   tags                                   = local.tags
 

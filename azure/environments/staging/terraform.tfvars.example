@@ -6,7 +6,7 @@ project_name            = "fiscora"
 environment             = "staging"
 deployment_suffix       = "sami090"
 
-budget_amount_usd     = 200
+budget_amount_usd     = 40
 budget_start_date     = "2026-09-01T00:00:00Z"
 budget_end_date       = "2027-01-01T00:00:00Z"
 budget_contact_emails = ["samimahjoub090@gmail.com"]
@@ -28,5 +28,7 @@ smtp_host                 = "smtp-relay.brevo.com"
 smtp_port                 = 587
 smtp_user                 = "REPLACE-WITH-BREVO-SMTP-LOGIN"
 smtp_from                 = "Fiscora <invitations@fiscora.me>"
+malware_scan_enabled      = true
+clamav_image              = "clamav/clamav:1.4"
 enable_custom_domains     = false
 frontend_custom_domain    = "app.fiscora.me"

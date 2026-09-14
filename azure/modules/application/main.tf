@@ -145,7 +145,19 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "MALWARE_SCAN_ENABLED"
-        value = "false"
+        value = tostring(var.malware_scan_enabled)
+      }
+      env {
+        name  = "CLAMAV_HOST"
+        value = "localhost"
+      }
+      env {
+        name  = "CLAMAV_PORT"
+        value = "3310"
+      }
+      env {
+        name  = "CLAMAV_TIMEOUT_MS"
+        value = "30000"
       }
       env {
         name  = "APP_PUBLIC_URL"
@@ -210,6 +222,42 @@ resource "azurerm_container_app" "api" {
         interval_seconds        = 30
         timeout                 = 5
         failure_count_threshold = 3
+      }
+    }
+
+    dynamic "container" {
+      for_each = var.malware_scan_enabled ? [1] : []
+
+      content {
+        name   = "clamav"
+        image  = var.clamav_image
+        cpu    = 1
+        memory = "2Gi"
+
+        startup_probe {
+          transport               = "TCP"
+          port                    = 3310
+          interval_seconds        = 10
+          timeout                 = 5
+          failure_count_threshold = 30
+        }
+
+        readiness_probe {
+          transport               = "TCP"
+          port                    = 3310
+          interval_seconds        = 10
+          timeout                 = 5
+          failure_count_threshold = 3
+        }
+
+        liveness_probe {
+          transport               = "TCP"
+          port                    = 3310
+          initial_delay           = 120
+          interval_seconds        = 30
+          timeout                 = 5
+          failure_count_threshold = 3
+        }
       }
     }
   }

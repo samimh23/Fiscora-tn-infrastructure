@@ -18,7 +18,8 @@ output "static_web_app_custom_domain_validation_token" {
   value     = module.frontend.custom_domain_validation_token
   sensitive = true
 }
-output "github_deployment_client_id" { value = module.ci.client_id }
+output "github_backend_client_id" { value = module.ci.backend_client_id }
+output "github_frontend_client_id" { value = module.ci.frontend_client_id }
 output "azure_tenant_id" { value = data.azurerm_client_config.current.tenant_id }
 output "azure_subscription_id" {
   value     = data.azurerm_client_config.current.subscription_id

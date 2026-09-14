@@ -54,9 +54,9 @@ variable "deployment_suffix" {
 }
 
 variable "budget_amount_usd" {
-  description = "Maximum planned Azure spend for this resource group during the credit period."
+  description = "Monthly staging cost-alert threshold. This is not a hard spending limit."
   type        = number
-  default     = 200
+  default     = 40
 }
 
 variable "budget_start_date" {
@@ -162,6 +162,18 @@ variable "smtp_password_secret_name" {
   description = "Key Vault secret populated out-of-band with the Brevo SMTP key."
   type        = string
   default     = "smtp-password"
+}
+
+variable "malware_scan_enabled" {
+  description = "Run ClamAV beside the API and reject uploads unless a clean scan succeeds."
+  type        = bool
+  default     = true
+}
+
+variable "clamav_image" {
+  description = "ClamAV container image used by the API sidecar. Pin by digest before production."
+  type        = string
+  default     = "clamav/clamav:1.4"
 }
 
 variable "enable_custom_domains" {

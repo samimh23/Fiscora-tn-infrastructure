@@ -14,5 +14,6 @@ resource "azurerm_application_insights" "this" {
   location            = var.location
   workspace_id        = azurerm_log_analytics_workspace.this.id
   application_type    = "web"
+  sampling_percentage = 25
   tags                = var.tags
 }
