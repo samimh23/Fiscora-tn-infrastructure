@@ -1,6 +1,11 @@
 # Fiscora infrastructure
 
-Terraform configuration for Fiscora's AWS environments.
+Terraform configuration for Fiscora's AWS environment and the reviewed Azure
+migration target.
+
+The existing AWS stack remains under `bootstrap/`, `modules/` and
+`environments/`. The Azure stack is isolated under [`azure/`](azure/README.md)
+and cannot change or destroy AWS resources.
 
 ## Current scope
 

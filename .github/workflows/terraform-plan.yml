@@ -44,7 +44,7 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.15.8
+          terraform_version: 1.16.2
 
       - name: Initialize staging state
         working-directory: environments/staging

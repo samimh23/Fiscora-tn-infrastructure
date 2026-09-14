@@ -1,0 +1,6 @@
+azure_subscription_id       = "00000000-0000-0000-0000-000000000000"
+location                    = "francecentral"
+state_resource_group_name   = "rg-fiscora-tfstate"
+state_storage_account_name  = "fiscoratfstateunique123"
+github_owner                = "samimh23"
+github_infrastructure_repository = "Fiscora-tn-infrastructure"

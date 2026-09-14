@@ -29,7 +29,7 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.15.8
+          terraform_version: 1.16.2
 
       - name: Check formatting
         run: terraform fmt -check -recursive
@@ -50,3 +50,18 @@ jobs:
         working-directory: environments/staging
         run: terraform validate
 
+      - name: Initialize Azure state bootstrap
+        working-directory: azure/bootstrap
+        run: terraform init -backend=false -input=false
+
+      - name: Validate Azure state bootstrap
+        working-directory: azure/bootstrap
+        run: terraform validate
+
+      - name: Initialize Azure staging
+        working-directory: azure/environments/staging
+        run: terraform init -backend=false -input=false
+
+      - name: Validate Azure staging
+        working-directory: azure/environments/staging
+        run: terraform validate

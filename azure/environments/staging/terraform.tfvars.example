@@ -1,0 +1,32 @@
+azure_subscription_id  = "00000000-0000-0000-0000-000000000000"
+operator_object_id      = "00000000-0000-0000-0000-000000000000"
+location                = "francecentral"
+static_web_app_location = "westeurope"
+project_name            = "fiscora"
+environment             = "staging"
+deployment_suffix       = "sami090"
+
+budget_amount_usd     = 200
+budget_start_date     = "2026-09-01T00:00:00Z"
+budget_end_date       = "2027-01-01T00:00:00Z"
+budget_contact_emails = ["samimahjoub090@gmail.com"]
+
+github_owner                     = "samimh23"
+github_infrastructure_repository = "Fiscora-tn-infrastructure"
+github_backend_repository        = "Fiscora-tn-backend"
+github_frontend_repository       = "Fiscora-tn-web"
+
+postgres_sku_name = "B_Standard_B1ms"
+postgres_version  = "16"
+
+# First apply: leave false. Populate Key Vault and push the backend image.
+deploy_application = false
+backend_image       = ""
+
+frontend_public_url       = "https://app.fiscora.me"
+smtp_host                 = "smtp-relay.brevo.com"
+smtp_port                 = 587
+smtp_user                 = "REPLACE-WITH-BREVO-SMTP-LOGIN"
+smtp_from                 = "Fiscora <invitations@fiscora.me>"
+enable_custom_domains     = false
+frontend_custom_domain    = "app.fiscora.me"
