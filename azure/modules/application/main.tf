@@ -85,7 +85,7 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "CORS_ALLOWED_ORIGINS"
-        value = var.frontend_public_url
+        value = var.cors_allowed_origins
       }
       env {
         name  = "DB_HOST"

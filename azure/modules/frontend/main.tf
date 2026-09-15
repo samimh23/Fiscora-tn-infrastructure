@@ -26,5 +26,5 @@ resource "azurerm_static_web_app_custom_domain" "this" {
 
   static_web_app_id = azurerm_static_web_app.this.id
   domain_name       = var.custom_domain
-  validation_type   = "dns-txt-token"
+  validation_type   = "cname-delegation"
 }

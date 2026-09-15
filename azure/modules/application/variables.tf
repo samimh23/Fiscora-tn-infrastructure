@@ -26,6 +26,10 @@ variable "smtp_password_secret_id" {
 variable "storage_account_url" { type = string }
 variable "storage_container_name" { type = string }
 variable "frontend_public_url" { type = string }
+variable "cors_allowed_origins" {
+  description = "Comma-separated browser origins allowed to call the API."
+  type        = string
+}
 variable "smtp_host" { type = string }
 variable "smtp_port" { type = number }
 variable "smtp_user" { type = string }
