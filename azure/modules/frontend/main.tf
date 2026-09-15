@@ -7,6 +7,12 @@ resource "azurerm_static_web_app" "this" {
   preview_environments_enabled       = false
   configuration_file_changes_enabled = true
   tags                               = var.tags
+
+  lifecycle {
+    # The Static Web Apps deployment service records the source repository
+    # after an upload. Delivery remains owned by the OIDC GitHub workflow.
+    ignore_changes = [repository_url, repository_branch]
+  }
 }
 
 resource "azurerm_role_assignment" "deployment" {
