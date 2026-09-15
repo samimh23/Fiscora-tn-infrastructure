@@ -5,7 +5,7 @@ resource "azurerm_static_web_app" "this" {
   sku_tier                           = "Free"
   sku_size                           = "Free"
   preview_environments_enabled       = false
-  configuration_file_changes_enabled = false
+  configuration_file_changes_enabled = true
   tags                               = var.tags
 }
 
