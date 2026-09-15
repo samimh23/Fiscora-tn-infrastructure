@@ -1,7 +1,7 @@
 azure_subscription_id  = "00000000-0000-0000-0000-000000000000"
 operator_object_id      = "00000000-0000-0000-0000-000000000000"
 location                = "francecentral"
-static_web_app_location = "westeurope"
+static_web_app_location = "eastus2"
 project_name            = "fiscora"
 environment             = "staging"
 deployment_suffix       = "sami090"

@@ -23,7 +23,7 @@ variable "location" {
 variable "static_web_app_location" {
   description = "Azure Static Web Apps region."
   type        = string
-  default     = "westeurope"
+  default     = "eastus2"
 }
 
 variable "project_name" {

@@ -6,6 +6,13 @@ resource "azurerm_container_app_environment" "this" {
   infrastructure_subnet_id       = var.container_apps_subnet_id
   internal_load_balancer_enabled = false
   tags                           = var.tags
+
+  workload_profile {
+    name                  = "Consumption"
+    workload_profile_type = "Consumption"
+    minimum_count         = 0
+    maximum_count         = 0
+  }
 }
 
 resource "azurerm_container_app" "api" {
