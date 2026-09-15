@@ -21,6 +21,7 @@ resource "azurerm_container_app" "api" {
   name                         = "ca-${var.name_prefix}-api"
   resource_group_name          = var.resource_group_name
   container_app_environment_id = azurerm_container_app_environment.this.id
+  workload_profile_name        = "Consumption"
   revision_mode                = "Single"
   tags                         = var.tags
 

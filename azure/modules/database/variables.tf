@@ -27,6 +27,11 @@ variable "storage_mb" {
   type    = number
   default = 32768
 }
+variable "allowed_extensions" {
+  description = "PostgreSQL extensions allow-listed through Azure's azure.extensions server parameter."
+  type        = list(string)
+  default     = ["uuid-ossp"]
+}
 variable "tags" {
   type    = map(string)
   default = {}

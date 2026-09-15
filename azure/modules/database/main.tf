@@ -38,3 +38,9 @@ resource "azurerm_postgresql_flexible_server_database" "application" {
   charset   = "UTF8"
   collation = "en_US.utf8"
 }
+
+resource "azurerm_postgresql_flexible_server_configuration" "extensions" {
+  name      = "azure.extensions"
+  server_id = azurerm_postgresql_flexible_server.this.id
+  value     = join(",", var.allowed_extensions)
+}
