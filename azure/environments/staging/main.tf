@@ -52,14 +52,17 @@ module "security" {
 module "ci" {
   source = "../../modules/ci"
 
-  name_prefix                = local.name_prefix
-  resource_group_name        = azurerm_resource_group.this.name
-  resource_group_id          = azurerm_resource_group.this.id
-  location                   = azurerm_resource_group.this.location
-  github_owner               = var.github_owner
-  github_backend_repository  = var.github_backend_repository
-  github_frontend_repository = var.github_frontend_repository
-  tags                       = local.tags
+  name_prefix                   = local.name_prefix
+  resource_group_name           = azurerm_resource_group.this.name
+  resource_group_id             = azurerm_resource_group.this.id
+  location                      = azurerm_resource_group.this.location
+  github_owner                  = var.github_owner
+  github_owner_id               = var.github_owner_id
+  github_backend_repository     = var.github_backend_repository
+  github_backend_repository_id  = var.github_backend_repository_id
+  github_frontend_repository    = var.github_frontend_repository
+  github_frontend_repository_id = var.github_frontend_repository_id
+  tags                          = local.tags
 }
 
 module "registry" {

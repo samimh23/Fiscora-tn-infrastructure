@@ -87,6 +87,11 @@ variable "github_owner" {
   default     = "samimh23"
 }
 
+variable "github_owner_id" {
+  description = "Immutable numeric GitHub owner ID included in OIDC subject claims."
+  type        = string
+}
+
 variable "github_infrastructure_repository" {
   type    = string
   default = "Fiscora-tn-infrastructure"
@@ -97,9 +102,19 @@ variable "github_backend_repository" {
   default = "Fiscora-tn-backend"
 }
 
+variable "github_backend_repository_id" {
+  description = "Immutable numeric GitHub backend repository ID included in OIDC subject claims."
+  type        = string
+}
+
 variable "github_frontend_repository" {
   type    = string
   default = "Fiscora-tn-web"
+}
+
+variable "github_frontend_repository_id" {
+  description = "Immutable numeric GitHub frontend repository ID included in OIDC subject claims."
+  type        = string
 }
 
 variable "postgres_sku_name" {

@@ -64,7 +64,7 @@ resource "azurerm_federated_identity_credential" "terraform_main" {
   user_assigned_identity_id = azurerm_user_assigned_identity.terraform_plan.id
   audience                  = ["api://AzureADTokenExchange"]
   issuer                    = "https://token.actions.githubusercontent.com"
-  subject                   = "repo:${var.github_owner}/${var.github_infrastructure_repository}:ref:refs/heads/main"
+  subject                   = "repo:${var.github_owner}@${var.github_owner_id}/${var.github_infrastructure_repository}@${var.github_infrastructure_repository_id}:ref:refs/heads/main"
 }
 
 resource "azurerm_federated_identity_credential" "terraform_pull_request" {
@@ -72,7 +72,7 @@ resource "azurerm_federated_identity_credential" "terraform_pull_request" {
   user_assigned_identity_id = azurerm_user_assigned_identity.terraform_plan.id
   audience                  = ["api://AzureADTokenExchange"]
   issuer                    = "https://token.actions.githubusercontent.com"
-  subject                   = "repo:${var.github_owner}/${var.github_infrastructure_repository}:pull_request"
+  subject                   = "repo:${var.github_owner}@${var.github_owner_id}/${var.github_infrastructure_repository}@${var.github_infrastructure_repository_id}:pull_request"
 }
 
 resource "azurerm_role_assignment" "terraform_plan_subscription_reader" {

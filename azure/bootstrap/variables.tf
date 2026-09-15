@@ -32,8 +32,18 @@ variable "github_owner" {
   default     = "samimh23"
 }
 
+variable "github_owner_id" {
+  description = "Immutable numeric GitHub owner ID included in OIDC subject claims."
+  type        = string
+}
+
 variable "github_infrastructure_repository" {
   description = "Infrastructure repository allowed to plan the Azure stack from main and pull requests."
   type        = string
   default     = "Fiscora-tn-infrastructure"
+}
+
+variable "github_infrastructure_repository_id" {
+  description = "Immutable numeric GitHub infrastructure repository ID included in OIDC subject claims."
+  type        = string
 }

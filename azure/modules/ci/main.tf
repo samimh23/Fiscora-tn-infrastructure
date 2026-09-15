@@ -17,7 +17,7 @@ resource "azurerm_federated_identity_credential" "backend_main" {
   user_assigned_identity_id = azurerm_user_assigned_identity.backend.id
   audience                  = ["api://AzureADTokenExchange"]
   issuer                    = "https://token.actions.githubusercontent.com"
-  subject                   = "repo:${var.github_owner}/${var.github_backend_repository}:ref:refs/heads/main"
+  subject                   = "repo:${var.github_owner}@${var.github_owner_id}/${var.github_backend_repository}@${var.github_backend_repository_id}:ref:refs/heads/main"
 }
 
 resource "azurerm_federated_identity_credential" "frontend_main" {
@@ -25,7 +25,7 @@ resource "azurerm_federated_identity_credential" "frontend_main" {
   user_assigned_identity_id = azurerm_user_assigned_identity.frontend.id
   audience                  = ["api://AzureADTokenExchange"]
   issuer                    = "https://token.actions.githubusercontent.com"
-  subject                   = "repo:${var.github_owner}/${var.github_frontend_repository}:ref:refs/heads/main"
+  subject                   = "repo:${var.github_owner}@${var.github_owner_id}/${var.github_frontend_repository}@${var.github_frontend_repository_id}:ref:refs/heads/main"
 }
 
 resource "azurerm_role_assignment" "backend_container_apps" {

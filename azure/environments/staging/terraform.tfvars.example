@@ -12,9 +12,12 @@ budget_end_date       = "2027-01-01T00:00:00Z"
 budget_contact_emails = ["samimahjoub090@gmail.com"]
 
 github_owner                     = "samimh23"
+github_owner_id                  = "80358238"
 github_infrastructure_repository = "Fiscora-tn-infrastructure"
 github_backend_repository        = "Fiscora-tn-backend"
+github_backend_repository_id     = "1312797097"
 github_frontend_repository       = "Fiscora-tn-web"
+github_frontend_repository_id    = "1312796835"
 
 postgres_sku_name = "B_Standard_B1ms"
 postgres_version  = "16"
