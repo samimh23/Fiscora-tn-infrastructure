@@ -260,7 +260,7 @@ resource "azurerm_container_app" "api" {
         liveness_probe {
           transport               = "TCP"
           port                    = 3310
-          initial_delay           = 120
+          initial_delay           = 60
           interval_seconds        = 30
           timeout                 = 5
           failure_count_threshold = 3
