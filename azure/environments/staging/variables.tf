@@ -258,3 +258,9 @@ variable "vertex_ai_embedding_model" {
   type    = string
   default = "gemini-embedding-001"
 }
+
+variable "ai_assistant_max_vector_distance" {
+  description = "Maximum cosine distance accepted for semantic context before the assistant refuses to answer."
+  type        = string
+  default     = "0.8"
+}

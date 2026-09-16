@@ -248,6 +248,10 @@ resource "azurerm_container_app" "api" {
         value = "768"
       }
       env {
+        name  = "AI_ASSISTANT_MAX_VECTOR_DISTANCE"
+        value = var.ai_assistant_max_vector_distance
+      }
+      env {
         name  = "VERTEX_AI_TIMEOUT_MS"
         value = "60000"
       }

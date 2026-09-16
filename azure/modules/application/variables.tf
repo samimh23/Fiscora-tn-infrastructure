@@ -50,6 +50,10 @@ variable "gcp_project_id" { type = string }
 variable "vertex_ai_location" { type = string }
 variable "vertex_ai_chat_model" { type = string }
 variable "vertex_ai_embedding_model" { type = string }
+variable "ai_assistant_max_vector_distance" {
+  type    = string
+  default = "0.8"
+}
 variable "tags" {
   type    = map(string)
   default = {}

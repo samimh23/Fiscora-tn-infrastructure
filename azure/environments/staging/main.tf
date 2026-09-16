@@ -166,6 +166,7 @@ module "application" {
   vertex_ai_location                     = var.vertex_ai_location
   vertex_ai_chat_model                   = var.vertex_ai_chat_model
   vertex_ai_embedding_model              = var.vertex_ai_embedding_model
+  ai_assistant_max_vector_distance       = var.ai_assistant_max_vector_distance
   tags                                   = local.tags
 
   depends_on = [module.database, module.registry, module.storage]
