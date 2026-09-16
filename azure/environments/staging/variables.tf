@@ -152,6 +152,12 @@ variable "frontend_public_url" {
   default     = "https://app.fiscora.me"
 }
 
+variable "google_oauth_client_id" {
+  description = "Public OAuth 2.0 web client ID shared by Google Identity Services and the API token verifier."
+  type        = string
+  default     = ""
+}
+
 variable "smtp_host" {
   type    = string
   default = "smtp-relay.brevo.com"

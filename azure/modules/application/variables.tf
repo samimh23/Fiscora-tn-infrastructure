@@ -34,6 +34,7 @@ variable "inbound_email_webhook_secret_id" {
 variable "storage_account_url" { type = string }
 variable "storage_container_name" { type = string }
 variable "frontend_public_url" { type = string }
+variable "google_oauth_client_id" { type = string }
 variable "cors_allowed_origins" {
   description = "Comma-separated browser origins allowed to call the API."
   type        = string

@@ -27,6 +27,7 @@ deploy_application = false
 backend_image       = ""
 
 frontend_public_url       = "https://app.fiscora.me"
+google_oauth_client_id    = "000000000000-example.apps.googleusercontent.com"
 smtp_host                 = "smtp-relay.brevo.com"
 smtp_port                 = 587
 smtp_user                 = "REPLACE-WITH-BREVO-SMTP-LOGIN"

@@ -148,6 +148,10 @@ resource "azurerm_container_app" "api" {
         value = "14"
       }
       env {
+        name  = "GOOGLE_OAUTH_CLIENT_ID"
+        value = var.google_oauth_client_id
+      }
+      env {
         name  = "OBJECT_STORAGE_PROVIDER"
         value = "azure"
       }

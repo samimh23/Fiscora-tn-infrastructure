@@ -150,6 +150,7 @@ module "application" {
   storage_account_url                    = module.storage.storage_account_url
   storage_container_name                 = module.storage.container_name
   frontend_public_url                    = var.frontend_public_url
+  google_oauth_client_id                 = var.google_oauth_client_id
   cors_allowed_origins                   = join(",", distinct([var.frontend_public_url, "https://${module.frontend.default_hostname}"]))
   smtp_host                              = var.smtp_host
   smtp_port                              = var.smtp_port
