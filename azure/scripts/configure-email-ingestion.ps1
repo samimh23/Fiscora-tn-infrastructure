@@ -82,10 +82,25 @@ try {
             )
         } | ConvertTo-Json -Depth 5
 
-        $existing = Invoke-RestMethod `
-            -Method Get `
-            -Uri 'https://api.brevo.com/v3/webhooks?type=inbound&sort=desc' `
-            -Headers $headers
+        # Brevo returns HTTP 404/document_not_found when an account has no
+        # inbound webhook yet. That is the normal first-run state, so treat it
+        # as an empty collection and create the webhook below.
+        try {
+            $existing = Invoke-RestMethod `
+                -Method Get `
+                -Uri 'https://api.brevo.com/v3/webhooks?type=inbound&sort=desc' `
+                -Headers $headers
+        }
+        catch {
+            $statusCode = [int]$_.Exception.Response.StatusCode
+            $errorBody = $_.ErrorDetails.Message
+            if ($statusCode -eq 404 -or $errorBody -match 'document_not_found') {
+                $existing = @{ webhooks = @() }
+            }
+            else {
+                throw
+            }
+        }
         $match = @($existing.webhooks) |
             Where-Object { $_.domain -eq $ReceivingDomain -or $_.description -eq $description } |
             Select-Object -First 1
