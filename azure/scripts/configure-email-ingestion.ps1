@@ -123,9 +123,10 @@ try {
         }
 
         Write-Host ''
-        Write-Host 'Add these DNS records in Namecheap Advanced DNS:'
-        Write-Host "MX | Host: inbox | Priority: 10 | Value: inbound1.sendinblue.com"
-        Write-Host "MX | Host: inbox | Priority: 20 | Value: inbound2.sendinblue.com"
+        Write-Host "Brevo inbound MX records must resolve for $ReceivingDomain."
+        Write-Host 'This repository manages them in a delegated Azure DNS zone.'
+        Write-Host 'Add every value from Terraform output email_ingestion_dns_name_servers'
+        Write-Host 'to Namecheap as an NS record with Host inbox. Keep root Mail Settings unchanged.'
         Write-Host ''
         Write-Host 'Run terraform apply after the secrets exist so the Container App receives them.'
     }

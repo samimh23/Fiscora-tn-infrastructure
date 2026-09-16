@@ -14,6 +14,9 @@ independent until data migration, smoke tests and DNS cutover have passed.
   private delegated subnet.
 - Azure Blob Storage stores accounting documents with versioning and 30-day
   soft deletion. Public container access and storage account keys are disabled.
+- Azure DNS hosts only the delegated `inbox.fiscora.me` receiving subdomain.
+  Its MX records route inbound accounting documents to Brevo without changing
+  the root domain's Namecheap email-forwarding service.
 - A user-assigned managed identity grants the API access to Blob Storage and
   Key Vault without long-lived Azure credentials.
 - Azure Key Vault stores the generated database password, JWT signing key and
@@ -131,9 +134,19 @@ $brevoApiKey = Read-Host 'Brevo REST API key' -AsSecureString
   -BrevoApiKey $brevoApiKey
 ```
 
-The script prints the two `inbox` MX records to add in Namecheap. Re-run
-`terraform plan` and `terraform apply` after the secrets exist so the Container
-App gets its Key Vault references. Then forward the cabinet Gmail to the
+Terraform creates the `inbox.fiscora.me` Azure DNS zone and its two Brevo MX
+records. After applying it, obtain the delegated nameservers:
+
+```powershell
+terraform output email_ingestion_dns_name_servers
+```
+
+In Namecheap Advanced DNS, add one **NS Record** for each returned nameserver,
+all with Host `inbox`. Keep Mail Settings set to **Email Forwarding** so
+`contact@fiscora.me` continues reaching Gmail. After public DNS resolves the
+two MX records, re-run the Brevo configurator to create the inbound webhook.
+Then apply the remaining runtime changes so the Container App receives its Key
+Vault references, and forward the cabinet Gmail to the
 `o-...@inbox.fiscora.me` address shown in Fiscora.
 
 Build and push the backend as `linux/amd64`, set `backend_image` to its immutable

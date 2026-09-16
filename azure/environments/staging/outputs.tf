@@ -28,3 +28,5 @@ output "azure_subscription_id" {
 output "azure_gcp_wif_app_id_uri" { value = module.google_wif.application_id_uri }
 output "azure_gcp_wif_application_client_id" { value = module.google_wif.application_client_id }
 output "application_identity_principal_id" { value = module.security.application_identity_principal_id }
+output "email_ingestion_dns_zone_name" { value = azurerm_dns_zone.email_ingestion.name }
+output "email_ingestion_dns_name_servers" { value = azurerm_dns_zone.email_ingestion.name_servers }
