@@ -49,6 +49,14 @@ module "security" {
   tags                          = local.tags
 }
 
+module "google_wif" {
+  source = "../../modules/google-wif"
+
+  name_prefix                       = local.name_prefix
+  application_id_uri                = var.azure_gcp_wif_app_id_uri
+  application_identity_principal_id = module.security.application_identity_principal_id
+}
+
 module "ci" {
   source = "../../modules/ci"
 
@@ -100,6 +108,7 @@ module "database" {
   database_name          = "accounting_nest"
   postgres_version       = var.postgres_version
   sku_name               = var.postgres_sku_name
+  allowed_extensions     = ["uuid-ossp", "vector"]
   tags                   = local.tags
 
   depends_on = [module.network]
@@ -147,6 +156,16 @@ module "application" {
   malware_scan_enabled                   = var.malware_scan_enabled
   clamav_image                           = var.clamav_image
   application_insights_connection_string = module.monitoring.application_insights_connection_string
+  document_extraction_enabled            = var.document_extraction_enabled
+  nuextract_service_url                  = var.nuextract_service_url
+  azure_gcp_wif_app_id_uri               = module.google_wif.application_id_uri
+  gcp_wif_provider_audience              = var.gcp_wif_provider_audience
+  gcp_wif_service_account                = var.gcp_wif_service_account
+  ai_assistant_enabled                   = var.ai_assistant_enabled
+  gcp_project_id                         = var.gcp_project_id
+  vertex_ai_location                     = var.vertex_ai_location
+  vertex_ai_chat_model                   = var.vertex_ai_chat_model
+  vertex_ai_embedding_model              = var.vertex_ai_embedding_model
   tags                                   = local.tags
 
   depends_on = [module.database, module.registry, module.storage]

@@ -1,11 +1,13 @@
 # Fiscora infrastructure
 
-Terraform configuration for Fiscora's AWS environment and the reviewed Azure
-migration target.
+Terraform configuration for Fiscora's legacy AWS environment, the deployed
+Azure application platform, and the isolated Google Cloud NuExtract target.
 
 The existing AWS stack remains under `bootstrap/`, `modules/` and
 `environments/`. The Azure stack is isolated under [`azure/`](azure/README.md)
-and cannot change or destroy AWS resources.
+and cannot change or destroy AWS resources. Private, scale-to-zero document AI
+infrastructure is isolated under [`gcp/`](gcp/README.md); it does not move the
+Azure web application or database.
 
 ## Current scope
 

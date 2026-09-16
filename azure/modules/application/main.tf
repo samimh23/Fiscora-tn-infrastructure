@@ -203,6 +203,62 @@ resource "azurerm_container_app" "api" {
         name  = "APPLICATIONINSIGHTS_CONNECTION_STRING"
         value = var.application_insights_connection_string
       }
+      env {
+        name  = "DOCUMENT_EXTRACTION_ENABLED"
+        value = tostring(var.document_extraction_enabled)
+      }
+      env {
+        name  = "NUEXTRACT_SERVICE_URL"
+        value = var.nuextract_service_url
+      }
+      env {
+        name  = "AZURE_GCP_WIF_APP_ID_URI"
+        value = var.azure_gcp_wif_app_id_uri
+      }
+      env {
+        name  = "GCP_WIF_PROVIDER_AUDIENCE"
+        value = var.gcp_wif_provider_audience
+      }
+      env {
+        name  = "GCP_WIF_SERVICE_ACCOUNT"
+        value = var.gcp_wif_service_account
+      }
+      env {
+        name  = "AI_ASSISTANT_ENABLED"
+        value = tostring(var.ai_assistant_enabled)
+      }
+      env {
+        name  = "GCP_PROJECT_ID"
+        value = var.gcp_project_id
+      }
+      env {
+        name  = "VERTEX_AI_LOCATION"
+        value = var.vertex_ai_location
+      }
+      env {
+        name  = "VERTEX_AI_CHAT_MODEL"
+        value = var.vertex_ai_chat_model
+      }
+      env {
+        name  = "VERTEX_AI_EMBEDDING_MODEL"
+        value = var.vertex_ai_embedding_model
+      }
+      env {
+        name  = "VERTEX_AI_EMBEDDING_DIMENSIONS"
+        value = "768"
+      }
+      env {
+        name  = "VERTEX_AI_TIMEOUT_MS"
+        value = "60000"
+      }
+      env {
+        name  = "DOCUMENT_EXTRACTION_MAX_ATTEMPTS"
+        value = "4"
+      }
+      env {
+        name  = "DOCUMENT_EXTRACTION_LEASE_MINUTES"
+        value = "15"
+      }
 
       startup_probe {
         transport               = "HTTP"

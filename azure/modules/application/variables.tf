@@ -40,6 +40,16 @@ variable "application_insights_connection_string" {
   type      = string
   sensitive = true
 }
+variable "document_extraction_enabled" { type = bool }
+variable "nuextract_service_url" { type = string }
+variable "azure_gcp_wif_app_id_uri" { type = string }
+variable "gcp_wif_provider_audience" { type = string }
+variable "gcp_wif_service_account" { type = string }
+variable "ai_assistant_enabled" { type = bool }
+variable "gcp_project_id" { type = string }
+variable "vertex_ai_location" { type = string }
+variable "vertex_ai_chat_model" { type = string }
+variable "vertex_ai_embedding_model" { type = string }
 variable "tags" {
   type    = map(string)
   default = {}

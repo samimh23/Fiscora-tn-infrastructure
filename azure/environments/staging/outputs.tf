@@ -25,3 +25,6 @@ output "azure_subscription_id" {
   value     = data.azurerm_client_config.current.subscription_id
   sensitive = true
 }
+output "azure_gcp_wif_app_id_uri" { value = module.google_wif.application_id_uri }
+output "azure_gcp_wif_application_client_id" { value = module.google_wif.application_client_id }
+output "application_identity_principal_id" { value = module.security.application_identity_principal_id }

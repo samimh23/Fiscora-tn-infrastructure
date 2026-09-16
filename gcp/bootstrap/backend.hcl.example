@@ -1,0 +1,3 @@
+bucket = "fiscora-ai-terraform-state"
+prefix = "bootstrap"
+

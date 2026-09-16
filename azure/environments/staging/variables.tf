@@ -201,3 +201,60 @@ variable "frontend_custom_domain" {
   type    = string
   default = "app.fiscora.me"
 }
+
+variable "document_extraction_enabled" {
+  description = "Run the durable document-extraction worker in the API."
+  type        = bool
+  default     = false
+}
+
+variable "nuextract_service_url" {
+  description = "Private Google Cloud Run NuExtract service URL."
+  type        = string
+  default     = ""
+}
+
+variable "azure_gcp_wif_app_id_uri" {
+  description = "Stable Microsoft Entra Application ID URI used as the Google federation audience."
+  type        = string
+  default     = "api://c26cfc43-9c94-4f7b-813e-d23460d18aec/fiscora-google-wif"
+}
+
+variable "gcp_wif_provider_audience" {
+  description = "Canonical Google Workload Identity provider audience."
+  type        = string
+  default     = ""
+}
+
+variable "gcp_wif_service_account" {
+  description = "Google service account impersonated by the Azure API."
+  type        = string
+  default     = ""
+}
+
+variable "ai_assistant_enabled" {
+  description = "Enable the permission-scoped dossier RAG assistant."
+  type        = bool
+  default     = false
+}
+
+variable "gcp_project_id" {
+  description = "Google Cloud project used for Vertex AI."
+  type        = string
+  default     = "fiscora-ai"
+}
+
+variable "vertex_ai_location" {
+  type    = string
+  default = "global"
+}
+
+variable "vertex_ai_chat_model" {
+  type    = string
+  default = "gemini-2.5-flash"
+}
+
+variable "vertex_ai_embedding_model" {
+  type    = string
+  default = "gemini-embedding-001"
+}

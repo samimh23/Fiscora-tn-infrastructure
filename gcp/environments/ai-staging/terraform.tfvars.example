@@ -1,0 +1,20 @@
+project_id         = "fiscora-ai"
+region             = "europe-west1"
+billing_account_id = "000000-000000-000000"
+monthly_budget_usd = 50
+
+invoker_members = [
+  "user:you@example.com",
+]
+
+# Cost gate: leave false until build-nuextract.ps1 prints an immutable digest.
+enable_nuextract_service = false
+nuextract_image          = null
+
+# The benchmark showed 32 as the preferred interactive setting and 64 for bulk.
+request_concurrency = 32
+max_num_seqs        = 32
+
+azure_tenant_id                     = "00000000-0000-0000-0000-000000000000"
+azure_managed_identity_object_id    = "00000000-0000-0000-0000-000000000000"
+azure_application_id_uri            = "api://TENANT_ID/fiscora-google-wif"

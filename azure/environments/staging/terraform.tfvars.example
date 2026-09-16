@@ -35,3 +35,17 @@ malware_scan_enabled      = true
 clamav_image              = "clamav/clamav:1.4"
 enable_custom_domains     = false
 frontend_custom_domain    = "app.fiscora.me"
+
+# Enable only after the GCP workload identity pool has been applied.
+document_extraction_enabled = false
+nuextract_service_url       = "https://fiscora-nuextract-xxxxxxxxxx-ew.a.run.app"
+azure_gcp_wif_app_id_uri    = "api://TENANT_ID/fiscora-google-wif"
+gcp_wif_provider_audience   = "//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/fiscora-azure/providers/azure-container-apps"
+gcp_wif_service_account     = "fiscora-azure-api@fiscora-ai.iam.gserviceaccount.com"
+
+# Enable after the RAG migration and Vertex IAM binding are deployed.
+ai_assistant_enabled      = false
+gcp_project_id            = "fiscora-ai"
+vertex_ai_location        = "global"
+vertex_ai_chat_model      = "gemini-2.5-flash"
+vertex_ai_embedding_model = "gemini-embedding-001"

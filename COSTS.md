@@ -1,5 +1,11 @@
 # AWS staging cost estimate
 
+> This file describes only the legacy AWS staging stack. The Azure application
+> and Google Cloud NuExtract service have separate cost controls. The Google
+> Cloud service defaults to zero minimum instances, one maximum L4 instance,
+> and an alert budget; see [`gcp/README.md`](gcp/README.md). Budget alerts do not
+> stop spending automatically.
+
 Estimate updated on 2026-08-01 from the AWS Price List API for
 `eu-north-1` (`EU (Stockholm)`). USD prices are before tax and use 730 hours
 for an always-on month.
