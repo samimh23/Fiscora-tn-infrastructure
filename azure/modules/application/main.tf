@@ -53,6 +53,18 @@ resource "azurerm_container_app" "api" {
     identity            = var.application_identity_id
   }
 
+  secret {
+    name                = "brevo-api-key"
+    key_vault_secret_id = var.brevo_api_key_secret_id
+    identity            = var.application_identity_id
+  }
+
+  secret {
+    name                = "inbound-email-webhook-secret"
+    key_vault_secret_id = var.inbound_email_webhook_secret_id
+    identity            = var.application_identity_id
+  }
+
   ingress {
     external_enabled           = true
     allow_insecure_connections = false
@@ -198,6 +210,22 @@ resource "azurerm_container_app" "api" {
       env {
         name  = "SMTP_FROM"
         value = var.smtp_from
+      }
+      env {
+        name  = "EMAIL_INGESTION_DOMAIN"
+        value = var.email_ingestion_domain
+      }
+      env {
+        name  = "EMAIL_INGESTION_MAX_ATTACHMENT_BYTES"
+        value = tostring(var.email_ingestion_max_attachment_bytes)
+      }
+      env {
+        name        = "BREVO_API_KEY"
+        secret_name = "brevo-api-key"
+      }
+      env {
+        name        = "INBOUND_EMAIL_WEBHOOK_SECRET"
+        secret_name = "inbound-email-webhook-secret"
       }
       env {
         name  = "APPLICATIONINSIGHTS_CONNECTION_STRING"

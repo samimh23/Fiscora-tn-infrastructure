@@ -179,6 +179,30 @@ variable "smtp_password_secret_name" {
   default     = "smtp-password"
 }
 
+variable "brevo_api_key_secret_name" {
+  description = "Key Vault secret populated out-of-band with the Brevo REST API key."
+  type        = string
+  default     = "brevo-api-key"
+}
+
+variable "inbound_email_webhook_secret_name" {
+  description = "Key Vault secret used to authenticate Brevo inbound webhooks."
+  type        = string
+  default     = "inbound-email-webhook-secret"
+}
+
+variable "email_ingestion_domain" {
+  description = "Dedicated receiving subdomain delegated to Brevo Inbound Parse."
+  type        = string
+  default     = "inbox.fiscora.me"
+}
+
+variable "email_ingestion_max_attachment_bytes" {
+  description = "Maximum size of one inbound accounting attachment."
+  type        = number
+  default     = 20971520
+}
+
 variable "malware_scan_enabled" {
   description = "Run ClamAV beside the API and reject uploads unless a clean scan succeeds."
   type        = bool

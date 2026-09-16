@@ -145,6 +145,8 @@ module "application" {
   database_password_secret_id            = module.security.postgres_password_secret_id
   jwt_signing_key_secret_id              = module.security.jwt_signing_key_secret_id
   smtp_password_secret_id                = "${module.security.key_vault_uri}secrets/${var.smtp_password_secret_name}"
+  brevo_api_key_secret_id                = "${module.security.key_vault_uri}secrets/${var.brevo_api_key_secret_name}"
+  inbound_email_webhook_secret_id        = "${module.security.key_vault_uri}secrets/${var.inbound_email_webhook_secret_name}"
   storage_account_url                    = module.storage.storage_account_url
   storage_container_name                 = module.storage.container_name
   frontend_public_url                    = var.frontend_public_url
@@ -153,6 +155,8 @@ module "application" {
   smtp_port                              = var.smtp_port
   smtp_user                              = var.smtp_user
   smtp_from                              = var.smtp_from
+  email_ingestion_domain                 = var.email_ingestion_domain
+  email_ingestion_max_attachment_bytes   = var.email_ingestion_max_attachment_bytes
   malware_scan_enabled                   = var.malware_scan_enabled
   clamav_image                           = var.clamav_image
   application_insights_connection_string = module.monitoring.application_insights_connection_string

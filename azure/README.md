@@ -119,6 +119,23 @@ $smtpKey = Read-Host 'Brevo SMTP key' -AsSecureString
   -BrevoSmtpKey $smtpKey
 ```
 
+For inbound client invoices, create a **Brevo REST API key** (`xkeysib-...`, not
+the SMTP key) and run the idempotent configurator. It stores both secrets in Key
+Vault and creates or updates the secured Inbound Parse webhook:
+
+```powershell
+$brevoApiKey = Read-Host 'Brevo REST API key' -AsSecureString
+..\..\scripts\configure-email-ingestion.ps1 `
+  -KeyVaultName (terraform output -raw key_vault_name) `
+  -ApiBaseUrl ("https://" + (terraform output -raw container_app_fqdn)) `
+  -BrevoApiKey $brevoApiKey
+```
+
+The script prints the two `inbox` MX records to add in Namecheap. Re-run
+`terraform plan` and `terraform apply` after the secrets exist so the Container
+App gets its Key Vault references. Then forward the cabinet Gmail to the
+`o-...@inbox.fiscora.me` address shown in Fiscora.
+
 Build and push the backend as `linux/amd64`, set `backend_image` to its immutable
 digest, set `deploy_application = true`, create a new plan and review it before
 the second apply.

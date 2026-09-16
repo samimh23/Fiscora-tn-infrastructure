@@ -23,6 +23,14 @@ variable "smtp_password_secret_id" {
   type      = string
   sensitive = true
 }
+variable "brevo_api_key_secret_id" {
+  type      = string
+  sensitive = true
+}
+variable "inbound_email_webhook_secret_id" {
+  type      = string
+  sensitive = true
+}
 variable "storage_account_url" { type = string }
 variable "storage_container_name" { type = string }
 variable "frontend_public_url" { type = string }
@@ -34,6 +42,8 @@ variable "smtp_host" { type = string }
 variable "smtp_port" { type = number }
 variable "smtp_user" { type = string }
 variable "smtp_from" { type = string }
+variable "email_ingestion_domain" { type = string }
+variable "email_ingestion_max_attachment_bytes" { type = number }
 variable "malware_scan_enabled" { type = bool }
 variable "clamav_image" { type = string }
 variable "application_insights_connection_string" {
