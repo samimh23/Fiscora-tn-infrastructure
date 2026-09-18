@@ -1,9 +1,9 @@
 output "artifact_repository" {
-  description = "Artifact Registry repository that stores the NuExtract image."
+  description = "Artifact Registry repository that stores document-inference images."
   value       = google_artifact_registry_repository.ai.name
 }
 
-output "nuextract_service_uri" {
+output "extraction_service_uri" {
   description = "Private Cloud Run URI, or null while the GPU service is disabled."
   value = coalesce(
     try(google_cloud_run_v2_service.nuextract[0].uri, null),
@@ -13,11 +13,11 @@ output "nuextract_service_uri" {
 
 output "gpu_cost_gate" {
   description = "Whether Terraform is currently allowed to create the GPU service."
-  value       = var.enable_nuextract_service
+  value       = var.enable_extraction_service
 }
 
 output "runtime_service_account" {
-  description = "Identity used by the NuExtract Cloud Run service."
+  description = "Identity used by the private extraction service."
   value       = google_service_account.nuextract.email
 }
 

@@ -35,60 +35,36 @@ if (-not $token) {
     throw 'Could not create a Google identity token.'
 }
 
-$template = [ordered]@{
-    document_type = @('invoice', 'credit_note', 'bank_statement', 'receipt', 'other')
-    supplier = [ordered]@{
-        name    = 'verbatim-string'
-        tax_id  = 'verbatim-string'
-        address = 'verbatim-string'
-    }
-    customer = [ordered]@{
-        name       = 'verbatim-string'
-        customer_id = 'verbatim-string'
-        address    = 'verbatim-string'
-    }
-    document_number  = 'verbatim-string'
-    issue_date       = 'date-time'
-    currency         = 'currency'
-    subtotal_excl_tax = 'number'
-    tax_amount       = 'number'
-    stamp_tax        = 'number'
-    total_incl_tax   = 'number'
-    amount_due       = 'number'
-    line_items = @([ordered]@{
-        description = 'verbatim-string'
-        quantity    = 'number'
-        unit_price  = 'number'
-        tax_rate    = 'number'
-        line_total  = 'number'
-    })
-}
-
 $instructions = @'
-Classify document_type from visible evidence, then extract all applicable fields.
-Use null for information that is unreadable or absent and never infer hidden identifiers.
-Preserve printed identifiers exactly. Use ISO-8601 dates and ISO-4217 currencies.
-For Tunisian documents, DT means TND and a comma followed by three digits is a millime decimal separator.
-Keep fiscal stamp separate. Financial values must be validated by the application before acceptance.
+Classify the financial document and extract it to JSON. Copy monetary values,
+quantities, rates and identifiers exactly as printed. Keep all spaces, commas
+and points exactly as they appear. Do not calculate, normalize or multiply any
+number. Preserve every table row in printed order. Use null instead of guessing.
 '@
 
 $encodedImage = [Convert]::ToBase64String([IO.File]::ReadAllBytes($resolvedImage.Path))
 $payload = [ordered]@{
-    model       = 'numind/NuExtract3'
-    temperature = 0.2
-    max_tokens  = 2400
-    messages    = @([ordered]@{
-        role    = 'user'
-        content = @([ordered]@{
-            type      = 'image_url'
-            image_url = [ordered]@{ url = "data:$mimeType;base64,$encodedImage" }
-        })
-    })
-    chat_template_kwargs = [ordered]@{
-        template        = ($template | ConvertTo-Json -Depth 10 -Compress)
-        instructions    = $instructions
-        enable_thinking = $false
-    }
+    model           = 'Qwen/Qwen3.5-4B'
+    temperature     = 0
+    seed            = 0
+    max_tokens      = 8000
+    response_format = [ordered]@{ type = 'json_object' }
+    messages        = @(
+        [ordered]@{ role = 'system'; content = $instructions },
+        [ordered]@{
+            role    = 'user'
+            content = @(
+                [ordered]@{
+                    type      = 'image_url'
+                    image_url = [ordered]@{ url = "data:$mimeType;base64,$encodedImage" }
+                },
+                [ordered]@{
+                    type = 'text'
+                    text = 'Return only the extracted JSON.'
+                }
+            )
+        }
+    )
 } | ConvertTo-Json -Depth 20 -Compress
 
 $timer = [Diagnostics.Stopwatch]::StartNew()
@@ -109,7 +85,7 @@ try {
     $parsed = $candidate | ConvertFrom-Json
 }
 catch {
-    throw "NuExtract returned non-JSON output: $raw"
+    throw "Qwen returned non-JSON output: $raw"
 }
 
 [pscustomobject]@{

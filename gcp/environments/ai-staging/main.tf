@@ -58,7 +58,7 @@ resource "google_artifact_registry_repository" "ai" {
 resource "google_service_account" "nuextract" {
   project      = var.project_id
   account_id   = "fiscora-nuextract"
-  display_name = "Fiscora NuExtract runtime"
+  display_name = "Fiscora Qwen extraction runtime"
 
   depends_on = [google_project_service.required]
 }
@@ -157,7 +157,7 @@ resource "google_billing_budget" "project" {
 
 resource "google_cloud_run_v2_service" "nuextract" {
   provider = google-beta
-  count    = var.enable_nuextract_service ? 1 : 0
+  count    = var.enable_extraction_service ? 1 : 0
 
   project             = var.project_id
   name                = var.service_name
@@ -177,8 +177,8 @@ resource "google_cloud_run_v2_service" "nuextract" {
     }
 
     containers {
-      name  = "nuextract"
-      image = var.nuextract_image
+      name  = "qwen-extractor"
+      image = var.extraction_image
 
       ports {
         name           = "http1"
@@ -225,7 +225,7 @@ resource "google_cloud_run_v2_service" "nuextract" {
 
 resource "google_cloud_run_v2_service_iam_member" "invoker" {
   provider = google-beta
-  for_each = var.enable_nuextract_service ? var.invoker_members : []
+  for_each = var.enable_extraction_service ? var.invoker_members : []
 
   project  = var.project_id
   location = var.region
@@ -236,7 +236,7 @@ resource "google_cloud_run_v2_service_iam_member" "invoker" {
 
 resource "google_cloud_run_v2_service_iam_member" "azure_api_invoker" {
   provider = google-beta
-  count    = var.enable_nuextract_service ? 1 : 0
+  count    = var.enable_extraction_service ? 1 : 0
 
   project  = var.project_id
   location = var.region

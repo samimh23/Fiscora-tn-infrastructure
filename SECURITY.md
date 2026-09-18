@@ -15,7 +15,7 @@ Human AWS access uses IAM Identity Center and temporary SSO sessions. GitHub
 Actions will use an AWS OIDC role in a later change; it must not use permanent
 AWS access keys.
 
-The Google Cloud NuExtract endpoint must remain authenticated. Azure-to-Google
+The Google Cloud Qwen document-extraction endpoint must remain authenticated. Azure-to-Google
 access will use Workload Identity Federation; do not create or download a
 long-lived Google service-account JSON key.
 

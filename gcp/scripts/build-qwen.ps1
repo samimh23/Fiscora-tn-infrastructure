@@ -3,13 +3,13 @@ param(
     [string]$ProjectId,
 
     [string]$Region = 'europe-west1',
-    [string]$ModelRevision = 'c99dc8f5641b866aa0192b6ea78f84bf9f3535f1',
-    [string]$Tag = 'vllm-0.22.1'
+    [string]$ModelRevision = '851bf6e',
+    [string]$Tag = 'qwen3-5-4b-vllm-nightly'
 )
 
 $ErrorActionPreference = 'Stop'
-$serviceRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'services/nuextract'
-$image = "${Region}-docker.pkg.dev/$ProjectId/fiscora-ai/nuextract3:$Tag"
+$serviceRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'services/qwen'
+$image = "${Region}-docker.pkg.dev/$ProjectId/fiscora-ai/qwen3-5-4b:$Tag"
 
 gcloud builds submit $serviceRoot `
     --project $ProjectId `
@@ -29,5 +29,5 @@ if (-not $digest) {
     throw 'The image was built, but its digest could not be resolved.'
 }
 
-Write-Host 'Immutable NuExtract image:'
-Write-Host "${Region}-docker.pkg.dev/$ProjectId/fiscora-ai/nuextract3@$digest"
+Write-Host 'Immutable Qwen extraction image:'
+Write-Host "${Region}-docker.pkg.dev/$ProjectId/fiscora-ai/qwen3-5-4b@$digest"

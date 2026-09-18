@@ -1,7 +1,7 @@
 # Fiscora infrastructure
 
 Terraform configuration for Fiscora's legacy AWS environment, the deployed
-Azure application platform, and the isolated Google Cloud NuExtract target.
+Azure application platform, and the isolated Google Cloud Qwen3.5 extraction target.
 
 The existing AWS stack remains under `bootstrap/`, `modules/` and
 `environments/`. The Azure stack is isolated under [`azure/`](azure/README.md)

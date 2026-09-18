@@ -239,7 +239,7 @@ variable "document_extraction_enabled" {
 }
 
 variable "nuextract_service_url" {
-  description = "Private Google Cloud Run NuExtract service URL."
+  description = "Private Google Cloud Run document-extraction service URL (legacy variable name retained for state compatibility)."
   type        = string
   default     = ""
 }

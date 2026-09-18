@@ -1,5 +1,5 @@
 variable "project_id" {
-  description = "Existing Google Cloud project that owns NuExtract resources."
+  description = "Existing Google Cloud project that owns document-extraction resources."
   type        = string
 }
 
@@ -14,4 +14,3 @@ variable "state_bucket_name" {
   type        = string
   default     = null
 }
-

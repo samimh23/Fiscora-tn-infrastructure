@@ -28,29 +28,29 @@ variable "monthly_budget_usd" {
 }
 
 variable "invoker_members" {
-  description = "IAM principals allowed to invoke the private NuExtract service."
+  description = "IAM principals allowed to invoke the private extraction service."
   type        = set(string)
   default     = []
 }
 
-variable "enable_nuextract_service" {
+variable "enable_extraction_service" {
   description = "Explicit cost gate. False creates no Cloud Run GPU service."
   type        = bool
   default     = false
 }
 
-variable "nuextract_image" {
-  description = "Immutable Artifact Registry image digest for NuExtract."
+variable "extraction_image" {
+  description = "Immutable Artifact Registry image digest for the Qwen extractor."
   type        = string
   default     = null
   nullable    = true
 
   validation {
     condition = (
-      !var.enable_nuextract_service ||
-      (var.nuextract_image != null && can(regex("@sha256:[0-9a-f]{64}$", var.nuextract_image)))
+      !var.enable_extraction_service ||
+      (var.extraction_image != null && can(regex("@sha256:[0-9a-f]{64}$", var.extraction_image)))
     )
-    error_message = "When enabled, nuextract_image must use an immutable @sha256 digest."
+    error_message = "When enabled, extraction_image must use an immutable @sha256 digest."
   }
 }
 
@@ -61,20 +61,20 @@ variable "service_name" {
 }
 
 variable "request_concurrency" {
-  description = "Requests admitted per instance. 32 is the benchmarked interactive mode."
+  description = "Requests admitted per L4 instance. Keep low for long structured multimodal outputs."
   type        = number
-  default     = 32
+  default     = 4
 
   validation {
-    condition     = contains([1, 8, 16, 32, 64], var.request_concurrency)
-    error_message = "Use a reviewed concurrency value: 1, 8, 16, 32, or 64."
+    condition     = contains([1, 2, 4, 8], var.request_concurrency)
+    error_message = "Use a reviewed concurrency value: 1, 2, 4, or 8."
   }
 }
 
 variable "max_num_seqs" {
   description = "vLLM scheduler ceiling. Keep aligned with request_concurrency."
   type        = number
-  default     = 32
+  default     = 4
 }
 
 variable "deletion_protection" {

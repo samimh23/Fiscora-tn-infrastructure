@@ -7,9 +7,9 @@ invoker_members = [
   "user:you@example.com",
 ]
 
-# Cost gate: leave false until build-nuextract.ps1 prints an immutable digest.
-enable_nuextract_service = false
-nuextract_image          = null
+# Cost gate: leave false until build-qwen.ps1 prints an immutable digest.
+enable_extraction_service = false
+extraction_image          = null
 
 # The benchmark showed 32 as the preferred interactive setting and 64 for bulk.
 request_concurrency = 32

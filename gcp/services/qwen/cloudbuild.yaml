@@ -12,4 +12,4 @@ images:
 options:
   machineType: E2_HIGHCPU_8
   diskSizeGb: 100
-
+timeout: 3600s

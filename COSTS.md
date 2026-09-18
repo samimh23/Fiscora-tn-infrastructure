@@ -1,7 +1,7 @@
 # AWS staging cost estimate
 
 > This file describes only the legacy AWS staging stack. The Azure application
-> and Google Cloud NuExtract service have separate cost controls. The Google
+> and Google Cloud Qwen extraction service have separate cost controls. The Google
 > Cloud service defaults to zero minimum instances, one maximum L4 instance,
 > and an alert budget; see [`gcp/README.md`](gcp/README.md). Budget alerts do not
 > stop spending automatically.

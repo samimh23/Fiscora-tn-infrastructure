@@ -78,8 +78,9 @@ resource "azurerm_container_app" "api" {
   }
 
   template {
-    min_replicas = 0
-    max_replicas = 1
+    min_replicas               = 0
+    max_replicas               = 1
+    cooldown_period_in_seconds = 600
 
     container {
       name   = "api"
@@ -242,6 +243,16 @@ resource "azurerm_container_app" "api" {
       env {
         name  = "NUEXTRACT_SERVICE_URL"
         value = var.nuextract_service_url
+      }
+
+      env {
+        name  = "DOCUMENT_EXTRACTION_SERVICE_URL"
+        value = var.nuextract_service_url
+      }
+
+      env {
+        name  = "DOCUMENT_EXTRACTION_MODEL"
+        value = "Qwen/Qwen3.5-4B"
       }
       env {
         name  = "AZURE_GCP_WIF_APP_ID_URI"
