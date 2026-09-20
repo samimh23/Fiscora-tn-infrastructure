@@ -9,7 +9,8 @@ git checkout -b feat/short-description
 Before committing:
 
 ```powershell
-.\scripts\validate.ps1
+.\azure\scripts\validate.ps1
+.\gcp\scripts\validate.ps1
 ```
 
 Use focused Conventional Commit messages:
@@ -17,9 +18,9 @@ Use focused Conventional Commit messages:
 ```text
 feat(network): add private database subnets
 fix(storage): restrict document bucket policy
-chore(terraform): update AWS provider
+chore(terraform): update Azure provider
 ```
 
-Never run `terraform apply` from an unreviewed branch. Do not use the AWS
-console to make routine infrastructure changes that belong in Terraform.
-
+Never run `terraform apply` from an unreviewed branch. Do not use the Azure or
+Google Cloud console to make routine infrastructure changes that belong in
+Terraform.

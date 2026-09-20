@@ -24,6 +24,3 @@ backend.hcl
 .vscode/
 .DS_Store
 Thumbs.db
-
-# Decrypted migration bundles contain customer accounting data.
-azure/migration/out/

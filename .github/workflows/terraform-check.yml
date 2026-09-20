@@ -34,22 +34,6 @@ jobs:
       - name: Check formatting
         run: terraform fmt -check -recursive
 
-      - name: Initialize state bootstrap
-        working-directory: bootstrap
-        run: terraform init -backend=false -input=false
-
-      - name: Validate state bootstrap
-        working-directory: bootstrap
-        run: terraform validate
-
-      - name: Initialize staging
-        working-directory: environments/staging
-        run: terraform init -backend=false -input=false
-
-      - name: Validate staging
-        working-directory: environments/staging
-        run: terraform validate
-
       - name: Initialize Azure state bootstrap
         working-directory: azure/bootstrap
         run: terraform init -backend=false -input=false
@@ -64,4 +48,20 @@ jobs:
 
       - name: Validate Azure staging
         working-directory: azure/environments/staging
+        run: terraform validate
+
+      - name: Initialize Google Cloud state bootstrap
+        working-directory: gcp/bootstrap
+        run: terraform init -backend=false -input=false
+
+      - name: Validate Google Cloud state bootstrap
+        working-directory: gcp/bootstrap
+        run: terraform validate
+
+      - name: Initialize Google Cloud AI staging
+        working-directory: gcp/environments/ai-staging
+        run: terraform init -backend=false -input=false
+
+      - name: Validate Google Cloud AI staging
+        working-directory: gcp/environments/ai-staging
         run: terraform validate

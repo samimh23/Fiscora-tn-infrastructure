@@ -1,8 +1,7 @@
 # Fiscora on Azure
 
-This directory defines a reproducible Azure staging platform for Fiscora. It
-does not replace or delete the current AWS environment. The two platforms stay
-independent until data migration, smoke tests and DNS cutover have passed.
+This directory defines the reproducible Azure staging platform currently used
+by Fiscora.
 
 ## Target architecture
 
@@ -178,13 +177,12 @@ Only after smoke tests pass:
 
 Never leave both the old A record and a new CNAME at host `app`.
 
-## 5. Migration and rollback
+## 5. Rollback
 
-See [`migration/README.md`](migration/README.md). AWS remains the source of
-truth until the PostgreSQL restore, document manifest verification and complete
-application smoke test succeed. Keep AWS available for a 48-72 hour rollback
-window after DNS cutover. Its destruction is a separate, explicitly approved
-operation.
+Container Apps retains revisions so a failed API release can return traffic to
+the previous healthy revision. Static Web Apps deployments and Terraform state
+provide the corresponding frontend and infrastructure recovery points. Always
+verify database compatibility before rolling an application revision back.
 
 ## Current staging limitations
 
