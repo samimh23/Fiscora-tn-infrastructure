@@ -244,6 +244,12 @@ variable "nuextract_service_url" {
   default     = ""
 }
 
+variable "paddle_ocr_service_url" {
+  description = "Private Google Cloud Run PP-OCRv6 service URL. Leave empty until deployed."
+  type        = string
+  default     = ""
+}
+
 variable "azure_gcp_wif_app_id_uri" {
   description = "Stable Microsoft Entra Application ID URI used as the Google federation audience."
   type        = string

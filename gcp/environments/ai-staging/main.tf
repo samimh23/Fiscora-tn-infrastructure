@@ -63,6 +63,14 @@ resource "google_service_account" "nuextract" {
   depends_on = [google_project_service.required]
 }
 
+resource "google_service_account" "paddleocr" {
+  project      = var.project_id
+  account_id   = "fiscora-paddleocr"
+  display_name = "Fiscora PaddleOCR runtime"
+
+  depends_on = [google_project_service.required]
+}
+
 resource "google_service_account" "azure_api" {
   project      = var.project_id
   account_id   = "fiscora-azure-api"
@@ -241,6 +249,86 @@ resource "google_cloud_run_v2_service_iam_member" "azure_api_invoker" {
   project  = var.project_id
   location = var.region
   name     = google_cloud_run_v2_service.nuextract[0].name
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.azure_api.email}"
+}
+
+resource "google_cloud_run_v2_service" "paddleocr" {
+  provider = google-beta
+  count    = var.enable_ocr_service ? 1 : 0
+
+  project             = var.project_id
+  name                = var.ocr_service_name
+  location            = var.region
+  deletion_protection = var.deletion_protection
+  ingress             = "INGRESS_TRAFFIC_ALL"
+
+  template {
+    service_account                  = google_service_account.paddleocr.email
+    timeout                          = "300s"
+    max_instance_request_concurrency = 1
+
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 1
+    }
+
+    containers {
+      name  = "paddleocr"
+      image = var.ocr_image
+
+      ports {
+        name           = "http1"
+        container_port = 8080
+      }
+
+      resources {
+        cpu_idle          = false
+        startup_cpu_boost = true
+        limits = {
+          cpu    = "4"
+          memory = "8Gi"
+        }
+      }
+
+      startup_probe {
+        failure_threshold     = 180
+        initial_delay_seconds = 0
+        period_seconds        = 2
+        timeout_seconds       = 2
+
+        http_get {
+          path = "/health"
+          port = 8080
+        }
+      }
+    }
+  }
+
+  depends_on = [
+    google_artifact_registry_repository.ai,
+    google_project_service.required,
+  ]
+}
+
+resource "google_cloud_run_v2_service_iam_member" "paddleocr_invoker" {
+  provider = google-beta
+  for_each = var.enable_ocr_service ? var.invoker_members : []
+
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.paddleocr[0].name
+  role     = "roles/run.invoker"
+  member   = each.value
+}
+
+resource "google_cloud_run_v2_service_iam_member" "azure_api_paddleocr_invoker" {
+  provider = google-beta
+  count    = var.enable_ocr_service ? 1 : 0
+
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.paddleocr[0].name
   role     = "roles/run.invoker"
   member   = "serviceAccount:${google_service_account.azure_api.email}"
 }

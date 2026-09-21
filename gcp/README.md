@@ -1,6 +1,8 @@
 # Fiscora Qwen3.5 extraction on Google Cloud
 
-This stack hosts `Qwen/Qwen3.5-4B` in non-thinking mode on one NVIDIA L4 with Cloud Run.
+This stack hosts `Qwen/Qwen3.5-4B` in non-thinking mode on one NVIDIA L4 and
+PP-OCRv6-medium on a separate CPU Cloud Run service. Qwen returns the accounting
+JSON; PaddleOCR supplies the trusted text coordinates used for visual highlights.
 The web application and API remain on Azure; Google Cloud provides only the
 private financial-document inference endpoint. The existing Cloud Run service
 name remains `fiscora-nuextract` during the migration so its authenticated URL
@@ -10,6 +12,8 @@ and Azure Workload Identity Federation integration do not change.
 
 - Minimum instances: `0` (scale to zero).
 - Maximum instances: `1` (at most one L4).
+- PaddleOCR is private, CPU-only, scale-to-zero, and limited to one request and
+  one instance so it cannot create an uncontrolled fleet.
 - Request concurrency and vLLM sequence ceiling: `4`.
 - GPU zonal redundancy: disabled.
 - Public/unauthenticated access: disabled.
@@ -32,6 +36,7 @@ cost guard. Closing a browser or local computer does not stop Cloud Run.
 gcp/bootstrap/                     Protected GCS Terraform-state bucket
 gcp/environments/ai-staging/       Artifact Registry, IAM, budget and Cloud Run
 gcp/services/qwen/                 Pinned Qwen3.5 + vLLM image
+gcp/services/paddleocr/            PP-OCRv6 coordinate service
 gcp/scripts/                       Build, pause, resume and smoke tests
 ```
 
@@ -51,10 +56,12 @@ scale-from-zero cold start.
 
 ```powershell
 .\gcp\scripts\build-qwen.ps1 -ProjectId fiscora-ai
+.\gcp\scripts\build-paddleocr.ps1 -ProjectId fiscora-ai
 ```
 
-Copy the immutable digest printed by the script into
-`gcp/environments/ai-staging/terraform.tfvars` as `extraction_image`. Then:
+Copy the immutable digests printed by the scripts into
+`gcp/environments/ai-staging/terraform.tfvars` as `extraction_image` and
+`ocr_image`, then set `enable_ocr_service = true`:
 
 ```powershell
 cd gcp\environments\ai-staging
@@ -87,5 +94,12 @@ deterministic validation and requires human review.
 The Azure API exchanges its managed-identity token through Google Workload
 Identity Federation. No Google service-account key is stored in Azure. Qwen is
 called through vLLM's OpenAI-compatible API with deterministic sampling and a
-strict JSON schema. Printed numbers are kept verbatim; Fiscora normalizes and
-checks them after extraction.
+strict JSON schema. The API calls PaddleOCR independently and accepts a visual
+highlight only when a Qwen value has one unique high-confidence OCR match.
+Printed numbers are kept verbatim; Fiscora normalizes and checks them after
+extraction.
+
+After applying GCP, copy the `ocr_service_uri` output into Azure staging as
+`paddle_ocr_service_url`, then apply the Azure stack. If the URL is empty or OCR
+fails, extraction still works but the review screen deliberately shows no
+uncertain highlight.

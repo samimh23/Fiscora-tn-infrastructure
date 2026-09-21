@@ -163,6 +163,7 @@ module "application" {
   application_insights_connection_string = module.monitoring.application_insights_connection_string
   document_extraction_enabled            = var.document_extraction_enabled
   nuextract_service_url                  = var.nuextract_service_url
+  paddle_ocr_service_url                 = var.paddle_ocr_service_url
   azure_gcp_wif_app_id_uri               = module.google_wif.application_id_uri
   gcp_wif_provider_audience              = var.gcp_wif_provider_audience
   gcp_wif_service_account                = var.gcp_wif_service_account

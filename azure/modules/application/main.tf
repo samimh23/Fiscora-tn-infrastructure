@@ -251,6 +251,11 @@ resource "azurerm_container_app" "api" {
       }
 
       env {
+        name  = "PADDLE_OCR_SERVICE_URL"
+        value = var.paddle_ocr_service_url
+      }
+
+      env {
         name  = "DOCUMENT_EXTRACTION_MODEL"
         value = "Qwen/Qwen3.5-4B"
       }

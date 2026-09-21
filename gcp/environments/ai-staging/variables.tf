@@ -60,6 +60,33 @@ variable "service_name" {
   default     = "fiscora-nuextract"
 }
 
+variable "enable_ocr_service" {
+  description = "Explicit cost gate for the private PP-OCRv6 CPU service."
+  type        = bool
+  default     = false
+}
+
+variable "ocr_image" {
+  description = "Immutable Artifact Registry image digest for PaddleOCR."
+  type        = string
+  default     = null
+  nullable    = true
+
+  validation {
+    condition = (
+      !var.enable_ocr_service ||
+      (var.ocr_image != null && can(regex("@sha256:[0-9a-f]{64}$", var.ocr_image)))
+    )
+    error_message = "When enabled, ocr_image must use an immutable @sha256 digest."
+  }
+}
+
+variable "ocr_service_name" {
+  description = "Private Cloud Run PP-OCRv6 service name."
+  type        = string
+  default     = "fiscora-paddleocr"
+}
+
 variable "request_concurrency" {
   description = "Requests admitted per L4 instance. Keep low for long structured multimodal outputs."
   type        = number

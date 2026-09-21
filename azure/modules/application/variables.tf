@@ -53,6 +53,7 @@ variable "application_insights_connection_string" {
 }
 variable "document_extraction_enabled" { type = bool }
 variable "nuextract_service_url" { type = string }
+variable "paddle_ocr_service_url" { type = string }
 variable "azure_gcp_wif_app_id_uri" { type = string }
 variable "gcp_wif_provider_audience" { type = string }
 variable "gcp_wif_service_account" { type = string }
