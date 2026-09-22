@@ -48,6 +48,12 @@ resource "azurerm_container_app" "api" {
   }
 
   secret {
+    name                = "mfa-encryption-key"
+    key_vault_secret_id = var.mfa_encryption_key_secret_id
+    identity            = var.application_identity_id
+  }
+
+  secret {
     name                = "smtp-password"
     key_vault_secret_id = var.smtp_password_secret_id
     identity            = var.application_identity_id
@@ -131,6 +137,14 @@ resource "azurerm_container_app" "api" {
       env {
         name        = "JWT_SIGNING_KEY"
         secret_name = "jwt-signing-key"
+      }
+      env {
+        name        = "MFA_ENCRYPTION_KEY"
+        secret_name = "mfa-encryption-key"
+      }
+      env {
+        name  = "MFA_ISSUER"
+        value = "Fiscora"
       }
       env {
         name  = "JWT_ISSUER"

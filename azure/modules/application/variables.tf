@@ -19,6 +19,10 @@ variable "jwt_signing_key_secret_id" {
   type      = string
   sensitive = true
 }
+variable "mfa_encryption_key_secret_id" {
+  type      = string
+  sensitive = true
+}
 variable "smtp_password_secret_id" {
   type      = string
   sensitive = true

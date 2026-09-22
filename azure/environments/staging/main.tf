@@ -144,6 +144,7 @@ module "application" {
   database_user                          = module.database.administrator_login
   database_password_secret_id            = module.security.postgres_password_secret_id
   jwt_signing_key_secret_id              = module.security.jwt_signing_key_secret_id
+  mfa_encryption_key_secret_id           = module.security.mfa_encryption_key_secret_id
   smtp_password_secret_id                = "${module.security.key_vault_uri}secrets/${var.smtp_password_secret_name}"
   brevo_api_key_secret_id                = "${module.security.key_vault_uri}secrets/${var.brevo_api_key_secret_name}"
   inbound_email_webhook_secret_id        = "${module.security.key_vault_uri}secrets/${var.inbound_email_webhook_secret_name}"

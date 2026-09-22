@@ -16,3 +16,7 @@ output "jwt_signing_key_secret_id" {
   value     = azurerm_key_vault_secret.jwt_signing_key.versionless_id
   sensitive = true
 }
+output "mfa_encryption_key_secret_id" {
+  value     = azurerm_key_vault_secret.mfa_encryption_key.versionless_id
+  sensitive = true
+}
