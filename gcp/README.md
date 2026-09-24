@@ -13,8 +13,13 @@ and Azure Workload Identity Federation integration do not change.
 - Minimum instances: `0` (scale to zero).
 - Maximum instances: `1` (at most one L4).
 - PaddleOCR is private, CPU-only, scale-to-zero, and limited to one request and
-  one instance so it cannot create an uncontrolled fleet.
+  one instance so it cannot create an uncontrolled fleet. It accepts JPEG, PNG
+  and PDF documents, and renders PDF pages with PDFium in bounded four-page
+  memory batches at 250 DPI before applying PaddleOCR.
 - Request concurrency and vLLM sequence ceiling: `4`.
+- NestJS admits at most four Qwen calls at once; vLLM continuously batches those
+  sequences. Multi-page OCR tokens are mapped in four-page Qwen batches and
+  merged deterministically before accounting validation.
 - GPU zonal redundancy: disabled.
 - Public/unauthenticated access: disabled.
 - Monthly budget alerts: 50%, 80%, 100%, and forecasted 100%.
@@ -80,6 +85,9 @@ previous revision remains available for rollback.
 ```powershell
 cd ..\..\..
 .\gcp\scripts\smoke-test.ps1 -ProjectId fiscora-ai
+.\gcp\scripts\smoke-paddleocr.ps1 `
+  -ProjectId fiscora-ai `
+  -DocumentPath C:\path\to\non-sensitive-test-document.pdf
 .\gcp\scripts\smoke-extraction.ps1 `
   -ProjectId fiscora-ai `
   -ImagePath C:\path\to\non-sensitive-test-document.jpg

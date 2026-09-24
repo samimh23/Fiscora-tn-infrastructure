@@ -274,6 +274,30 @@ resource "azurerm_container_app" "api" {
         value = "Qwen/Qwen3.5-4B"
       }
       env {
+        name  = "DOCUMENT_EXTRACTION_WORKER_CONCURRENCY"
+        value = "4"
+      }
+      env {
+        name  = "DOCUMENT_EXTRACTION_QWEN_CONCURRENCY"
+        value = "4"
+      }
+      env {
+        name  = "DOCUMENT_EXTRACTION_OCR_BATCH_PAGES"
+        value = "4"
+      }
+      env {
+        name  = "DOCUMENT_EXTRACTION_OCR_BATCH_MAX_CHARS"
+        value = "28000"
+      }
+      env {
+        name  = "DOCUMENT_EXTRACTION_LEASE_MINUTES"
+        value = "30"
+      }
+      env {
+        name  = "PADDLE_OCR_TIMEOUT_MS"
+        value = "900000"
+      }
+      env {
         name  = "AZURE_GCP_WIF_APP_ID_URI"
         value = var.azure_gcp_wif_app_id_uri
       }

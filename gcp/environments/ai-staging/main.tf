@@ -265,7 +265,7 @@ resource "google_cloud_run_v2_service" "paddleocr" {
 
   template {
     service_account                  = google_service_account.paddleocr.email
-    timeout                          = "300s"
+    timeout                          = "900s"
     max_instance_request_concurrency = 1
 
     scaling {
@@ -280,6 +280,21 @@ resource "google_cloud_run_v2_service" "paddleocr" {
       ports {
         name           = "http1"
         container_port = 8080
+      }
+
+      env {
+        name  = "OCR_MAX_PDF_PAGES"
+        value = "100"
+      }
+
+      env {
+        name  = "OCR_PDF_RENDER_DPI"
+        value = "250"
+      }
+
+      env {
+        name  = "OCR_PAGE_BATCH_SIZE"
+        value = "4"
       }
 
       resources {
