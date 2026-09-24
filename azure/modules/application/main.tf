@@ -290,10 +290,6 @@ resource "azurerm_container_app" "api" {
         value = "28000"
       }
       env {
-        name  = "DOCUMENT_EXTRACTION_LEASE_MINUTES"
-        value = "30"
-      }
-      env {
         name  = "PADDLE_OCR_TIMEOUT_MS"
         value = "900000"
       }
@@ -347,7 +343,7 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "DOCUMENT_EXTRACTION_LEASE_MINUTES"
-        value = "15"
+        value = "30"
       }
 
       startup_probe {
