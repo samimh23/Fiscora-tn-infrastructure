@@ -255,13 +255,21 @@ resource "azurerm_container_app" "api" {
         value = tostring(var.document_extraction_enabled)
       }
       env {
+        name  = "DOCUMENT_EXTRACTION_PROVIDER"
+        value = var.document_extraction_provider
+      }
+      env {
+        name  = "QWEN_SERVICE_URL"
+        value = var.qwen_service_url
+      }
+      env {
         name  = "NUEXTRACT_SERVICE_URL"
         value = var.nuextract_service_url
       }
 
       env {
         name  = "DOCUMENT_EXTRACTION_SERVICE_URL"
-        value = var.nuextract_service_url
+        value = var.qwen_service_url
       }
 
       env {
@@ -274,12 +282,20 @@ resource "azurerm_container_app" "api" {
         value = "Qwen/Qwen3.5-4B"
       }
       env {
+        name  = "NUEXTRACT_MODEL"
+        value = "numind/NuExtract-2.0-8B"
+      }
+      env {
         name  = "DOCUMENT_EXTRACTION_WORKER_CONCURRENCY"
         value = "4"
       }
       env {
         name  = "DOCUMENT_EXTRACTION_QWEN_CONCURRENCY"
         value = "4"
+      }
+      env {
+        name  = "DOCUMENT_EXTRACTION_NUEXTRACT_CONCURRENCY"
+        value = "2"
       }
       env {
         name  = "DOCUMENT_EXTRACTION_OCR_BATCH_PAGES"

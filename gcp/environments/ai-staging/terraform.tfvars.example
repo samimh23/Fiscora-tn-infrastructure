@@ -11,14 +11,20 @@ invoker_members = [
 enable_extraction_service = false
 extraction_image          = null
 
+# Independent candidate service. Enabling this never replaces Qwen.
+enable_nuextract_service      = false
+nuextract_image               = null
+nuextract_service_name        = "fiscora-nuextract-v2"
+nuextract_request_concurrency = 2
+nuextract_max_num_seqs        = 2
+
 # Build with build-paddleocr.ps1, paste its immutable digest, then enable.
 enable_ocr_service = false
 ocr_image          = null
 ocr_service_name   = "fiscora-paddleocr"
 
-# The benchmark showed 32 as the preferred interactive setting and 64 for bulk.
-request_concurrency = 32
-max_num_seqs        = 32
+request_concurrency = 4
+max_num_seqs        = 4
 
 azure_tenant_id                     = "00000000-0000-0000-0000-000000000000"
 azure_managed_identity_object_id    = "00000000-0000-0000-0000-000000000000"

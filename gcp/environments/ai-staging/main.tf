@@ -253,6 +253,96 @@ resource "google_cloud_run_v2_service_iam_member" "azure_api_invoker" {
   member   = "serviceAccount:${google_service_account.azure_api.email}"
 }
 
+resource "google_cloud_run_v2_service" "nuextract_candidate" {
+  provider = google-beta
+  count    = var.enable_nuextract_service ? 1 : 0
+
+  project             = var.project_id
+  name                = var.nuextract_service_name
+  location            = var.region
+  deletion_protection = var.deletion_protection
+  ingress             = "INGRESS_TRAFFIC_ALL"
+
+  template {
+    service_account                  = google_service_account.nuextract.email
+    timeout                          = "600s"
+    max_instance_request_concurrency = var.nuextract_request_concurrency
+    gpu_zonal_redundancy_disabled    = true
+
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 1
+    }
+
+    containers {
+      name  = "nuextract-extractor"
+      image = var.nuextract_image
+
+      ports {
+        name           = "http1"
+        container_port = 8080
+      }
+
+      env {
+        name  = "MAX_NUM_SEQS"
+        value = tostring(var.nuextract_max_num_seqs)
+      }
+
+      resources {
+        cpu_idle          = false
+        startup_cpu_boost = true
+        limits = {
+          cpu              = "4"
+          memory           = "16Gi"
+          "nvidia.com/gpu" = "1"
+        }
+      }
+
+      startup_probe {
+        failure_threshold     = 1800
+        initial_delay_seconds = 0
+        period_seconds        = 1
+        timeout_seconds       = 1
+
+        tcp_socket {
+          port = 8080
+        }
+      }
+    }
+
+    node_selector {
+      accelerator = "nvidia-l4"
+    }
+  }
+
+  depends_on = [
+    google_artifact_registry_repository.ai,
+    google_project_service.required,
+  ]
+}
+
+resource "google_cloud_run_v2_service_iam_member" "nuextract_candidate_invoker" {
+  provider = google-beta
+  for_each = var.enable_nuextract_service ? var.invoker_members : []
+
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.nuextract_candidate[0].name
+  role     = "roles/run.invoker"
+  member   = each.value
+}
+
+resource "google_cloud_run_v2_service_iam_member" "azure_api_nuextract_candidate_invoker" {
+  provider = google-beta
+  count    = var.enable_nuextract_service ? 1 : 0
+
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.nuextract_candidate[0].name
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.azure_api.email}"
+}
+
 resource "google_cloud_run_v2_service" "paddleocr" {
   provider = google-beta
   count    = var.enable_ocr_service ? 1 : 0

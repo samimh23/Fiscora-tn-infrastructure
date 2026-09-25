@@ -19,6 +19,14 @@ output "ocr_service_uri" {
   )
 }
 
+output "nuextract_service_uri" {
+  description = "Private NuExtract 2.0 candidate URI, or null while disabled."
+  value = coalesce(
+    try(google_cloud_run_v2_service.nuextract_candidate[0].uri, null),
+    try(google_cloud_run_v2_service.nuextract_candidate[0].urls[0], null),
+  )
+}
+
 output "gpu_cost_gate" {
   description = "Whether Terraform is currently allowed to create the GPU service."
   value       = var.enable_extraction_service

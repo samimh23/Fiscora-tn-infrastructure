@@ -60,6 +60,50 @@ variable "service_name" {
   default     = "fiscora-nuextract"
 }
 
+variable "enable_nuextract_service" {
+  description = "Cost gate for the separate NuExtract 2.0 candidate service. The Qwen service is not replaced."
+  type        = bool
+  default     = false
+}
+
+variable "nuextract_image" {
+  description = "Immutable Artifact Registry image digest for NuExtract 2.0."
+  type        = string
+  default     = null
+  nullable    = true
+
+  validation {
+    condition = (
+      !var.enable_nuextract_service ||
+      (var.nuextract_image != null && can(regex("@sha256:[0-9a-f]{64}$", var.nuextract_image)))
+    )
+    error_message = "When enabled, nuextract_image must use an immutable @sha256 digest."
+  }
+}
+
+variable "nuextract_service_name" {
+  description = "Separate private Cloud Run service name for NuExtract 2.0."
+  type        = string
+  default     = "fiscora-nuextract-v2"
+}
+
+variable "nuextract_request_concurrency" {
+  description = "Requests admitted per NuExtract L4 instance."
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = contains([1, 2, 4], var.nuextract_request_concurrency)
+    error_message = "Use a reviewed NuExtract concurrency value: 1, 2, or 4."
+  }
+}
+
+variable "nuextract_max_num_seqs" {
+  description = "NuExtract vLLM scheduler ceiling. Keep aligned with request concurrency."
+  type        = number
+  default     = 2
+}
+
 variable "enable_ocr_service" {
   description = "Explicit cost gate for the private PP-OCRv6 CPU service."
   type        = bool

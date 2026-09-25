@@ -163,6 +163,8 @@ module "application" {
   clamav_image                           = var.clamav_image
   application_insights_connection_string = module.monitoring.application_insights_connection_string
   document_extraction_enabled            = var.document_extraction_enabled
+  document_extraction_provider           = var.document_extraction_provider
+  qwen_service_url                       = var.qwen_service_url
   nuextract_service_url                  = var.nuextract_service_url
   paddle_ocr_service_url                 = var.paddle_ocr_service_url
   azure_gcp_wif_app_id_uri               = module.google_wif.application_id_uri

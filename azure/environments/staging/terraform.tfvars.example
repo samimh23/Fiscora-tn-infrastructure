@@ -41,7 +41,9 @@ frontend_custom_domain    = "app.fiscora.me"
 
 # Enable only after the GCP workload identity pool has been applied.
 document_extraction_enabled = false
-nuextract_service_url       = "https://fiscora-nuextract-xxxxxxxxxx-ew.a.run.app"
+document_extraction_provider = "qwen"
+qwen_service_url             = "https://fiscora-qwen-xxxxxxxxxx-ew.a.run.app"
+nuextract_service_url        = "https://fiscora-nuextract-v2-xxxxxxxxxx-ew.a.run.app"
 paddle_ocr_service_url      = "https://fiscora-paddleocr-xxxxxxxxxx-ew.a.run.app"
 azure_gcp_wif_app_id_uri    = "api://TENANT_ID/fiscora-google-wif"
 gcp_wif_provider_audience   = "//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/fiscora-azure/providers/azure-container-apps"

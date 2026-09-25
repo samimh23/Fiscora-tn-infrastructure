@@ -1,12 +1,12 @@
-# Fiscora Qwen3.5 extraction on Google Cloud
+# Fiscora document extraction on Google Cloud
 
-This stack hosts `Qwen/Qwen3.5-4B` in non-thinking mode on one NVIDIA L4 and
-PP-OCRv6-medium on a separate CPU Cloud Run service. Qwen returns the accounting
-JSON; PaddleOCR supplies the trusted text coordinates used for visual highlights.
+This stack keeps `Qwen/Qwen3.5-4B` and `numind/NuExtract-2.0-8B` in separate,
+private, scale-to-zero Cloud Run services. PP-OCRv6-medium runs on a separate CPU
+service and supplies trusted text coordinates for visual highlights.
 The web application and API remain on Azure; Google Cloud provides only the
 private financial-document inference endpoint. The existing Cloud Run service
-name remains `fiscora-nuextract` during the migration so its authenticated URL
-and Azure Workload Identity Federation integration do not change.
+name remains `fiscora-nuextract` for backward compatibility even though it runs
+Qwen. The actual NuExtract candidate is `fiscora-nuextract-v2`.
 
 ## Safety defaults
 
@@ -16,7 +16,7 @@ and Azure Workload Identity Federation integration do not change.
   one instance so it cannot create an uncontrolled fleet. It accepts JPEG, PNG
   and PDF documents, and renders PDF pages with PDFium in bounded four-page
   memory batches at 250 DPI before applying PaddleOCR.
-- Request concurrency and vLLM sequence ceiling: `4`.
+- Qwen request concurrency and vLLM sequence ceiling: `4`; NuExtract: `2`.
 - NestJS admits at most four Qwen calls at once; vLLM continuously batches those
   sequences. Multi-page OCR tokens are mapped in four-page Qwen batches and
   merged deterministically before accounting validation.
@@ -41,6 +41,7 @@ cost guard. Closing a browser or local computer does not stop Cloud Run.
 gcp/bootstrap/                     Protected GCS Terraform-state bucket
 gcp/environments/ai-staging/       Artifact Registry, IAM, budget and Cloud Run
 gcp/services/qwen/                 Pinned Qwen3.5 + vLLM image
+gcp/services/nuextract/            Pinned NuExtract 2.0 + vLLM image
 gcp/services/paddleocr/            PP-OCRv6 coordinate service
 gcp/scripts/                       Build, pause, resume and smoke tests
 ```
@@ -61,12 +62,14 @@ scale-from-zero cold start.
 
 ```powershell
 .\gcp\scripts\build-qwen.ps1 -ProjectId fiscora-ai
+.\gcp\scripts\build-nuextract.ps1 -ProjectId fiscora-ai
 .\gcp\scripts\build-paddleocr.ps1 -ProjectId fiscora-ai
 ```
 
 Copy the immutable digests printed by the scripts into
-`gcp/environments/ai-staging/terraform.tfvars` as `extraction_image` and
-`ocr_image`, then set `enable_ocr_service = true`:
+`gcp/environments/ai-staging/terraform.tfvars`. Qwen uses `extraction_image`,
+NuExtract uses `nuextract_image`, and OCR uses `ocr_image`. Each service has an
+independent enable flag:
 
 ```powershell
 cd gcp\environments\ai-staging
@@ -91,6 +94,9 @@ cd ..\..\..
 .\gcp\scripts\smoke-extraction.ps1 `
   -ProjectId fiscora-ai `
   -ImagePath C:\path\to\non-sensitive-test-document.jpg
+.\gcp\scripts\smoke-nuextract.ps1 `
+  -ProjectId fiscora-ai `
+  -ImagePath C:\path\to\non-sensitive-test-document.jpg
 ```
 
 The extraction test checks authentication, image handling and JSON generation.
@@ -100,10 +106,11 @@ deterministic validation and requires human review.
 ## Production integration
 
 The Azure API exchanges its managed-identity token through Google Workload
-Identity Federation. No Google service-account key is stored in Azure. Qwen is
-called through vLLM's OpenAI-compatible API with deterministic sampling and a
-strict JSON schema. The API calls PaddleOCR independently and accepts a visual
-highlight only when a Qwen value has one unique high-confidence OCR match.
+Identity Federation. No Google service-account key is stored in Azure. Both
+models use vLLM's OpenAI-compatible API. NuExtract receives the selected invoice
+or bank-statement template; generic document categories continue to use Qwen.
+The API accepts a visual highlight only when an extracted value has one unique,
+high-confidence PaddleOCR match.
 Printed numbers are kept verbatim; Fiscora normalizes and checks them after
 extraction.
 
@@ -111,3 +118,16 @@ After applying GCP, copy the `ocr_service_uri` output into Azure staging as
 `paddle_ocr_service_url`, then apply the Azure stack. If the URL is empty or OCR
 fails, extraction still works but the review screen deliberately shows no
 uncertain highlight.
+
+## Provider switch and rollback
+
+The Azure API selects the provider with one setting:
+
+```hcl
+document_extraction_provider = "nuextract" # or "qwen"
+```
+
+Keep both `qwen_service_url` and `nuextract_service_url` configured. Changing the
+provider and applying the Azure stack creates a new API revision; it does not
+delete either model service. Existing jobs keep the model name recorded when
+they started, so a retry does not silently change providers.

@@ -238,8 +238,25 @@ variable "document_extraction_enabled" {
   default     = false
 }
 
+variable "document_extraction_provider" {
+  description = "Active fixed-schema extraction provider. Change to qwen for an immediate rollback."
+  type        = string
+  default     = "qwen"
+
+  validation {
+    condition     = contains(["qwen", "nuextract"], var.document_extraction_provider)
+    error_message = "document_extraction_provider must be qwen or nuextract."
+  }
+}
+
+variable "qwen_service_url" {
+  description = "Private Google Cloud Run Qwen service URL retained for rollback."
+  type        = string
+  default     = ""
+}
+
 variable "nuextract_service_url" {
-  description = "Private Google Cloud Run document-extraction service URL (legacy variable name retained for state compatibility)."
+  description = "Private Google Cloud Run NuExtract 2.0 service URL."
   type        = string
   default     = ""
 }
