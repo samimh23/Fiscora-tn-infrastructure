@@ -256,7 +256,7 @@ variable "qwen_service_url" {
 }
 
 variable "nuextract_service_url" {
-  description = "Private Google Cloud Run NuExtract 2.0 service URL."
+  description = "Private Google Cloud Run NuExtract3 service URL."
   type        = string
   default     = ""
 }

@@ -61,13 +61,13 @@ variable "service_name" {
 }
 
 variable "enable_nuextract_service" {
-  description = "Cost gate for the separate NuExtract 2.0 candidate service. The Qwen service is not replaced."
+  description = "Cost gate for the separate NuExtract3 candidate service. The Qwen service is not replaced."
   type        = bool
   default     = false
 }
 
 variable "nuextract_image" {
-  description = "Immutable Artifact Registry image digest for NuExtract 2.0."
+  description = "Immutable Artifact Registry image digest for NuExtract3."
   type        = string
   default     = null
   nullable    = true
@@ -82,9 +82,9 @@ variable "nuextract_image" {
 }
 
 variable "nuextract_service_name" {
-  description = "Separate private Cloud Run service name for NuExtract 2.0."
+  description = "Separate private Cloud Run service name for NuExtract3."
   type        = string
-  default     = "fiscora-nuextract-v2"
+  default     = "fiscora-nuextract-v3"
 }
 
 variable "nuextract_request_concurrency" {

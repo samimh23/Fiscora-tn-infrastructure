@@ -6,7 +6,7 @@ param(
     [string]$ImagePath,
 
     [string]$Region = 'europe-west1',
-    [string]$Service = 'fiscora-nuextract-v2'
+    [string]$Service = 'fiscora-nuextract-v3'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -50,15 +50,15 @@ $template = [ordered]@{
 
 $encodedImage = [Convert]::ToBase64String([IO.File]::ReadAllBytes($resolvedImage.Path))
 $payload = [ordered]@{
-    model = 'numind/NuExtract-2.0-8B'
+    model = 'numind/NuExtract3'
     temperature = 0
     max_tokens = 4000
-    chat_template_kwargs = [ordered]@{ template = $template }
+    chat_template_kwargs = [ordered]@{
+        template = $template
+        instructions = 'Copy only visible values, preserve printed monetary formatting, never calculate, and return JSON only.'
+        enable_thinking = $false
+    }
     messages = @(
-        [ordered]@{
-            role = 'system'
-            content = 'Copy only visible values, preserve printed monetary formatting, never calculate, and return JSON only.'
-        },
         [ordered]@{
             role = 'user'
             content = @(
@@ -92,4 +92,3 @@ catch { throw "NuExtract returned non-JSON output: $raw" }
     OutputTokens = $response.usage.completion_tokens
     Extraction = $parsed
 }
-

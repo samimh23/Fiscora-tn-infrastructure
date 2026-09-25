@@ -3,13 +3,13 @@ param(
     [string]$ProjectId,
 
     [string]$Region = 'europe-west1',
-    [string]$ModelRevision = 'a470f0b5dd0b42fa7182cdbe7c6113a232f671e4',
-    [string]$Tag = 'nuextract-2-0-8b-vllm-nightly'
+    [string]$ModelRevision = 'c99dc8f5641b866aa0192b6ea78f84bf9f3535f1',
+    [string]$Tag = 'nuextract3-4b-vllm-nightly'
 )
 
 $ErrorActionPreference = 'Stop'
 $serviceRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'services/nuextract'
-$image = "${Region}-docker.pkg.dev/$ProjectId/fiscora-ai/nuextract-2-8b:$Tag"
+$image = "${Region}-docker.pkg.dev/$ProjectId/fiscora-ai/nuextract3-4b:$Tag"
 
 gcloud builds submit $serviceRoot `
     --project $ProjectId `
@@ -30,5 +30,4 @@ if (-not $digest) {
 }
 
 Write-Host 'Immutable NuExtract extraction image:'
-Write-Host "${Region}-docker.pkg.dev/$ProjectId/fiscora-ai/nuextract-2-8b@$digest"
-
+Write-Host "${Region}-docker.pkg.dev/$ProjectId/fiscora-ai/nuextract3-4b@$digest"

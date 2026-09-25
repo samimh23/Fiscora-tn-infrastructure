@@ -14,7 +14,7 @@ extraction_image          = null
 # Independent candidate service. Enabling this never replaces Qwen.
 enable_nuextract_service      = false
 nuextract_image               = null
-nuextract_service_name        = "fiscora-nuextract-v2"
+nuextract_service_name        = "fiscora-nuextract-v3"
 nuextract_request_concurrency = 2
 nuextract_max_num_seqs        = 2
 

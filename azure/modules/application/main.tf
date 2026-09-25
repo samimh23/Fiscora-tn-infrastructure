@@ -283,7 +283,7 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "NUEXTRACT_MODEL"
-        value = "numind/NuExtract-2.0-8B"
+        value = "numind/NuExtract3"
       }
       env {
         name  = "DOCUMENT_EXTRACTION_WORKER_CONCURRENCY"

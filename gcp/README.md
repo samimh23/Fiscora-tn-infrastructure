@@ -1,12 +1,12 @@
 # Fiscora document extraction on Google Cloud
 
-This stack keeps `Qwen/Qwen3.5-4B` and `numind/NuExtract-2.0-8B` in separate,
+This stack keeps `Qwen/Qwen3.5-4B` and official 4B `numind/NuExtract3` in separate,
 private, scale-to-zero Cloud Run services. PP-OCRv6-medium runs on a separate CPU
 service and supplies trusted text coordinates for visual highlights.
 The web application and API remain on Azure; Google Cloud provides only the
 private financial-document inference endpoint. The existing Cloud Run service
 name remains `fiscora-nuextract` for backward compatibility even though it runs
-Qwen. The actual NuExtract candidate is `fiscora-nuextract-v2`.
+Qwen. The actual NuExtract candidate is `fiscora-nuextract-v3`.
 
 ## Safety defaults
 
@@ -41,7 +41,7 @@ cost guard. Closing a browser or local computer does not stop Cloud Run.
 gcp/bootstrap/                     Protected GCS Terraform-state bucket
 gcp/environments/ai-staging/       Artifact Registry, IAM, budget and Cloud Run
 gcp/services/qwen/                 Pinned Qwen3.5 + vLLM image
-gcp/services/nuextract/            Pinned NuExtract 2.0 + vLLM image
+gcp/services/nuextract/            Pinned NuExtract3 4B + vLLM image
 gcp/services/paddleocr/            PP-OCRv6 coordinate service
 gcp/scripts/                       Build, pause, resume and smoke tests
 ```
