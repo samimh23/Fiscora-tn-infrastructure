@@ -55,7 +55,7 @@ $payload = [ordered]@{
     max_tokens = 4000
     chat_template_kwargs = [ordered]@{
         template = $template
-        instructions = 'Copy only visible values, preserve printed monetary formatting, never calculate, and return JSON only.'
+        instructions = 'Copy only visible values, preserve printed monetary formatting, and never calculate. A tax_id must come only from MF, matricule fiscal or tax ID; never use an IBAN, RIB, bank account, phone, barcode, RC or registration number as tax_id. Return JSON only.'
         enable_thinking = $false
     }
     messages = @(
