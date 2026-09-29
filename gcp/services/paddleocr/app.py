@@ -19,6 +19,11 @@ class OcrRequest(BaseModel):
     contentBase64: str
 
 
+class RenderRequest(OcrRequest):
+    startPage: int = 1
+    pageCount: int = 2
+
+
 app = FastAPI(title="Fiscora PaddleOCR", docs_url=None, redoc_url=None)
 _lock = threading.Lock()
 _max_document_bytes = int(
@@ -26,6 +31,9 @@ _max_document_bytes = int(
 )
 _max_pdf_pages = int(os.getenv("OCR_MAX_PDF_PAGES", "100"))
 _pdf_render_dpi = int(os.getenv("OCR_PDF_RENDER_DPI", "250"))
+_pdf_max_page_dimension = max(
+    512, min(4096, int(os.getenv("OCR_PDF_MAX_PAGE_DIMENSION", "4096")))
+)
 _page_batch_size = max(1, int(os.getenv("OCR_PAGE_BATCH_SIZE", "4")))
 _ocr = PaddleOCR(
     use_doc_orientation_classify=False,
@@ -44,6 +52,7 @@ def health() -> dict[str, Any]:
         "model": "PP-OCRv6-medium",
         "pdf": True,
         "pageBatchSize": _page_batch_size,
+        "pdfRender": True,
     }
 
 
@@ -82,6 +91,72 @@ def ocr(request: OcrRequest) -> dict[str, Any]:
         "pages": [{"page": 1, "width": width, "height": height, "source": "ocr"}],
         "tokens": tokens,
     }
+
+
+@app.post("/render")
+def render_pdf(request: RenderRequest) -> dict[str, Any]:
+    """Return a bounded batch of original PDF page images, without running OCR."""
+    if request.mimeType.lower() != "application/pdf":
+        raise HTTPException(status_code=415, detail="Page rendering requires a PDF.")
+    if request.startPage < 1 or not 1 <= request.pageCount <= 6:
+        raise HTTPException(
+            status_code=400,
+            detail="Request one to six pages starting at page 1 or later.",
+        )
+    try:
+        content = base64.b64decode(request.contentBase64, validate=True)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400, detail="Invalid base64 document."
+        ) from error
+    if not content or len(content) > _max_document_bytes:
+        raise HTTPException(status_code=413, detail="PDF exceeds the document-size limit.")
+    try:
+        document = pdfium.PdfDocument(content)
+    except Exception as error:
+        raise HTTPException(
+            status_code=400, detail="The PDF could not be opened."
+        ) from error
+    try:
+        page_count = len(document)
+        if not 1 <= page_count <= _max_pdf_pages:
+            raise HTTPException(
+                status_code=413,
+                detail="PDF exceeds the page-count limit or has no pages.",
+            )
+        if request.startPage > page_count:
+            raise HTTPException(status_code=400, detail="Start page is outside the PDF.")
+        pages = []
+        response_bytes = 0
+        batch_end = min(page_count, request.startPage - 1 + request.pageCount)
+        for index in range(request.startPage - 1, batch_end):
+            page = document[index]
+            try:
+                image = _render_pdf_page(page)
+            finally:
+                page.close()
+            success, encoded = cv2.imencode(
+                ".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 90]
+            )
+            if not success:
+                raise HTTPException(status_code=422, detail="PDF page could not be encoded.")
+            content_base64 = base64.b64encode(encoded.tobytes()).decode("ascii")
+            response_bytes += len(content_base64)
+            if response_bytes > 20 * 1024 * 1024:
+                raise HTTPException(
+                    status_code=413,
+                    detail="Rendered batch is too large; request fewer pages.",
+                )
+            pages.append(
+                {
+                    "page": index + 1,
+                    "mimeType": "image/jpeg",
+                    "contentBase64": content_base64,
+                }
+            )
+        return {"pageCount": page_count, "pages": pages}
+    finally:
+        document.close()
 
 
 def _decode_image(content: bytes) -> np.ndarray:
@@ -154,7 +229,10 @@ def _ocr_pdf(content: bytes) -> dict[str, Any]:
 
 
 def _render_pdf_page(page: pdfium.PdfPage) -> np.ndarray:
-    scale = _pdf_render_dpi / 72
+    width, height = page.get_size()
+    if width <= 0 or height <= 0:
+        raise HTTPException(status_code=422, detail="PDF page dimensions are invalid.")
+    scale = min(_pdf_render_dpi / 72, _pdf_max_page_dimension / max(width, height))
     bitmap = page.render(
         scale=scale,
         rotation=0,

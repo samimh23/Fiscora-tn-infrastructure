@@ -16,6 +16,9 @@ Qwen. The actual NuExtract candidate is `fiscora-nuextract-v3`.
   one instance so it cannot create an uncontrolled fleet. It accepts JPEG, PNG
   and PDF documents, and renders PDF pages with PDFium in bounded four-page
   memory batches at 250 DPI before applying PaddleOCR.
+  Its separate `POST /render` endpoint returns one to six JPEG page images
+  without running OCR, for NuExtract visual extraction. Rendered batches are
+  capped at 20 MiB and each page's longest dimension at 4096 pixels.
 - Qwen request concurrency and vLLM sequence ceiling: `4`; NuExtract: `2`.
 - NestJS admits at most four Qwen calls at once; vLLM continuously batches those
   sequences. Multi-page OCR tokens are mapped in four-page Qwen batches and
@@ -109,6 +112,12 @@ The Azure API exchanges its managed-identity token through Google Workload
 Identity Federation. No Google service-account key is stored in Azure. Both
 models use vLLM's OpenAI-compatible API. NuExtract receives the selected invoice
 or bank-statement template; generic document categories continue to use Qwen.
+NuExtract receives the original image (or PDF page images), not PaddleOCR text.
+PaddleOCR runs separately for source highlighting. Deploy the updated PaddleOCR
+service exposing `/render` before deploying the image-first PDF backend change.
+NestJS sends PDF images in batches of two by default, capped at the deployed
+six-image limit. The renderer requires the existing private service URL; an
+unavailable renderer fails explicitly rather than falling back to OCR text.
 The API accepts a visual highlight only when an extracted value has one unique,
 high-confidence PaddleOCR match.
 Printed numbers are kept verbatim; Fiscora normalizes and checks them after
@@ -116,7 +125,7 @@ extraction.
 
 After applying GCP, copy the `ocr_service_uri` output into Azure staging as
 `paddle_ocr_service_url`, then apply the Azure stack. If the URL is empty or OCR
-fails, extraction still works but the review screen deliberately shows no
+fails for mapping, image extraction still works but the review screen deliberately shows no
 uncertain highlight.
 
 ## Provider switch and rollback

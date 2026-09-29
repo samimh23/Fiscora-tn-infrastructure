@@ -22,6 +22,8 @@ COPY requirements.txt .
 RUN python -m pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
+COPY test_render.py .
+RUN python -m unittest test_render.py
 
 # Bake PP-OCRv6-medium weights into the image instead of downloading them on
 # every scale-from-zero cold start.
