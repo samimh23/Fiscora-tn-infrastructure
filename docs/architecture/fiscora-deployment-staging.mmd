@@ -1,0 +1,79 @@
+flowchart LR
+  Browser["Navigateur utilisateur<br/>React exécuté côté navigateur"]
+  Namecheap["Namecheap<br/>Registrar et DNS"]
+  Brevo["Brevo<br/>SMTP et parsing des e-mails entrants"]
+
+  subgraph Azure[Microsoft Azure]
+    SWA["Azure Static Web Apps<br/>Frontend React + Vite"]
+    EmailDNS["Azure DNS<br/>inbox.fiscora.me · MX / DKIM"]
+    subgraph VNet[Réseau virtuel Azure]
+      subgraph AppsSubnet[Sous-réseau Container Apps]
+        subgraph Environment[Environnement Container Apps]
+          subgraph App[Container App]
+            API["NestJS API<br/>REST + Socket.IO<br/>Orchestration RAG"]
+            Clam["ClamAV sidecar"]
+          end
+        end
+      end
+      subgraph DBSubnet[Sous-réseau PostgreSQL délégué]
+        DB["PostgreSQL 16 Flexible Server<br/>Données métier + pgvector<br/>DNS et réseau privés"]
+      end
+    end
+    Blob["Azure Blob Storage<br/>Documents comptables"]
+    Vault[Azure Key Vault]
+    Monitoring["Application Insights<br/>Log Analytics"]
+    MI[Identité managée Azure]
+    ACR[Azure Container Registry]
+  end
+
+  subgraph GCP[Google Cloud]
+    WIF["Google STS / WIF<br/>Échange du jeton Entra ID"]
+    IAM["Compte de service Google<br/>Jetons IAM pour l’API"]
+    Vertex["Vertex AI<br/>Gemini + embeddings<br/>Pas de moteur Vertex RAG géré"]
+    NuExtract["Cloud Run GPU<br/>NuExtract3 + vLLM<br/>Factures et relevés"]
+    Qwen["Cloud Run GPU<br/>Qwen3.5 + vLLM<br/>Catégories génériques"]
+    OCR["Cloud Run CPU<br/>PaddleOCR PP-OCRv6<br/>OCR, coordonnées, rendu PDF"]
+    Registry[Google Artifact Registry]
+    CloudBuild[Google Cloud Build]
+  end
+
+  Browser -->|HTTPS · chargement des fichiers web| SWA
+  Browser -->|HTTPS REST + WSS| API
+  Browser -. Résolution DNS .-> Namecheap
+  Namecheap -. Délégation NS .-> EmailDNS
+  EmailDNS -. MX entrants .-> Brevo
+  API -->|TCP localhost:3310| Clam
+  API -->|PostgreSQL / TLS| DB
+  API -->|Identité managée| Blob
+  API -->|Identité managée| Vault
+  API -->|Télémétrie| Monitoring
+  API -->|SMTP / STARTTLS| Brevo
+  Brevo -->|Webhook HTTPS sécurisé| API
+  API -->|HTTPS · jeton IAM| Vertex
+  API -->|HTTPS · jeton IAM| NuExtract
+  API -->|HTTPS · jeton IAM| Qwen
+  API -->|HTTPS · jeton IAM| OCR
+  MI -. Jeton Entra ID .-> WIF
+  WIF -. Fédération .-> IAM
+  IAM -. Jetons ; pas de relais de documents .-> API
+
+  subgraph Delivery[Construction et livraison]
+    GitHub["GitHub Actions CI/CD<br/>OIDC Azure"]
+    Scripts[Scripts gcloud]
+    Terraform["Terraform<br/>Provisionnement Azure et GCP"]
+  end
+  GitHub -. Build et publication frontend .-> SWA
+  GitHub -. Build et push backend .-> ACR
+  ACR -. Déploiement image API .-> App
+  Scripts -. Déclenchement build .-> CloudBuild
+  CloudBuild -. Build et push IA .-> Registry
+  Registry -. Images par digest .-> NuExtract
+  Registry -. Images par digest .-> Qwen
+  Registry -. Images par digest .-> OCR
+  Terraform -. Provisionne .-> Azure
+  Terraform -. Provisionne et configure Cloud Run .-> GCP
+
+  %% Configuration des dépôts, pas une attestation de l’état cloud live.
+  %% Cloud Run : ingress public et accès IAM obligatoire, pas de VPC privé Azure-GCP.
+  %% NuExtract est le provider configuré ; Qwen reste un service distinct.
+  %% Pas de pipeline OCR texte vers NuExtract : celui-ci utilise les images/pages.
