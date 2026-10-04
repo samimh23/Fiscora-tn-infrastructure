@@ -1,3 +1,7 @@
+# Inputs for the staging assembly. Defaults are intentionally unchanged.
+# Existing deployments must retain their private terraform.tfvars values.
+# Azure access, naming and regions.
+
 variable "azure_subscription_id" {
   description = "Azure subscription receiving the Fiscora staging resources."
   type        = string
@@ -53,6 +57,8 @@ variable "deployment_suffix" {
   }
 }
 
+# Cost notifications (not a hard spending limit).
+
 variable "budget_amount_usd" {
   description = "Monthly staging cost-alert threshold. This is not a hard spending limit."
   type        = number
@@ -81,6 +87,8 @@ variable "budget_contact_emails" {
   }
 }
 
+# GitHub deployment access; numeric IDs stay stable across repository renames.
+
 variable "github_owner" {
   description = "GitHub organization or user owning the Fiscora repositories."
   type        = string
@@ -93,13 +101,15 @@ variable "github_owner_id" {
 }
 
 variable "github_infrastructure_repository" {
-  type    = string
-  default = "Fiscora-tn-infrastructure"
+  description = "Infrastructure repository name retained for compatibility; Azure application CI uses the frontend/backend repositories."
+  type        = string
+  default     = "Fiscora-tn-infrastructure"
 }
 
 variable "github_backend_repository" {
-  type    = string
-  default = "Fiscora-tn-backend"
+  description = "Repository whose main branch can deploy the NestJS backend."
+  type        = string
+  default     = "Fiscora-tn-backend"
 }
 
 variable "github_backend_repository_id" {
@@ -108,14 +118,17 @@ variable "github_backend_repository_id" {
 }
 
 variable "github_frontend_repository" {
-  type    = string
-  default = "Fiscora-tn-web"
+  description = "Repository whose main branch can deploy the React frontend."
+  type        = string
+  default     = "Fiscora-tn-web"
 }
 
 variable "github_frontend_repository_id" {
   description = "Immutable numeric GitHub frontend repository ID included in OIDC subject claims."
   type        = string
 }
+
+# Database and hosting. Start the API only after its image and secrets exist.
 
 variable "postgres_sku_name" {
   description = "Low-cost burstable PostgreSQL SKU for staging."
@@ -158,14 +171,18 @@ variable "google_oauth_client_id" {
   default     = ""
 }
 
+# Email credentials belong in Key Vault, not this file or terraform.tfvars.
+
 variable "smtp_host" {
-  type    = string
-  default = "smtp-relay.brevo.com"
+  description = "SMTP relay hostname for outgoing invitations and emails."
+  type        = string
+  default     = "smtp-relay.brevo.com"
 }
 
 variable "smtp_port" {
-  type    = number
-  default = 587
+  description = "SMTP submission port; the default Brevo relay uses STARTTLS."
+  type        = number
+  default     = 587
 }
 
 variable "smtp_user" {
@@ -175,8 +192,9 @@ variable "smtp_user" {
 }
 
 variable "smtp_from" {
-  type    = string
-  default = "Fiscora <invitations@fiscora.me>"
+  description = "Sender name and email address; authenticate the domain in Brevo."
+  type        = string
+  default     = "Fiscora <invitations@fiscora.me>"
 }
 
 variable "smtp_password_secret_name" {
@@ -209,6 +227,8 @@ variable "email_ingestion_max_attachment_bytes" {
   default     = 20971520
 }
 
+# Upload protection and frontend DNS. Keep malware scanning enabled.
+
 variable "malware_scan_enabled" {
   description = "Run ClamAV beside the API and reject uploads unless a clean scan succeeds."
   type        = bool
@@ -228,9 +248,12 @@ variable "enable_custom_domains" {
 }
 
 variable "frontend_custom_domain" {
-  type    = string
-  default = "app.fiscora.me"
+  description = "Frontend hostname bound to Static Web Apps after DNS is ready."
+  type        = string
+  default     = "app.fiscora.me"
 }
+
+# Optional AI integrations; services are deployed by the separate GCP stack.
 
 variable "document_extraction_enabled" {
   description = "Run the durable document-extraction worker in the API."
@@ -250,19 +273,19 @@ variable "document_extraction_provider" {
 }
 
 variable "qwen_service_url" {
-  description = "Private Google Cloud Run Qwen service URL retained for rollback."
+  description = "IAM-authenticated Cloud Run Qwen URL for generic extraction and fixed-schema rollback; not a private-network endpoint."
   type        = string
   default     = ""
 }
 
 variable "nuextract_service_url" {
-  description = "Private Google Cloud Run NuExtract3 service URL."
+  description = "IAM-authenticated Cloud Run NuExtract3 URL for fixed-schema extraction; not a private-network endpoint."
   type        = string
   default     = ""
 }
 
 variable "paddle_ocr_service_url" {
-  description = "Private Google Cloud Run PP-OCRv6 service URL. Leave empty until deployed."
+  description = "IAM-authenticated Cloud Run PP-OCRv6 URL for OCR and PDF rendering. Leave empty until deployed."
   type        = string
   default     = ""
 }
@@ -298,18 +321,21 @@ variable "gcp_project_id" {
 }
 
 variable "vertex_ai_location" {
-  type    = string
-  default = "global"
+  description = "Vertex AI endpoint location for assistant requests."
+  type        = string
+  default     = "global"
 }
 
 variable "vertex_ai_chat_model" {
-  type    = string
-  default = "gemini-2.5-flash"
+  description = "Gemini model generating grounded assistant responses."
+  type        = string
+  default     = "gemini-2.5-flash"
 }
 
 variable "vertex_ai_embedding_model" {
-  type    = string
-  default = "gemini-embedding-001"
+  description = "Embedding model for vectors stored and searched in PostgreSQL/pgvector."
+  type        = string
+  default     = "gemini-embedding-001"
 }
 
 variable "ai_assistant_max_vector_distance" {

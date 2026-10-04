@@ -3,6 +3,11 @@
 This directory defines the reproducible Azure staging platform currently used
 by Fiscora.
 
+Start with [START-HERE.md](START-HERE.md) for a short explanation, file map and
+mentor walkthrough. This document is the detailed deployment reference.
+For an existing deployment, preserve local `terraform.tfvars` and `backend.hcl`;
+the example configuration is only a template for a new installation.
+
 ## Target architecture
 
 - Azure Static Web Apps (Free) hosts the React frontend.
@@ -19,7 +24,7 @@ by Fiscora.
 - A user-assigned managed identity grants the API access to Blob Storage and
   Key Vault without long-lived Azure credentials.
 - Azure Key Vault stores the generated database password, JWT signing key and
-  the manually supplied Brevo SMTP key.
+  the MFA encryption key and manually supplied Brevo email credentials.
 - Azure Container Registry stores immutable backend images.
 - Log Analytics is capped at 0.1 GB/day with 25% Application Insights sampling.
   A USD 40 monthly resource-group budget notifies at 25%, 50% and 75% actual
@@ -27,8 +32,8 @@ by Fiscora.
 - GitHub Actions authenticates through workload identity federation rather
   than an Azure client secret.
 
-The current Azure startup balance is USD 200 and expires on 2026-12-13. The
-budget resource ends on the next valid month boundary, 2027-01-01. Budget
+The configured staging budget ends on the month boundary 2027-01-01. Check
+actual credit balances and expiry in Azure; this repository does not report them. Budget
 notifications are warnings, not a hard spending stop. Always review the Azure
 cost estimate and Terraform plan before an apply.
 

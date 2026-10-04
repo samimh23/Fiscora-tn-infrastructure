@@ -1,58 +1,50 @@
-azure_subscription_id  = "00000000-0000-0000-0000-000000000000"
-operator_object_id      = "00000000-0000-0000-0000-000000000000"
-location                = "francecentral"
-static_web_app_location = "eastus2"
-project_name            = "fiscora"
-environment             = "staging"
-deployment_suffix       = "sami090"
+# NEW DEPLOYMENT TEMPLATE ONLY. Never overwrite an existing terraform.tfvars.
+# No passwords/API keys here: use the Key Vault setup scripts.
+# Routine settings use the unchanged defaults in variables.tf.
 
-budget_amount_usd     = 40
-budget_start_date     = "2026-09-01T00:00:00Z"
-budget_end_date       = "2027-01-01T00:00:00Z"
-budget_contact_emails = ["samimahjoub090@gmail.com"]
+# 1. Account-specific settings: replace all placeholders before planning.
+azure_subscription_id    = "00000000-0000-0000-0000-000000000000"
+operator_object_id       = "00000000-0000-0000-0000-000000000000"
+deployment_suffix        = "change123" # Unique lowercase suffix; keep stable once deployed.
+budget_contact_emails    = ["you@example.com"]
+azure_gcp_wif_app_id_uri = "api://YOUR-TENANT-ID/fiscora-google-wif"
 
-github_owner                     = "samimh23"
-github_owner_id                  = "80358238"
-github_infrastructure_repository = "Fiscora-tn-infrastructure"
-github_backend_repository        = "Fiscora-tn-backend"
-github_backend_repository_id     = "1312797097"
-github_frontend_repository       = "Fiscora-tn-web"
-github_frontend_repository_id    = "1312796835"
+# GitHub numeric IDs identify the repositories allowed to deploy through OIDC.
+# Default names: samimh23 / Fiscora-tn-backend / Fiscora-tn-web.
+# Override the owner/repository names too when using different repositories.
+github_owner_id                 = "REPLACE-WITH-NUMERIC-OWNER-ID"
+github_backend_repository_id    = "REPLACE-WITH-NUMERIC-BACKEND-ID"
+github_frontend_repository_id    = "REPLACE-WITH-NUMERIC-FRONTEND-ID"
 
-postgres_sku_name = "B_Standard_B1ms"
-postgres_version  = "16"
-
-# First apply: leave false. Populate Key Vault and push the backend image.
+# 2. First deployment: prepare the platform before starting the API.
+# Existing API deployments MUST retain true and their current image reference.
 deploy_application = false
-backend_image       = ""
+backend_image      = "" # Later: registry/repository@sha256:... from the backend build.
+smtp_user          = "REPLACE-WITH-BREVO-SMTP-LOGIN" # Not the SMTP secret.
 
-frontend_public_url       = "https://app.fiscora.me"
-google_oauth_client_id    = "000000000000-example.apps.googleusercontent.com"
-smtp_host                 = "smtp-relay.brevo.com"
-smtp_port                 = 587
-smtp_user                 = "REPLACE-WITH-BREVO-SMTP-LOGIN"
-smtp_from                 = "Fiscora <invitations@fiscora.me>"
-email_ingestion_domain    = "inbox.fiscora.me"
-email_ingestion_max_attachment_bytes = 20971520
-malware_scan_enabled      = true
-clamav_image              = "clamav/clamav:1.4"
-enable_custom_domains     = false
-frontend_custom_domain    = "app.fiscora.me"
+# 3. Optional features: uncomment after their prerequisites are ready.
+# Domains: configure Namecheap DNS before enabling Azure custom-domain bindings.
+# enable_custom_domains = true
+# Google sign-in: public OAuth client ID, not a secret.
+# google_oauth_client_id = "YOUR-CLIENT-ID.apps.googleusercontent.com"
 
-# Enable only after the GCP workload identity pool has been applied.
-document_extraction_enabled = false
-document_extraction_provider = "qwen"
-qwen_service_url             = "https://fiscora-qwen-xxxxxxxxxx-ew.a.run.app"
-nuextract_service_url        = "https://fiscora-nuextract-v3-xxxxxxxxxx-ew.a.run.app"
-paddle_ocr_service_url      = "https://fiscora-paddleocr-xxxxxxxxxx-ew.a.run.app"
-azure_gcp_wif_app_id_uri    = "api://TENANT_ID/fiscora-google-wif"
-gcp_wif_provider_audience   = "//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/fiscora-azure/providers/azure-container-apps"
-gcp_wif_service_account     = "fiscora-azure-api@fiscora-ai.iam.gserviceaccount.com"
+# Extraction: deploy the separate GCP stack and configure WIF before enabling.
+# document_extraction_enabled  = true
+# document_extraction_provider = "nuextract"
+# qwen_service_url             = "https://YOUR-QWEN-SERVICE.a.run.app"
+# nuextract_service_url        = "https://YOUR-NUEXTRACT-SERVICE.a.run.app"
+# paddle_ocr_service_url       = "https://YOUR-PADDLEOCR-SERVICE.a.run.app"
+# gcp_wif_provider_audience    = "//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/fiscora-azure/providers/azure-container-apps"
+# gcp_wif_service_account      = "fiscora-azure-api@YOUR-GCP-PROJECT.iam.gserviceaccount.com"
+# gcp_project_id               = "YOUR-GCP-PROJECT"
+# Assistant: enable after the RAG migration and Vertex IAM permissions are ready.
+# ai_assistant_enabled = true
 
-# Enable after the RAG migration and Vertex IAM binding are deployed.
-ai_assistant_enabled      = false
-gcp_project_id            = "fiscora-ai"
-vertex_ai_location        = "global"
-vertex_ai_chat_model      = "gemini-2.5-flash"
-vertex_ai_embedding_model = "gemini-embedding-001"
-ai_assistant_max_vector_distance = "0.8"
+# 4. Advanced overrides: defaults are documented in variables.tf.
+# location                = "francecentral"
+# static_web_app_location = "eastus2"
+# postgres_version        = "16"
+# postgres_sku_name       = "B_Standard_B1ms"
+# malware_scan_enabled    = true
+# frontend_public_url     = "https://app.fiscora.me"
+# For NEW deployments, set budget dates to valid month boundaries when needed.
