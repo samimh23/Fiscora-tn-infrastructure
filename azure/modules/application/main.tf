@@ -25,6 +25,18 @@ resource "azurerm_container_app" "api" {
   revision_mode                = "Single"
   tags                         = var.tags
 
+  lifecycle {
+    # Terraform owns infrastructure/settings; GitHub owns API releases after creation.
+    # Ignore only the API image, never the entire template or the ClamAV image.
+    ignore_changes  = [template[0].container[0].image]
+    prevent_destroy = true
+
+    postcondition {
+      condition     = self.template[0].container[0].name == "api"
+      error_message = "The API must remain the first container for narrow image ownership."
+    }
+  }
+
   identity {
     type         = "UserAssigned"
     identity_ids = [var.application_identity_id]
@@ -56,18 +68,6 @@ resource "azurerm_container_app" "api" {
   secret {
     name                = "smtp-password"
     key_vault_secret_id = var.smtp_password_secret_id
-    identity            = var.application_identity_id
-  }
-
-  secret {
-    name                = "brevo-api-key"
-    key_vault_secret_id = var.brevo_api_key_secret_id
-    identity            = var.application_identity_id
-  }
-
-  secret {
-    name                = "inbound-email-webhook-secret"
-    key_vault_secret_id = var.inbound_email_webhook_secret_id
     identity            = var.application_identity_id
   }
 
@@ -229,22 +229,6 @@ resource "azurerm_container_app" "api" {
       env {
         name  = "SMTP_FROM"
         value = var.smtp_from
-      }
-      env {
-        name  = "EMAIL_INGESTION_DOMAIN"
-        value = var.email_ingestion_domain
-      }
-      env {
-        name  = "EMAIL_INGESTION_MAX_ATTACHMENT_BYTES"
-        value = tostring(var.email_ingestion_max_attachment_bytes)
-      }
-      env {
-        name        = "BREVO_API_KEY"
-        secret_name = "brevo-api-key"
-      }
-      env {
-        name        = "INBOUND_EMAIL_WEBHOOK_SECRET"
-        secret_name = "inbound-email-webhook-secret"
       }
       env {
         name  = "APPLICATIONINSIGHTS_CONNECTION_STRING"

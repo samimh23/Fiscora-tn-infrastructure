@@ -11,6 +11,9 @@ Cette version conserve la vue d'ensemble initiale. Elle corrige le rôle du DNS,
 les appels navigateur/API, Gemini et le RAG, l'accès IAM à Cloud Run et les builds
 IA. Elle ajoute le service Qwen distinct et place ClamAV dans la même Container
 App que l'API. Le chemin WIF ne transporte pas les documents.
+La réception de factures par email est retirée ; Brevo ne sert plus qu'à
+l'envoi SMTP. Les schémas décrivent la configuration cible après nettoyage,
+pas la suppression déjà appliquée des anciennes ressources DNS.
 
 ```powershell
 node Fiscora-tn-infrastructure/docs/architecture/render-corrected-original.cjs
@@ -53,7 +56,6 @@ Cloud Run avec ces images.
 ## Sources de configuration
 
 - `azure/environments/staging/main.tf`
-- `azure/environments/staging/email-ingestion-dns.tf`
 - `azure/modules/application/main.tf`
 - `azure/modules/network/main.tf`
 - `azure/modules/database/main.tf`

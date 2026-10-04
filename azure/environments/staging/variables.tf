@@ -149,7 +149,7 @@ variable "deploy_application" {
 }
 
 variable "backend_image" {
-  description = "Immutable backend image, preferably pinned by digest."
+  description = "Initial backend image pinned by digest. After creation GitHub owns API image releases."
   type        = string
   default     = ""
 
@@ -201,30 +201,6 @@ variable "smtp_password_secret_name" {
   description = "Key Vault secret populated out-of-band with the Brevo SMTP key."
   type        = string
   default     = "smtp-password"
-}
-
-variable "brevo_api_key_secret_name" {
-  description = "Key Vault secret populated out-of-band with the Brevo REST API key."
-  type        = string
-  default     = "brevo-api-key"
-}
-
-variable "inbound_email_webhook_secret_name" {
-  description = "Key Vault secret used to authenticate Brevo inbound webhooks."
-  type        = string
-  default     = "inbound-email-webhook-secret"
-}
-
-variable "email_ingestion_domain" {
-  description = "Dedicated receiving subdomain delegated to Brevo Inbound Parse."
-  type        = string
-  default     = "inbox.fiscora.me"
-}
-
-variable "email_ingestion_max_attachment_bytes" {
-  description = "Maximum size of one inbound accounting attachment."
-  type        = number
-  default     = 20971520
 }
 
 # Upload protection and frontend DNS. Keep malware scanning enabled.

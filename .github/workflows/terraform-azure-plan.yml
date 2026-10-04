@@ -2,10 +2,6 @@ name: Terraform Azure staging plan
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - "azure/**"
-      - ".github/workflows/terraform-azure-plan.yml"
 
 permissions:
   contents: read
@@ -18,21 +14,29 @@ concurrency:
 jobs:
   plan:
     name: Plan Azure staging
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       TF_IN_AUTOMATION: "true"
       TF_INPUT: "false"
-      TF_VAR_azure_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      TF_VAR_operator_object_id: ${{ vars.AZURE_OPERATOR_OBJECT_ID }}
-      TF_VAR_deployment_suffix: ${{ vars.AZURE_DEPLOYMENT_SUFFIX }}
-      TF_VAR_budget_contact_emails: '["${{ vars.AZURE_BUDGET_EMAIL }}"]'
-      TF_VAR_smtp_user: ${{ vars.BREVO_SMTP_LOGIN }}
-      TF_VAR_deploy_application: "false"
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Load the complete staging configuration
+        working-directory: azure/environments/staging
+        shell: bash
+        env:
+          STAGING_TFVARS: ${{ secrets.AZURE_TERRAFORM_TFVARS }}
+        run: |
+          if [ -z "$STAGING_TFVARS" ]; then
+            echo "Set AZURE_TERRAFORM_TFVARS to the reviewed staging settings; never put passwords or API keys in it." >&2
+            exit 1
+          fi
+          umask 077
+          printf '%s\n' "$STAGING_TFVARS" > terraform.tfvars
 
       - name: Authenticate to Azure with OIDC
         uses: azure/login@v2
@@ -58,4 +62,23 @@ jobs:
 
       - name: Create Azure staging plan
         working-directory: azure/environments/staging
-        run: terraform plan -lock-timeout=60s -no-color
+        shell: bash
+        run: |
+          set +e
+          # Existing-state comparison: this identity cannot read Key Vault values
+          # or refresh Entra applications. Use the local operator for drift checks.
+          terraform plan -refresh=false -lock-timeout=60s -input=false -no-color -detailed-exitcode
+          result=$?
+          set -e
+          if [ "$result" -eq 2 ]; then
+            echo "Changes proposed. This workflow never applies them." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$result" -ne 0 ]; then
+            exit "$result"
+          else
+            echo "No infrastructure changes proposed." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Remove temporary configuration
+        if: always()
+        working-directory: azure/environments/staging
+        run: rm -f terraform.tfvars

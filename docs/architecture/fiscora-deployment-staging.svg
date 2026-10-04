@@ -45,13 +45,6 @@
 <text x="60" y="840" font-size="17" fill="#557083" font-weight="400" text-anchor="start">Registrar / zone parente</text>
 <text x="60" y="864" font-size="17" fill="#557083" font-weight="400" text-anchor="start">Résolution app et API</text>
 </g>
-<g data-box="email-dns">
-<rect x="1130" y="220" width="320" height="105" rx="14" fill="#fff" stroke="#d5e2ea" stroke-width="1.6"/>
-<path d="M1132 235 V310" stroke="#7550ad" stroke-width="5" stroke-linecap="round"/>
-<text x="1150" y="252" font-size="21" fill="#142c3d" font-weight="700" text-anchor="start">Azure DNS · e-mails</text>
-<text x="1150" y="280" font-size="17" fill="#557083" font-weight="400" text-anchor="start">Sous-domaine : inbox.fiscora.me</text>
-<text x="1150" y="304" font-size="17" fill="#557083" font-weight="400" text-anchor="start">MX / DKIM / vérification Brevo</text>
-</g>
 <path d="M350 260 H435" fill="none" stroke="#087f82" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#data)"/>
 <rect x="354.5" y="226" width="75" height="27" rx="7" fill="#f8fbfd" stroke="none" stroke-width="1.6"/>
 <text x="392" y="245" font-size="15" fill="#087f82" font-weight="600" text-anchor="middle">HTTPS</text>
@@ -61,9 +54,6 @@
 <path d="M40 330 H20 V740 H195 V780" fill="none" stroke="#7550ad" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="5 7" marker-end="url(#auth)"/>
 <rect x="112.5" y="721" width="155" height="27" rx="7" fill="#f8fbfd" stroke="none" stroke-width="1.6"/>
 <text x="190" y="740" font-size="15" fill="#7550ad" font-weight="600" text-anchor="middle">Résolution DNS</text>
-<path d="M350 835 H380 V335 H1290 V325" fill="none" stroke="#7550ad" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="5 7" marker-end="url(#auth)"/>
-<rect x="727.5" y="317" width="355" height="27" rx="7" fill="#f8fbfd" stroke="none" stroke-width="1.6"/>
-<text x="905" y="336" font-size="15" fill="#7550ad" font-weight="600" text-anchor="middle">Délégation NS du sous-domaine entrant</text>
 <g data-box="api">
 <rect x="500" y="535" width="500" height="98" rx="14" fill="#fff" stroke="#d5e2ea" stroke-width="1.6"/>
 <path d="M502 550 V618" stroke="#1765a5" stroke-width="5" stroke-linecap="round"/>
@@ -157,19 +147,16 @@
 <g data-box="brevo">
 <rect x="1540" y="928" width="620" height="112" rx="14" fill="#fff" stroke="#d5e2ea" stroke-width="1.6"/>
 <path d="M1542 943 V1025" stroke="#087f82" stroke-width="5" stroke-linecap="round"/>
-<text x="1560" y="960" font-size="21" fill="#142c3d" font-weight="700" text-anchor="start">Brevo · e-mails</text>
-<text x="1560" y="988" font-size="17" fill="#557083" font-weight="400" text-anchor="start">Sortant : envoi SMTP depuis l’API</text>
-<text x="1560" y="1012" font-size="17" fill="#557083" font-weight="400" text-anchor="start">Entrant : parsing + webhook HTTPS vers l’API</text>
+<text x="1560" y="960" font-size="21" fill="#142c3d" font-weight="700" text-anchor="start">Brevo · e-mails sortants</text>
+<text x="1560" y="988" font-size="17" fill="#557083" font-weight="400" text-anchor="start">Envoi SMTP depuis l’API</text>
+<text x="1560" y="1012" font-size="17" fill="#557083" font-weight="400" text-anchor="start">Invitations et notifications</text>
 </g>
-<path d="M1450 295 H1524 V900 H1810 V928" fill="none" stroke="#7550ad" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="5 7" marker-end="url(#auth)"/>
-<rect x="1637.5" y="886" width="235" height="27" rx="7" fill="#f8fbfd" stroke="none" stroke-width="1.6"/>
-<text x="1755" y="905" font-size="15" fill="#7550ad" font-weight="600" text-anchor="middle">MX / DNS e-mails entrants</text>
+<path d="M350 835 H380 V335 H1524 V900 H1810 V928" fill="none" stroke="#7550ad" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="5 7" marker-end="url(#auth)"/>
+<rect x="705" y="317" width="400" height="27" rx="7" fill="#f8fbfd" stroke="none" stroke-width="1.6"/>
+<text x="905" y="336" font-size="15" fill="#7550ad" font-weight="600" text-anchor="middle">DNS Namecheap · authentification expéditeur</text>
 <path d="M1000 601 H1107 V972 H1540" fill="none" stroke="#087f82" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#data)"/>
 <rect x="1222.5" y="951" width="185" height="27" rx="7" fill="#f8fbfd" stroke="none" stroke-width="1.6"/>
 <text x="1315" y="970" font-size="15" fill="#087f82" font-weight="600" text-anchor="middle">SMTP / STARTTLS</text>
-<path d="M1540 1015 H1089 V626 H1000" fill="none" stroke="#087f82" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#data)"/>
-<rect x="1185" y="995" width="240" height="27" rx="7" fill="#f8fbfd" stroke="none" stroke-width="1.6"/>
-<text x="1305" y="1014" font-size="15" fill="#087f82" font-weight="600" text-anchor="middle">Webhook HTTPS sécurisé</text>
 <text x="1120" y="872" font-size="17" fill="#557083" font-weight="400" text-anchor="start">Les documents originaux restent dans Azure.</text>
 <text x="1120" y="899" font-size="17" fill="#557083" font-weight="400" text-anchor="start">L’IA reçoit les données nécessaires à l’inférence.</text>
 <text x="40" y="1090" font-size="18" fill="#557083" font-weight="700" text-anchor="start">2  AUTHENTIFICATION AZURE → GOOGLE (SANS CLÉ GOOGLE PERMANENTE)</text>

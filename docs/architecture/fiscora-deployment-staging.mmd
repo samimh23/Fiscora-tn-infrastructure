@@ -1,11 +1,10 @@
 flowchart LR
   Browser["Navigateur utilisateur<br/>React exécuté côté navigateur"]
   Namecheap["Namecheap<br/>Registrar et DNS"]
-  Brevo["Brevo<br/>SMTP et parsing des e-mails entrants"]
+  Brevo["Brevo<br/>E-mails sortants SMTP"]
 
   subgraph Azure[Microsoft Azure]
     SWA["Azure Static Web Apps<br/>Frontend React + Vite"]
-    EmailDNS["Azure DNS<br/>inbox.fiscora.me · MX / DKIM"]
     subgraph VNet[Réseau virtuel Azure]
       subgraph AppsSubnet[Sous-réseau Container Apps]
         subgraph Environment[Environnement Container Apps]
@@ -40,15 +39,13 @@ flowchart LR
   Browser -->|HTTPS · chargement des fichiers web| SWA
   Browser -->|HTTPS REST + WSS| API
   Browser -. Résolution DNS .-> Namecheap
-  Namecheap -. Délégation NS .-> EmailDNS
-  EmailDNS -. MX entrants .-> Brevo
+  Namecheap -. Authentification DNS expéditeur .-> Brevo
   API -->|TCP localhost:3310| Clam
   API -->|PostgreSQL / TLS| DB
   API -->|Identité managée| Blob
   API -->|Identité managée| Vault
   API -->|Télémétrie| Monitoring
   API -->|SMTP / STARTTLS| Brevo
-  Brevo -->|Webhook HTTPS sécurisé| API
   API -->|HTTPS · jeton IAM| Vertex
   API -->|HTTPS · jeton IAM| NuExtract
   API -->|HTTPS · jeton IAM| Qwen

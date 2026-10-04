@@ -24,7 +24,7 @@ group(1880,280,850,780,'Google Cloud');
 
 box('browser',40,75,230,105,['Users / browser','Client · Accountant','Employee · Administrator']);
 box('dns',370,75,230,105,['Namecheap','Domain and DNS']);
-box('brevo',1880,75,280,105,['Brevo','SMTP + inbound parsing']);
+box('brevo',1880,75,280,105,['Brevo','Outgoing SMTP']);
 box('frontend',690,365,250,100,['Azure Static Web Apps','React + Vite frontend']);
 box('acr',690,550,250,100,['Azure Container Registry','Backend images']);
 box('api',1090,455,290,95,['NestJS API','REST + Socket.IO','RAG orchestration']);
@@ -46,7 +46,7 @@ box('terraform',320,725,230,100,['Terraform','Infrastructure as Code']);
 
 // DNS is a lookup, not an HTTPS application proxy.
 e('M270 103 H370','auth');tag(320,90,'DNS','auth',58);
-e('M600 110 H1805 V95 H1880','auth');tag(1210,110,'Email DNS records · delegated Azure DNS zone','auth',425);
+e('M600 110 H1805 V95 H1880','auth');tag(1210,110,'Sender authentication · Namecheap DNS','auth',390);
 // Files are hosted by SWA; application API requests originate in the browser.
 e('M155 180 V265 H610 V415 H690');tag(505,415,'HTTPS · web files','data',168);
 e('M270 160 H295 V330 H1235 V455');tag(860,329,'Browser → API · HTTPS / REST / WebSocket','data',410);
@@ -64,9 +64,8 @@ tag(2050,248,'Direct API calls · HTTPS + IAM token','data',360);
 e('M1380 534 H1400 V882 H2210 V383 H2180','auth',true);
 tag(1765,882,'Azure identity → Google tokens (no permanent key)','auth',455);
 
-// Distinct outbound SMTP and inbound HTTPS webhook routes.
+// Outgoing SMTP only; invoice email ingestion is retired.
 e('M1380 484 H1482 V205 H2020 V180');tag(1710,204,'SMTP / STARTTLS','data',165);
-e('M1880 120 H1845 V450 H1394 V510 H1380');tag(1837,430,'HTTPS webhook','data',154);
 
 // Original Azure delivery flow is preserved. AI builds are Google Cloud Build.
 e('M550 551 H655 V449 H690','deploy');tag(617,482,'Build frontend','deploy',142);

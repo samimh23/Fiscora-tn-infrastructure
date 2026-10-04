@@ -59,11 +59,9 @@ group(460,790,580,190,'Sous-réseau PostgreSQL','Sous-réseau délégué + DNS p
 box('browser',40,222,310,162,'Navigateur utilisateur',['Client · Collaborateur','Comptable · Administrateur','React s’exécute ici.']);
 box('swa',435,220,305,105,'Azure Static Web Apps',['Fichiers React + Vite','Domaine : app.fiscora.me']);
 box('dns',40,780,310,105,'Namecheap · DNS',['Registrar / zone parente','Résolution app et API'],C.purple);
-box('email-dns',1130,220,320,105,'Azure DNS · e-mails',['Sous-domaine : inbox.fiscora.me','MX / DKIM / vérification Brevo'],C.purple);
 edge('M350 260 H435'); tag(392,244,'HTTPS', 'data',75);
 edge('M195 384 V573 H500'); tag(343,554,'HTTPS REST + WSS / Socket.IO','data',276);
 edge('M40 330 H20 V740 H195 V780','auth'); tag(190,739,'Résolution DNS','auth',155);
-edge('M350 835 H380 V335 H1290 V325','auth'); tag(905,335,'Délégation NS du sous-domaine entrant','auth',355);
 
 box('api',500,535,500,98,'API NestJS · REST + Socket.IO',['Logique métier, recherche et orchestration RAG']);
 box('clam',500,668,260,53,'ClamAV · sidecar',[],C.blue);
@@ -88,12 +86,11 @@ edge('M1580 352 V342','data',false);
 tag(1310,380,'Appels directs API → IA · HTTPS + jeton IAM','data',410);
 text(1562,855,'IAM obligatoire ; ingress public, sans accès anonyme.',17,C.purple);
 
-// Email traffic has two directions and uses two different protocols.
-box('brevo',1540,928,620,112,'Brevo · e-mails',['Sortant : envoi SMTP depuis l’API','Entrant : parsing + webhook HTTPS vers l’API'],C.teal);
-edge('M1450 295 H1524 V900 H1810 V928','auth');
-tag(1755,904,'MX / DNS e-mails entrants','auth',235);
+// Outgoing emails only; incoming invoice email has been retired.
+box('brevo',1540,928,620,112,'Brevo · e-mails sortants',['Envoi SMTP depuis l’API','Invitations et notifications'],C.teal);
+edge('M350 835 H380 V335 H1524 V900 H1810 V928','auth');
+tag(905,335,'DNS Namecheap · authentification expéditeur','auth',400);
 edge('M1000 601 H1107 V972 H1540'); tag(1315,969,'SMTP / STARTTLS','data',185);
-edge('M1540 1015 H1089 V626 H1000'); tag(1305,1013,'Webhook HTTPS sécurisé','data',240);
 text(1120,872,'Les documents originaux restent dans Azure.',17,C.muted);
 text(1120,899,'L’IA reçoit les données nécessaires à l’inférence.',17,C.muted);
 

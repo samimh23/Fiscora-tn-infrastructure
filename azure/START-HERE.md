@@ -46,7 +46,6 @@ dépendances ; il n'exécute pas `main.tf` ligne par ligne.
 | `environments/staging/terraform.tfvars` | Paramètres locaux existants : ne pas publier ni remplacer. |
 | `environments/staging/backend.hcl` | Emplacement de l'état distant : ne pas publier ni remplacer. |
 | `environments/staging/outputs.tf` | Adresses et identifiants produits par les modules. |
-| `environments/staging/email-ingestion-dns.tf` | Zone DNS `inbox.fiscora.me` et enregistrements Brevo. |
 | `environments/staging/providers.tf` / `versions.tf` | Fournisseurs Azure et versions compatibles. |
 | `modules/` | Détails de création de chaque composant. |
 | `scripts/` | Validation et configuration complémentaire des secrets/e-mails. |
@@ -126,5 +125,9 @@ sert à l'authentification, pas au transport des documents.
 > Terraform séparée dans le dossier gcp.
 
 Pour une première installation ou les procédures avancées, suivre
-[`README.md`](README.md). Pour le schéma compact, voir
+[`DEPLOYMENT.md`](DEPLOYMENT.md), puis [`README.md`](README.md).
+Après la première création, GitHub gère les versions de l'image API ; Terraform
+continue à gérer les paramètres, les secrets, le réseau et le scanner ClamAV.
+La réception des factures par e-mail est retirée ; les e-mails sortants restent.
+Pour le schéma compact, voir
 [`docs/architecture`](../docs/architecture/README.md).

@@ -6,9 +6,9 @@ Terraform and deployment tooling for the current Fiscora platform:
   Storage, Key Vault, container registry, monitoring and budget controls.
 - **Google Cloud** hosts IAM-authenticated Qwen3.5 and NuExtract3 financial-document
   extraction services plus PaddleOCR on Cloud Run.
-- **Brevo** provides SMTP delivery and inbound email parsing.
+- **Brevo** provides outgoing SMTP delivery (invitations, password resets and document requests).
 - **Namecheap** remains the registrar and DNS delegation point for the public
-  application and inbound-email subdomain.
+  application.
 
 The web application and its primary data storage stay on Azure. Google Cloud receives
 the document requests and assistant context needed for AI processing, authenticated through
@@ -33,6 +33,12 @@ gcp/scripts/                      Build, pause, resume and smoke tests
 Start with the [beginner-friendly Azure guide](azure/START-HERE.md). It explains
 the four sections of staging/main.tf and the safe workflow for an existing deployment.
 The Azure and GCP stacks remain separate.
+
+For the exact first-deployment sequence and Terraform/GitHub responsibilities,
+see [the deployment walkthrough](azure/DEPLOYMENT.md).
+Incoming invoice email is retired. The next reviewed Azure plan removes its
+obsolete DNS resources and API settings; pushing this repository does not apply
+that cleanup. Gmail forwarding and Brevo webhooks must be disabled separately.
 
 Detailed deployment instructions live in
 [`azure/README.md`](azure/README.md) and [`gcp/README.md`](gcp/README.md).

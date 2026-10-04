@@ -4,15 +4,19 @@ on:
   pull_request:
     paths:
       - "**/*.tf"
+      - "**/*.tftest.hcl"
       - "**/*.tfvars.example"
-      - ".github/workflows/terraform-check.yml"
+      - ".github/workflows/**"
+      - "scripts/deployment-workflows.test.cjs"
   push:
     branches:
       - main
     paths:
       - "**/*.tf"
+      - "**/*.tftest.hcl"
       - "**/*.tfvars.example"
-      - ".github/workflows/terraform-check.yml"
+      - ".github/workflows/**"
+      - "scripts/deployment-workflows.test.cjs"
 
 permissions:
   contents: read
@@ -25,6 +29,14 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Install Node.js for workflow guard tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check deployment workflow guards
+        run: node --test scripts/deployment-workflows.test.cjs
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
@@ -49,6 +61,14 @@ jobs:
       - name: Validate Azure staging
         working-directory: azure/environments/staging
         run: terraform validate
+
+      - name: Initialize mocked application tests
+        working-directory: azure/modules/application
+        run: terraform init -backend=false -input=false
+
+      - name: Test deployment ownership without cloud access
+        working-directory: azure/modules/application
+        run: terraform test
 
       - name: Initialize Google Cloud state bootstrap
         working-directory: gcp/bootstrap

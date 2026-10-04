@@ -1,200 +1,77 @@
 # Fiscora on Azure
 
-This directory defines the reproducible Azure staging platform currently used
-by Fiscora.
+Start with [START-HERE.md](START-HERE.md) for the file map and mentor walkthrough,
+then [DEPLOYMENT.md](DEPLOYMENT.md) for the first deployment and routine updates.
+For an existing installation, preserve `terraform.tfvars`, `backend.hcl`, state,
+resource names and identity IDs. Examples are for new installations only.
 
-Start with [START-HERE.md](START-HERE.md) for a short explanation, file map and
-mentor walkthrough. This document is the detailed deployment reference.
-For an existing deployment, preserve local `terraform.tfvars` and `backend.hcl`;
-the example configuration is only a template for a new installation.
+## Architecture kept deliberately small
 
-## Target architecture
+- Static Web Apps hosts the React frontend.
+- Container Apps hosts the NestJS API and its ClamAV sidecar.
+- PostgreSQL Flexible Server stores relational data on a private subnet.
+- Blob Storage stores documents with versioning and 30-day soft deletion;
+  public containers and storage account keys are disabled.
+- A user-assigned managed identity gives the API access to Blob Storage and
+  Key Vault. Key Vault holds generated database/JWT/MFA secrets and the
+  separately supplied outgoing SMTP key.
+- Container Registry stores immutable backend images.
+- Namecheap handles application DNS. Brevo is used for outgoing emails only.
+- Log Analytics/Application Insights provide monitoring. The resource-group
+  budget sends notifications; it is not a hard spending limit.
+- GitHub authenticates through OIDC, with separate frontend, backend and
+  read-only Terraform-plan identities.
 
-- Azure Static Web Apps (Free) hosts the React frontend.
-- Azure Container Apps runs the NestJS API and can scale to zero in staging.
-- ClamAV runs as an API sidecar. Document uploads fail closed when the scanner
-  is unavailable and infected files are rejected before Blob Storage.
-- Azure Database for PostgreSQL Flexible Server stores relational data on a
-  private delegated subnet.
-- Azure Blob Storage stores accounting documents with versioning and 30-day
-  soft deletion. Public container access and storage account keys are disabled.
-- Azure DNS hosts only the delegated `inbox.fiscora.me` receiving subdomain.
-  Its MX records route inbound accounting documents to Brevo without changing
-  the root domain's Namecheap email-forwarding service.
-- A user-assigned managed identity grants the API access to Blob Storage and
-  Key Vault without long-lived Azure credentials.
-- Azure Key Vault stores the generated database password, JWT signing key and
-  the MFA encryption key and manually supplied Brevo email credentials.
-- Azure Container Registry stores immutable backend images.
-- Log Analytics is capped at 0.1 GB/day with 25% Application Insights sampling.
-  A USD 40 monthly resource-group budget notifies at 25%, 50% and 75% actual
-  usage and 90% forecasted usage.
-- GitHub Actions authenticates through workload identity federation rather
-  than an Azure client secret.
+Google Cloud AI is a separate stack under `gcp/`; this cleanup does not migrate
+or remove Qwen, NuExtract, PaddleOCR, Vertex AI or their identity federation.
 
-The configured staging budget ends on the month boundary 2027-01-01. Check
-actual credit balances and expiry in Azure; this repository does not report them. Budget
-notifications are warnings, not a hard spending stop. Always review the Azure
-cost estimate and Terraform plan before an apply.
+## Deployment ownership
 
-## Deliberate two-stage deployment
+Terraform owns resource creation, network, identities, secrets references,
+API settings and the ClamAV image. GitHub builds, publishes and releases the
+**API image**. Terraform uses `backend_image` on first creation, then ignores
+only `template[0].container[0].image` so an infrastructure update cannot revert
+a GitHub release. A postcondition checks that this container is still `api`.
 
-The first staging apply uses `deploy_application = false`. It creates the
-platform but not the API. This prevents a broken revision from starting before
-the container image and Brevo key exist.
+For a new installation, deploy the foundation with `deploy_application=false`,
+run **Backend CI** manually with **bootstrap_image_only** checked, then create
+the API using the resulting digest and `deploy_application=true`. Keep it true
+afterwards. The API has a `prevent_destroy` guard against accidental removal
+while its resource configuration remains present.
 
-The generated PostgreSQL and JWT values are marked sensitive and stored in the
-encrypted remote Terraform state as well as Key Vault. Never download, commit,
-print or share the state file.
+Pull requests run offline formatting/validation and mocked ownership tests.
+Cloud planning is manual on `main`, using the complete reviewed settings in
+`AZURE_TERRAFORM_TFVARS`; it never applies changes. It compares configuration
+with existing state (`-refresh=false`) without granting the CI identity Key
+Vault secret-reading or Entra application permissions. A local operator plan
+with normal refresh is required to check live drift before an apply.
+Application pushes still release the backend/frontend through their own repositories.
 
-## Prerequisites
+## Retired incoming-email feature
 
-- Azure CLI authenticated with the personal Microsoft account that owns the
-  startup subscription;
-- Terraform 1.10 or newer;
-- permission to create role assignments in the selected subscription;
-- an available `Microsoft.App`, `Microsoft.DBforPostgreSQL`, `Microsoft.Storage`,
-  `Microsoft.KeyVault`, `Microsoft.ContainerRegistry`, `Microsoft.Web`,
-  `Microsoft.OperationalInsights` and `Microsoft.Insights` resource provider;
-- a unique lowercase `deployment_suffix` in `terraform.tfvars`.
+The next reviewed staging plan removes the obsolete incoming-email DNS zone
+and its five records, and removes four environment variables/two secret
+references from the API. **A push does not apply this cleanup.** Existing
+documents and database history remain untouched.
 
-Select the subscription explicitly:
+Disable Gmail forwarding and the Brevo incoming webhook separately before
+applying this retirement. Remove only the `inbox` delegation in Namecheap;
+keep outgoing SMTP/DKIM and the website/app DNS. Old Key Vault secrets are not
+deleted by this change. The bootstrap plan separately retires the unused
+pull-request OIDC credential; the manual `main` credential remains.
 
-```powershell
-az login
-az account list --output table
-az account set --subscription <subscription-id>
-az account show --output table
-./azure/scripts/register-resource-providers.ps1 -SubscriptionId <subscription-id>
-```
+## Security and staging limits
 
-The registration script is idempotent and must complete before the first
-staging apply. Provider registration does not deploy the Fiscora application.
-
-## 1. Bootstrap remote state
-
-Bootstrap is the only stack that initially uses local state:
-
-```powershell
-cd azure/bootstrap
-Copy-Item terraform.tfvars.example terraform.tfvars
-# Replace the subscription ID and the globally unique storage account name.
-terraform init -backend=false
-terraform plan -out bootstrap.tfplan
-terraform apply bootstrap.tfplan
-```
-
-Copy `environments/staging/backend.hcl.example` to `backend.hcl`, replace the
-storage account placeholder with the bootstrap output and wait a few minutes
-for its RBAC assignment to propagate. Set `operator_object_id` in staging
-`terraform.tfvars` to the stable object ID returned by
-`az ad signed-in-user show --query id --output tsv`; do not derive this value
-from whichever GitHub or local identity happens to run a plan.
-
-The bootstrap also creates a read-only GitHub OIDC identity for Terraform
-plans. Store its `github_terraform_plan_client_id` output as the repository
-variable `AZURE_TERRAFORM_CLIENT_ID`; it cannot apply infrastructure changes.
-Store the same stable human object ID as the repository variable
-`AZURE_OPERATOR_OBJECT_ID` for drift-free pull-request plans.
-
-## 2. Review the staging plan
-
-```powershell
-cd ../environments/staging
-Copy-Item terraform.tfvars.example terraform.tfvars
-# Replace subscription ID, deployment suffix and Brevo SMTP login.
-terraform init -backend-config=backend.hcl
-terraform fmt -check -recursive
-terraform validate
-terraform plan -out staging.tfplan
-terraform show staging.tfplan
-```
-
-`terraform plan` and `terraform show` do not create Azure resources. Do not run
-`terraform apply` until the plan and Azure pricing calculator have been
-reviewed.
-
-## 3. First platform apply and secrets
-
-With `deploy_application = false`, apply the reviewed plan. Then store the
-Brevo SMTP key without placing it in PowerShell history:
-
-```powershell
-$smtpKey = Read-Host 'Brevo SMTP key' -AsSecureString
-..\..\scripts\set-runtime-secrets.ps1 `
-  -KeyVaultName (terraform output -raw key_vault_name) `
-  -BrevoSmtpKey $smtpKey
-```
-
-For inbound client invoices, create a **Brevo REST API key** (`xkeysib-...`, not
-the SMTP key) and run the idempotent configurator. It stores both secrets in Key
-Vault and creates or updates the secured Inbound Parse webhook:
-
-```powershell
-$brevoApiKey = Read-Host 'Brevo REST API key' -AsSecureString
-..\..\scripts\configure-email-ingestion.ps1 `
-  -KeyVaultName (terraform output -raw key_vault_name) `
-  -ApiBaseUrl ("https://" + (terraform output -raw container_app_fqdn)) `
-  -BrevoApiKey $brevoApiKey
-```
-
-Terraform creates the `inbox.fiscora.me` Azure DNS zone and its two Brevo MX
-records. After applying it, obtain the delegated nameservers:
-
-```powershell
-terraform output email_ingestion_dns_name_servers
-```
-
-In Namecheap Advanced DNS, add one **NS Record** for each returned nameserver,
-all with Host `inbox`. Keep Mail Settings set to **Email Forwarding** so
-`contact@fiscora.me` continues reaching Gmail. After public DNS resolves the
-two MX records, re-run the Brevo configurator to create the inbound webhook.
-Then apply the remaining runtime changes so the Container App receives its Key
-Vault references, and forward the cabinet Gmail to the
-`o-...@inbox.fiscora.me` address shown in Fiscora.
-
-Build and push the backend as `linux/amd64`, set `backend_image` to its immutable
-digest, set `deploy_application = true`, create a new plan and review it before
-the second apply.
-
-The backend's manual `Deploy backend to Azure staging` workflow supports this
-bootstrap: leave `update_container_app` false to push the first image, then copy
-the digest shown in the workflow summary into `backend_image`. After Terraform
-has created the Container App, later runs can set the input to true. Store
-`github_backend_client_id` as `AZURE_CLIENT_ID` in the backend repository and
-`github_frontend_client_id` as `AZURE_CLIENT_ID` in the frontend repository.
-The identities are deliberately separate and narrowly scoped; neither is the
-runtime application's managed identity.
-
-## 4. Frontend and DNS
-
-Build the frontend with `VITE_API_URL` set to the Container App HTTPS endpoint.
-Deploy the `dist` directory to the Static Web App. Test on the Azure-generated
-hostnames before enabling custom domains.
-
-Only after smoke tests pass:
-
-1. set `enable_custom_domains = true` and apply;
-2. add the returned `_dnsauth.app` TXT record in Namecheap;
-3. replace the current `app` A record with the Static Web App CNAME;
-4. create a separate API CNAME/custom-domain binding if the stable Azure API
-   hostname will not be used directly.
-
-Never leave both the old A record and a new CNAME at host `app`.
-
-## 5. Rollback
-
-Container Apps retains revisions so a failed API release can return traffic to
-the previous healthy revision. Static Web Apps deployments and Terraform state
-provide the corresponding frontend and infrastructure recovery points. Always
-verify database compatibility before rolling an application revision back.
-
-## Current staging limitations
-
-- Malware scanning is enabled when the API is deployed. Use synthetic files
-  until the ClamAV health probe and an EICAR rejection smoke test pass. Pin the
-  ClamAV image by digest before production.
-- The PostgreSQL administrator password exists in encrypted Terraform state.
-  Production should move the application to Microsoft Entra database
-  authentication and use a separate migration identity.
-- This stack is single-region and does not claim production availability.
+- Generated secrets exist in remote Terraform state as well as Key Vault.
+  Never commit, print or share state or saved plans; restrict access to them.
+- Uploads fail closed when malware scanning is unavailable. Verify scanner
+  health and EICAR rejection with synthetic files before using real documents.
+  Pin the ClamAV image by digest before production.
+- PostgreSQL uses an administrator password in this staging setup. Production
+  should use Entra database authentication and a separate migration identity.
+- This is a single-region staging setup, not a production availability claim.
+- The configured budget ends at the month boundary `2027-01-01`; review dates,
+  actual costs and Azure credits before deploying another installation.
+- Check database compatibility before rolling back an API release. Roll back
+  application images with the release/revision workflow, not by changing the
+  now-ignored Terraform API image field.
