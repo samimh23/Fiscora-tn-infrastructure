@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2760" height="1140" viewBox="0 0 2760 1140"><defs><marker id="m-data" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#82c5ed"/></marker><marker id="m-auth" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#c4a6e5"/></marker><marker id="m-deploy" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#9aaebb"/></marker></defs>
+<rect x="0" y="0" width="2760" height="1140" rx="0" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="40" y="40" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="700" fill="#e5f0f7" text-anchor="start">Fiscora — architecture physique de déploiement (staging)</text>
+<rect x="630" y="190" width="1190" height="635" rx="16" fill="#252d36" stroke="#4b5b69" stroke-width="1.5"/>
+<text x="1225" y="221" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="#e5f0f7" text-anchor="middle">Microsoft Azure</text>
+<rect x="1060" y="375" width="360" height="290" rx="16" fill="#252d36" stroke="#4b5b69" stroke-width="1.5"/>
+<text x="1240" y="406" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="#e5f0f7" text-anchor="middle">Azure Container Apps</text>
+<rect x="1075" y="409" width="330" height="237" rx="13" fill="#202933" stroke="#456275" stroke-width="1.5"/>
+<text x="1240" y="435" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#a4bdcf" text-anchor="middle">Container App : API + sidecar</text>
+<rect x="1880" y="280" width="850" height="780" rx="16" fill="#252d36" stroke="#4b5b69" stroke-width="1.5"/>
+<text x="2305" y="311" font-family="Arial,Helvetica,sans-serif" font-size="21" font-weight="700" fill="#e5f0f7" text-anchor="middle">Google Cloud</text>
+<g data-box="browser">
+<rect x="40" y="75" width="230" height="105" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="155" y="107.5" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Users / browser</text>
+<text x="155" y="133.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Client · Accountant</text>
+<text x="155" y="159.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Employee · Administrator</text>
+</g>
+<g data-box="dns">
+<rect x="370" y="75" width="230" height="105" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="485" y="120.5" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Namecheap</text>
+<text x="485" y="146.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Domain and DNS</text>
+</g>
+<g data-box="brevo">
+<rect x="1880" y="75" width="280" height="105" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="2020" y="120.5" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Brevo</text>
+<text x="2020" y="146.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">SMTP + inbound parsing</text>
+</g>
+<g data-box="frontend">
+<rect x="690" y="365" width="250" height="100" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="815" y="408" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Azure Static Web Apps</text>
+<text x="815" y="434" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">React + Vite frontend</text>
+</g>
+<g data-box="acr">
+<rect x="690" y="550" width="250" height="100" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="815" y="593" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Azure Container Registry</text>
+<text x="815" y="619" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Backend images</text>
+</g>
+<g data-box="api">
+<rect x="1090" y="455" width="290" height="95" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="1235" y="482.5" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">NestJS API</text>
+<text x="1235" y="508.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">REST + Socket.IO</text>
+<text x="1235" y="534.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">RAG orchestration</text>
+</g>
+<g data-box="clam">
+<rect x="1090" y="575" width="290" height="62" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="1235" y="612" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">ClamAV sidecar</text>
+</g>
+<g data-box="db">
+<rect x="1500" y="275" width="275" height="100" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="1637.5" y="305" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Azure PostgreSQL 16</text>
+<text x="1637.5" y="331" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Flexible Server + pgvector</text>
+<text x="1637.5" y="357" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Private subnet</text>
+</g>
+<g data-box="blob">
+<rect x="1500" y="425" width="275" height="95" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="1637.5" y="465.5" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Azure Blob Storage</text>
+<text x="1637.5" y="491.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Accounting documents</text>
+</g>
+<g data-box="vault">
+<rect x="1500" y="565" width="275" height="95" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="1637.5" y="605.5" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Azure Key Vault</text>
+<text x="1637.5" y="631.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Secrets and keys</text>
+</g>
+<g data-box="monitoring">
+<rect x="1500" y="705" width="275" height="95" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="1637.5" y="745.5" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Application Insights</text>
+<text x="1637.5" y="771.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Log Analytics</text>
+</g>
+<g data-box="wif">
+<rect x="1910" y="335" width="270" height="95" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="2045" y="362.5" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Workload Identity</text>
+<text x="2045" y="388.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Federation + Google IAM</text>
+<text x="2045" y="414.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Authentication only</text>
+</g>
+<g data-box="vertex">
+<rect x="2360" y="335" width="335" height="100" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="2527.5" y="378" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Vertex AI</text>
+<text x="2527.5" y="404" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Gemini + embeddings</text>
+</g>
+<g data-box="qwen">
+<rect x="2360" y="475" width="335" height="100" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="2527.5" y="518" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">IAM-authenticated Cloud Run</text>
+<text x="2527.5" y="544" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">GPU · Qwen3.5 + vLLM</text>
+</g>
+<g data-box="ocr">
+<rect x="2360" y="615" width="335" height="100" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="2527.5" y="658" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">IAM-authenticated Cloud Run</text>
+<text x="2527.5" y="684" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">CPU · PaddleOCR PP-OCRv6</text>
+</g>
+<g data-box="nuextract">
+<rect x="2360" y="755" width="335" height="100" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="2527.5" y="798" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">IAM-authenticated Cloud Run</text>
+<text x="2527.5" y="824" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">GPU · NuExtract3 + vLLM</text>
+</g>
+<g data-box="registry">
+<rect x="1910" y="740" width="270" height="100" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="2045" y="783" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Google Artifact Registry</text>
+<text x="2045" y="809" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">AI container images</text>
+</g>
+<g data-box="cloudbuild">
+<rect x="1910" y="955" width="270" height="90" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="2045" y="993" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Google Cloud Build</text>
+<text x="2045" y="1019" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">AI image build / push</text>
+</g>
+<g data-box="github">
+<rect x="320" y="520" width="230" height="105" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="435" y="565.5" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">GitHub Actions</text>
+<text x="435" y="591.5" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Azure CI/CD + OIDC</text>
+</g>
+<g data-box="terraform">
+<rect x="320" y="725" width="230" height="100" rx="14" fill="#083855" stroke="#28658b" stroke-width="1.5"/>
+<text x="435" y="768" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#e5f0f7" text-anchor="middle">Terraform</text>
+<text x="435" y="794" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="400" fill="#a4bdcf" text-anchor="middle">Infrastructure as Code</text>
+</g>
+<path d="M270 103 H370" fill="none" stroke="#c4a6e5" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="4 7" marker-end="url(#m-auth)"/>
+<rect x="291" y="70" width="58" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="320" y="90" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#c4a6e5" text-anchor="middle">DNS</text>
+<path d="M600 110 H1805 V95 H1880" fill="none" stroke="#c4a6e5" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="4 7" marker-end="url(#m-auth)"/>
+<rect x="997.5" y="90" width="425" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="1210" y="110" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#c4a6e5" text-anchor="middle">Email DNS records · delegated Azure DNS zone</text>
+<path d="M155 180 V265 H610 V415 H690" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<rect x="421" y="395" width="168" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="505" y="415" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#82c5ed" text-anchor="middle">HTTPS · web files</text>
+<path d="M270 160 H295 V330 H1235 V455" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<rect x="655" y="309" width="410" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="860" y="329" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#82c5ed" text-anchor="middle">Browser → API · HTTPS / REST / WebSocket</text>
+<path d="M1235 550 V575" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<path d="M1380 470 H1435 V325 H1500" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<rect x="1355" y="275" width="160" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="1435" y="295" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#82c5ed" text-anchor="middle">PostgreSQL / TLS</text>
+<path d="M1380 497 H1500" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<rect x="1360" y="462" width="160" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="1440" y="482" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#82c5ed" text-anchor="middle">Managed identity</text>
+<path d="M1380 519 H1450 V612 H1500" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<rect x="1370" y="574" width="160" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="1450" y="594" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#82c5ed" text-anchor="middle">Managed identity</text>
+<path d="M1380 540 H1435 V752 H1500" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<rect x="1397.5" y="717" width="105" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="1450" y="737" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#82c5ed" text-anchor="middle">Telemetry</text>
+<path d="M1380 470 H1465 V249 H2310 V785" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round"/>
+<path d="M2310 385 H2360" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<path d="M2310 505 H2360" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<path d="M2310 645 H2360" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<path d="M2310 785 H2360" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<rect x="1870" y="228" width="360" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="2050" y="248" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#82c5ed" text-anchor="middle">Direct API calls · HTTPS + IAM token</text>
+<path d="M1380 534 H1400 V882 H2210 V383 H2180" fill="none" stroke="#c4a6e5" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="4 7" marker-end="url(#m-auth)" marker-start="url(#m-auth)"/>
+<rect x="1537.5" y="862" width="455" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="1765" y="882" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#c4a6e5" text-anchor="middle">Azure identity → Google tokens (no permanent key)</text>
+<path d="M1380 484 H1482 V205 H2020 V180" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<rect x="1627.5" y="184" width="165" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="1710" y="204" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#82c5ed" text-anchor="middle">SMTP / STARTTLS</text>
+<path d="M1880 120 H1845 V450 H1394 V510 H1380" fill="none" stroke="#82c5ed" stroke-width="2.1" stroke-linejoin="round" marker-end="url(#m-data)"/>
+<rect x="1760" y="410" width="154" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="1837" y="430" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#82c5ed" text-anchor="middle">HTTPS webhook</text>
+<path d="M550 551 H655 V449 H690" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#m-deploy)"/>
+<rect x="546" y="462" width="142" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="617" y="482" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#9aaebb" text-anchor="middle">Build frontend</text>
+<path d="M550 595 H690" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#m-deploy)"/>
+<rect x="565" y="561" width="110" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="620" y="581" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#9aaebb" text-anchor="middle">Push image</text>
+<path d="M940 601 H1015 V498 H1090" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#m-deploy)"/>
+<rect x="939.5" y="563" width="147" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="1013" y="583" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#9aaebb" text-anchor="middle">Deploy revision</text>
+<path d="M550 770 H630" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#m-deploy)"/>
+<rect x="556" y="735" width="68" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="590" y="755" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#9aaebb" text-anchor="middle">Azure</text>
+<path d="M435 825 V1068 H1850 V874 H1880" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#m-deploy)"/>
+<rect x="1036.5" y="1048" width="327" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="1200" y="1068" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#9aaebb" text-anchor="middle">Provision Azure and Google Cloud</text>
+<path d="M2045 955 V840" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#m-deploy)"/>
+<rect x="1936" y="916" width="218" height="30" rx="10" fill="#171b20" stroke="none" stroke-width="1.5"/>
+<text x="2045" y="936" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#9aaebb" text-anchor="middle">Build / push AI images</text>
+<path d="M2180 790 H2265 V545" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6"/>
+<path d="M2265 790 V825" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6"/>
+<path d="M2265 545 H2360" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#m-deploy)"/>
+<path d="M2265 685 H2360" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#m-deploy)"/>
+<path d="M2265 825 H2360" fill="none" stroke="#9aaebb" stroke-width="2.1" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#m-deploy)"/>
+<text x="2045" y="706" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#9aaebb" text-anchor="middle">Image deployment</text>
+<text x="40" y="1120" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="400" fill="#a4bdcf" text-anchor="start">Repository configuration, not a live cloud audit.  Solid: application traffic · Dotted: DNS / authentication · Dashed: build / deployment.</text>
+</svg>

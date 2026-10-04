@@ -1,5 +1,23 @@
 # Architecture de déploiement de Fiscora — staging
 
+## Version compacte recommandée pour la présentation
+
+- `fiscora-architecture-corrected-original.png` : reprise corrigée du premier
+  schéma, dans son style sombre et horizontal, 5520 × 2280.
+- `fiscora-architecture-corrected-original.svg` : export vectoriel.
+- `render-corrected-original.cjs` : source de la mise en page.
+
+Cette version conserve la vue d'ensemble initiale. Elle corrige le rôle du DNS,
+les appels navigateur/API, Gemini et le RAG, l'accès IAM à Cloud Run et les builds
+IA. Elle ajoute le service Qwen distinct et place ClamAV dans la même Container
+App que l'API. Le chemin WIF ne transporte pas les documents.
+
+```powershell
+node Fiscora-tn-infrastructure/docs/architecture/render-corrected-original.cjs
+```
+
+## Version détaillée (annexe)
+
 - `fiscora-deployment-staging.png` : export haute résolution, 4400 × 3320.
 - `fiscora-deployment-staging.svg` : version vectorielle, adaptée à un rapport.
 - `fiscora-deployment-staging.mmd` : description Mermaid éditable des relations.
