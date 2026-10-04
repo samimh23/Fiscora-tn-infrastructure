@@ -153,6 +153,12 @@ et assistant. Ne remplacez pas les valeurs d'un déploiement existant.
 
 ## Nettoyage de l'ancienne réception par email
 
+Pour notre staging existant, le nettoyage Azure/Brevo et la configuration
+GitHub ont été appliqués et vérifiés le 05/10/2026. Voir
+[le compte rendu](CLEANUP-STATUS.md) : il reste seulement les quatre NS
+`inbox` à retirer dans Namecheap. La procédure suivante est conservée pour
+les autres installations éventuelles.
+
 Ce changement de code prépare, mais n'applique pas, le retrait de six ressources
 DNS (zone `inbox` et cinq enregistrements) et des paramètres API associés.
 Faire un plan staging et vérifier qu'il ne supprime ni base, ni documents,

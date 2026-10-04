@@ -49,6 +49,10 @@ Application pushes still release the backend/frontend through their own reposito
 
 ## Retired incoming-email feature
 
+The existing staging cleanup was applied and verified on 2026-10-05; see
+[CLEANUP-STATUS.md](CLEANUP-STATUS.md) for results and the remaining Namecheap
+housekeeping. The procedure below also covers other existing installations.
+
 The next reviewed staging plan removes the obsolete incoming-email DNS zone
 and its five records, and removes four environment variables/two secret
 references from the API. **A push does not apply this cleanup.** Existing

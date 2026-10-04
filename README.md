@@ -36,9 +36,11 @@ The Azure and GCP stacks remain separate.
 
 For the exact first-deployment sequence and Terraform/GitHub responsibilities,
 see [the deployment walkthrough](azure/DEPLOYMENT.md).
-Incoming invoice email is retired. The next reviewed Azure plan removes its
-obsolete DNS resources and API settings; pushing this repository does not apply
-that cleanup. Gmail forwarding and Brevo webhooks must be disabled separately.
+Incoming invoice email is retired. The configuration no longer includes its
+obsolete DNS resources or API settings; pushing this repository never applies
+infrastructure changes. The existing staging retirement was applied with
+explicit approval; see [the verified cleanup record](azure/CLEANUP-STATUS.md)
+for its status and remaining Namecheap housekeeping.
 
 Detailed deployment instructions live in
 [`azure/README.md`](azure/README.md) and [`gcp/README.md`](gcp/README.md).

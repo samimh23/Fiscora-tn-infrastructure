@@ -13,7 +13,8 @@ IA. Elle ajoute le service Qwen distinct et place ClamAV dans la même Container
 App que l'API. Le chemin WIF ne transporte pas les documents.
 La réception de factures par email est retirée ; Brevo ne sert plus qu'à
 l'envoi SMTP. Les schémas décrivent la configuration cible après nettoyage,
-pas la suppression déjà appliquée des anciennes ressources DNS.
+pas un audit en temps réel. Le nettoyage de notre staging a ensuite été appliqué
+et vérifié : voir `azure/CLEANUP-STATUS.md` pour le compte rendu.
 
 ```powershell
 node Fiscora-tn-infrastructure/docs/architecture/render-corrected-original.cjs

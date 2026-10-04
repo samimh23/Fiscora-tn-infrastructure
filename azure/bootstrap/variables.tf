@@ -38,7 +38,7 @@ variable "github_owner_id" {
 }
 
 variable "github_infrastructure_repository" {
-  description = "Infrastructure repository allowed to plan the Azure stack from main and pull requests."
+  description = "Infrastructure repository allowed to run manual Azure plans from main."
   type        = string
   default     = "Fiscora-tn-infrastructure"
 }
