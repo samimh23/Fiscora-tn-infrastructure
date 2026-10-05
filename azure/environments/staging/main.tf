@@ -179,8 +179,6 @@ module "application" {
 
   ai = {
     extraction_enabled  = var.document_extraction_enabled
-    provider            = var.document_extraction_provider
-    qwen_url            = var.qwen_service_url
     nuextract_url       = var.nuextract_service_url
     ocr_url             = var.paddle_ocr_service_url
     azure_audience      = module.google_wif.application_id_uri

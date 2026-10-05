@@ -1,7 +1,7 @@
 param(
     [string]$ProjectId = 'fiscora-ai',
     [string]$Region = 'europe-west1',
-    [string]$Service = 'fiscora-nuextract'
+    [string]$Service = 'fiscora-nuextract-v3'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -12,4 +12,4 @@ gcloud run services update $Service `
     --max 1
 
 if ($LASTEXITCODE -ne 0) { throw 'Cloud Run resume failed.' }
-Write-Host 'Qwen extraction is available and remains configured to scale from zero to one L4.'
+Write-Host 'NuExtract extraction is available and remains configured to scale from zero to one L4.'

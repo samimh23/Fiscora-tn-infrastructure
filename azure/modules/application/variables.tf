@@ -69,8 +69,6 @@ variable "ai" {
   description = "Extraction, assistant and cross-cloud identity settings."
   type = object({
     extraction_enabled  = bool
-    provider            = string
-    qwen_url            = string
     nuextract_url       = string
     ocr_url             = string
     azure_audience      = string
@@ -83,8 +81,4 @@ variable "ai" {
     embedding_model     = string
     max_vector_distance = optional(string, "0.8")
   })
-  validation {
-    condition     = contains(["qwen", "nuextract"], var.ai.provider)
-    error_message = "ai.provider must be qwen or nuextract."
-  }
 }

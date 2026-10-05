@@ -14,7 +14,7 @@ Never commit:
 GitHub Actions must authenticate to Azure and Google Cloud through OIDC or
 Workload Identity Federation. Do not create permanent cloud access keys for CI.
 
-The Google Cloud Qwen document-extraction endpoint must remain authenticated. Azure-to-Google
+The Google Cloud NuExtract document-extraction endpoint must remain authenticated. Azure-to-Google
 access will use Workload Identity Federation; do not create or download a
 long-lived Google service-account JSON key.
 

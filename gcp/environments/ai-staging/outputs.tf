@@ -3,14 +3,6 @@ output "artifact_repository" {
   value       = google_artifact_registry_repository.ai.name
 }
 
-output "extraction_service_uri" {
-  description = "IAM-authenticated Qwen HTTPS URI; public ingress, no anonymous invocation."
-  value = coalesce(
-    try(google_cloud_run_v2_service.nuextract[0].uri, null),
-    try(google_cloud_run_v2_service.nuextract[0].urls[0], null),
-  )
-}
-
 output "ocr_service_uri" {
   description = "IAM-authenticated PaddleOCR HTTPS URI; public ingress, no anonymous invocation."
   value = coalesce(
@@ -29,11 +21,11 @@ output "nuextract_service_uri" {
 
 output "gpu_cost_gate" {
   description = "Whether Terraform is currently allowed to create the GPU service."
-  value       = var.enable_extraction_service
+  value       = var.enable_nuextract_service
 }
 
 output "runtime_service_account" {
-  description = "Runtime identity shared by the Qwen and NuExtract3 services."
+  description = "NuExtract3 runtime identity (historical account ID retained)."
   value       = google_service_account.nuextract.email
 }
 

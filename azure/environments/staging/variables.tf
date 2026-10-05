@@ -237,23 +237,6 @@ variable "document_extraction_enabled" {
   default     = false
 }
 
-variable "document_extraction_provider" {
-  description = "Active fixed-schema extraction provider. Change to qwen for an immediate rollback."
-  type        = string
-  default     = "qwen"
-
-  validation {
-    condition     = contains(["qwen", "nuextract"], var.document_extraction_provider)
-    error_message = "document_extraction_provider must be qwen or nuextract."
-  }
-}
-
-variable "qwen_service_url" {
-  description = "IAM-authenticated Cloud Run Qwen URL for generic extraction and fixed-schema rollback; not a private-network endpoint."
-  type        = string
-  default     = ""
-}
-
 variable "nuextract_service_url" {
   description = "IAM-authenticated Cloud Run NuExtract3 URL for fixed-schema extraction; not a private-network endpoint."
   type        = string

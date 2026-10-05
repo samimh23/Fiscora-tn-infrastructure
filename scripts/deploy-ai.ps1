@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [ValidateSet('qwen', 'nuextract', 'paddleocr')]
+    [ValidateSet('nuextract', 'paddleocr')]
     [string]$Service,
 
     [Parameter(Mandatory)]
@@ -21,7 +21,6 @@ Write-Output "Preparing ${Service}: Cloud Build publishes an image and can incur
 & (Join-Path $root "gcp/scripts/build-$Service.ps1") -ProjectId $ProjectId -Region $Region
 
 $setting = switch ($Service) {
-    'qwen' { 'extraction_image' }
     'nuextract' { 'nuextract_image' }
     'paddleocr' { 'ocr_image' }
 }

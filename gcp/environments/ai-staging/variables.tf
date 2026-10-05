@@ -33,35 +33,8 @@ variable "invoker_members" {
   default     = []
 }
 
-variable "enable_extraction_service" {
-  description = "Explicit cost gate. False creates no Cloud Run GPU service."
-  type        = bool
-  default     = false
-}
-
-variable "extraction_image" {
-  description = "Immutable Artifact Registry image digest for the Qwen extractor."
-  type        = string
-  default     = null
-  nullable    = true
-
-  validation {
-    condition = (
-      !var.enable_extraction_service ||
-      (var.extraction_image != null && can(regex("@sha256:[0-9a-f]{64}$", var.extraction_image)))
-    )
-    error_message = "When enabled, extraction_image must use an immutable @sha256 digest."
-  }
-}
-
-variable "service_name" {
-  description = "Qwen service name; the legacy fiscora-nuextract name is retained to preserve existing URLs."
-  type        = string
-  default     = "fiscora-nuextract"
-}
-
 variable "enable_nuextract_service" {
-  description = "Cost gate for the separate NuExtract3 service. The Qwen service is not replaced."
+  description = "Explicit cost gate for the NuExtract3 GPU service."
   type        = bool
   default     = false
 }
@@ -129,23 +102,6 @@ variable "ocr_service_name" {
   description = "IAM-authenticated Cloud Run PP-OCRv6 service name."
   type        = string
   default     = "fiscora-paddleocr"
-}
-
-variable "request_concurrency" {
-  description = "Requests admitted per L4 instance. Keep low for long structured multimodal outputs."
-  type        = number
-  default     = 4
-
-  validation {
-    condition     = contains([1, 2, 4, 8], var.request_concurrency)
-    error_message = "Use a reviewed concurrency value: 1, 2, 4, or 8."
-  }
-}
-
-variable "max_num_seqs" {
-  description = "vLLM scheduler ceiling. Keep aligned with request_concurrency."
-  type        = number
-  default     = 4
 }
 
 variable "deletion_protection" {

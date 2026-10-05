@@ -30,8 +30,6 @@ smtp_user          = "REPLACE-WITH-BREVO-SMTP-LOGIN" # Not the SMTP secret.
 
 # Extraction: deploy the separate GCP stack and configure WIF before enabling.
 # document_extraction_enabled  = true
-# document_extraction_provider = "nuextract"
-# qwen_service_url             = "https://YOUR-QWEN-SERVICE.a.run.app"
 # nuextract_service_url        = "https://YOUR-NUEXTRACT-SERVICE.a.run.app"
 # paddle_ocr_service_url       = "https://YOUR-PADDLEOCR-SERVICE.a.run.app"
 # gcp_wif_provider_audience    = "//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/fiscora-azure/providers/azure-container-apps"

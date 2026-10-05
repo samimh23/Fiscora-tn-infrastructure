@@ -55,11 +55,11 @@ resource "google_artifact_registry_repository" "ai" {
   depends_on = [google_project_service.required]
 }
 
-# Legacy Terraform address/account ID: runs Qwen and NuExtract3. Keep stable.
+# Legacy Terraform address/account ID retained for the NuExtract3 runtime.
 resource "google_service_account" "nuextract" {
   project      = var.project_id
   account_id   = "fiscora-nuextract"
-  display_name = "Fiscora Qwen extraction runtime"
+  display_name = "Fiscora NuExtract3 runtime"
 
   depends_on = [google_project_service.required]
 }
@@ -164,98 +164,7 @@ resource "google_billing_budget" "project" {
   depends_on = [google_project_service.required]
 }
 
-# Qwen runtime. Legacy address/name retained to avoid replacement or URL changes.
-# All Cloud Run services below use public HTTPS ingress with IAM invocation.
-resource "google_cloud_run_v2_service" "nuextract" {
-  provider = google-beta
-  count    = var.enable_extraction_service ? 1 : 0
-
-  project             = var.project_id
-  name                = var.service_name
-  location            = var.region
-  deletion_protection = var.deletion_protection
-  ingress             = "INGRESS_TRAFFIC_ALL"
-
-  template {
-    service_account                  = google_service_account.nuextract.email
-    timeout                          = "600s"
-    max_instance_request_concurrency = var.request_concurrency
-    gpu_zonal_redundancy_disabled    = true
-
-    scaling {
-      min_instance_count = 0
-      max_instance_count = 1
-    }
-
-    containers {
-      name  = "qwen-extractor"
-      image = var.extraction_image
-
-      ports {
-        name           = "http1"
-        container_port = 8080
-      }
-
-      env {
-        name  = "MAX_NUM_SEQS"
-        value = tostring(var.max_num_seqs)
-      }
-
-      resources {
-        cpu_idle          = false
-        startup_cpu_boost = true
-        limits = {
-          cpu              = "4"
-          memory           = "16Gi"
-          "nvidia.com/gpu" = "1"
-        }
-      }
-
-      startup_probe {
-        failure_threshold     = 1800
-        initial_delay_seconds = 0
-        period_seconds        = 1
-        timeout_seconds       = 1
-
-        tcp_socket {
-          port = 8080
-        }
-      }
-    }
-
-    node_selector {
-      accelerator = "nvidia-l4"
-    }
-  }
-
-  depends_on = [
-    google_artifact_registry_repository.ai,
-    google_project_service.required,
-  ]
-}
-
-resource "google_cloud_run_v2_service_iam_member" "invoker" {
-  provider = google-beta
-  for_each = var.enable_extraction_service ? var.invoker_members : []
-
-  project  = var.project_id
-  location = var.region
-  name     = google_cloud_run_v2_service.nuextract[0].name
-  role     = "roles/run.invoker"
-  member   = each.value
-}
-
-resource "google_cloud_run_v2_service_iam_member" "azure_api_invoker" {
-  provider = google-beta
-  count    = var.enable_extraction_service ? 1 : 0
-
-  project  = var.project_id
-  location = var.region
-  name     = google_cloud_run_v2_service.nuextract[0].name
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.azure_api.email}"
-}
-
+# Cloud Run uses public HTTPS ingress with IAM-authenticated invocation.
 # NuExtract3 runtime; "candidate" is only the historical Terraform address.
 resource "google_cloud_run_v2_service" "nuextract_candidate" {
   provider = google-beta
@@ -350,6 +259,11 @@ resource "google_cloud_run_v2_service_iam_member" "azure_api_nuextract_candidate
 resource "google_cloud_run_v2_service" "paddleocr" {
   provider = google-beta
   count    = var.enable_ocr_service ? 1 : 0
+
+  # CLI attribution metadata is not part of the runtime configuration.
+  lifecycle {
+    ignore_changes = [client, client_version]
+  }
 
   project             = var.project_id
   name                = var.ocr_service_name

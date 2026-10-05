@@ -8,11 +8,7 @@ invoker_members = [
 ]
 
 # Build with scripts/deploy-ai.ps1. Paste each digest before enabling its service.
-# Qwen remains required for generic documents and jobs pinned to its model.
-enable_extraction_service = false
-extraction_image          = null
-
-# Separate NuExtract3 service for invoices/statements; it does not replace Qwen.
+# NuExtract3 is the only extraction model for invoices and statements.
 enable_nuextract_service      = false
 nuextract_image               = null
 

@@ -4,8 +4,8 @@ Terraform and deployment tooling for the current Fiscora platform:
 
 - **Azure** hosts the React frontend, NestJS API, PostgreSQL database, Blob
   Storage, Key Vault, container registry, monitoring and budget controls.
-- **Google Cloud** hosts IAM-authenticated Qwen3.5 and NuExtract3 financial-document
-  extraction services plus PaddleOCR on Cloud Run.
+- **Google Cloud** hosts IAM-authenticated NuExtract3 financial-document
+  extraction plus PaddleOCR on Cloud Run.
 - **Brevo** provides outgoing SMTP delivery (invitations, password resets and document requests).
 - **Namecheap** remains the registrar and DNS delegation point for the public
   application.
@@ -23,8 +23,7 @@ azure/environments/staging/       Deployed Azure staging composition
 azure/modules/                    Reusable Azure infrastructure modules
 azure/scripts/                    Azure validation and secret configuration
 gcp/bootstrap/                    Google Cloud Terraform-state foundation
-gcp/environments/ai-staging/      Qwen/NuExtract Cloud Run, IAM and budgets
-gcp/services/qwen/                Pinned Qwen3.5 + vLLM container
+gcp/environments/ai-staging/      NuExtract Cloud Run, IAM and budgets
 gcp/services/nuextract/           Pinned NuExtract3 4B + vLLM container
 gcp/services/paddleocr/           OCR and PDF rendering container
 gcp/scripts/                      Build, pause, resume and smoke tests

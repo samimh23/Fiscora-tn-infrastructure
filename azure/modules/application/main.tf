@@ -239,22 +239,10 @@ resource "azurerm_container_app" "api" {
         value = tostring(var.ai.extraction_enabled)
       }
       env {
-        name  = "DOCUMENT_EXTRACTION_PROVIDER"
-        value = var.ai.provider
-      }
-      env {
-        name  = "QWEN_SERVICE_URL"
-        value = var.ai.qwen_url
-      }
-      env {
         name  = "NUEXTRACT_SERVICE_URL"
         value = var.ai.nuextract_url
       }
 
-      env {
-        name  = "DOCUMENT_EXTRACTION_SERVICE_URL"
-        value = var.ai.qwen_url
-      }
 
       env {
         name  = "PADDLE_OCR_SERVICE_URL"
@@ -262,19 +250,11 @@ resource "azurerm_container_app" "api" {
       }
 
       env {
-        name  = "DOCUMENT_EXTRACTION_MODEL"
-        value = "Qwen/Qwen3.5-4B"
-      }
-      env {
         name  = "NUEXTRACT_MODEL"
         value = "numind/NuExtract3"
       }
       env {
         name  = "DOCUMENT_EXTRACTION_WORKER_CONCURRENCY"
-        value = "4"
-      }
-      env {
-        name  = "DOCUMENT_EXTRACTION_QWEN_CONCURRENCY"
         value = "4"
       }
       env {

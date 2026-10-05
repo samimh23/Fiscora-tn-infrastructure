@@ -1,3 +1,10 @@
+# Qwen retirement note
+
+The rendered diagrams and renderer sources below predate Qwen retirement. They
+are historical exports, not the current deployment diagram. The current target
+has NuExtract3 and PaddleOCR only; generic categories are upload-only. See
+gcp/README.md and Terraform source for current configuration.
+
 # Architecture de déploiement de Fiscora — staging
 
 ## Version compacte recommandée pour la présentation

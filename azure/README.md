@@ -23,7 +23,7 @@ resource names and identity IDs. Examples are for new installations only.
   read-only Terraform-plan identities.
 
 Google Cloud AI is a separate stack under `gcp/`; this cleanup does not migrate
-or remove Qwen, NuExtract, PaddleOCR, Vertex AI or their identity federation.
+or remove NuExtract, PaddleOCR, Vertex AI or their identity federation.
 
 ## Deployment ownership
 

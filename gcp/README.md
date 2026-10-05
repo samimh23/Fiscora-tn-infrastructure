@@ -1,144 +1,50 @@
-# Fiscora document extraction on Google Cloud
+# Fiscora extraction on Google Cloud
 
-This stack keeps `Qwen/Qwen3.5-4B` and official 4B `numind/NuExtract3` in separate,
-IAM-authenticated, scale-to-zero Cloud Run services. PP-OCRv6-medium runs on a separate CPU
-service and supplies trusted text coordinates for visual highlights.
-The web application and API remain on Azure; Google Cloud provides only the
-authenticated financial-document inference endpoints. Cloud Run ingress is public
-HTTPS, but anonymous invocation is not allowed; this is not a private cross-cloud network.
-The existing Cloud Run service
-name remains `fiscora-nuextract` for backward compatibility even though it runs
-Qwen. The actual NuExtract candidate is `fiscora-nuextract-v3`.
+NuExtract3 is the only extraction model for purchase invoices, sales invoices
+and bank statements. Other categories remain upload-only until manually classified.
+The former Qwen service and its build tooling are retired.
 
-## Safety defaults
+## Services
 
-- Minimum instances: `0` (scale to zero).
-- Maximum instances: `1` (at most one L4).
-- PaddleOCR requires IAM authentication, is CPU-only, scale-to-zero, and limited to one request and
-  one instance so it cannot create an uncontrolled fleet. It accepts JPEG, PNG
-  and PDF documents, and renders PDF pages with PDFium in bounded four-page
-  memory batches at 250 DPI before applying PaddleOCR.
-  Its separate `POST /render` endpoint returns one to six JPEG page images
-  without running OCR, for NuExtract visual extraction. Rendered batches are
-  capped at 20 MiB and each page's longest dimension at 4096 pixels.
-- Qwen request concurrency and vLLM sequence ceiling: `4`; NuExtract: `2`.
-- NestJS admits at most four Qwen calls at once; vLLM continuously batches those
-  sequences. Multi-page OCR tokens are mapped in four-page Qwen batches and
-  merged deterministically before accounting validation.
-- GPU zonal redundancy: disabled.
-- Public HTTPS ingress: enabled. Anonymous invocation: not granted.
-- Monthly budget alerts: 50%, 80%, 100%, and forecasted 100%.
-- Deletion protection: enabled.
+- fiscora-nuextract-v3: NuExtract3 + vLLM, minimum zero instances, maximum one
+  L4 GPU instance, request concurrency two.
+- fiscora-paddleocr: CPU OCR supplies trusted highlight coordinates. Its PDFium
+  POST /render endpoint supplies original PDF page images without OCR.
+- Vertex AI provides the separate assistant and embeddings.
 
-Budgets are alerts, not hard caps. The single-instance limit is the enforced GPU
-cost guard. Closing a browser or local computer does not stop Cloud Run.
+Cloud Run ingress is public HTTPS with IAM-authenticated invocation. The Azure
+API uses Workload Identity Federation, not a Google service-account JSON key.
+Existing NuExtract runtime identity and Terraform addresses are retained.
 
-## Explicit pause and resume
+## Operations
 
-```powershell
-.\gcp\scripts\pause-extraction.ps1
-.\gcp\scripts\resume-extraction.ps1
-```
+Authenticate with Google CLI and Application Default Credentials first.
+Use scripts/check.ps1, scripts/deploy-ai.ps1 -Service nuextract (or paddleocr),
+and scripts/plan.ps1 -Cloud Google. See ../QUICKSTART.md for exact commands.
+Build commands publish images only and can incur charges. Copy the immutable
+digest into nuextract_image or ocr_image in existing private tfvars.
+Model revisions are pinned, but the current vLLM nightly base does not guarantee
+reproducible future builds. Review every plan before applying.
+Deletion protection remains enabled for active services. Budgets are alerts,
+not hard spending caps. Never reuse a saved plan after changing configuration.
 
-## Layout
+## Smoke tests and cost controls
 
-```text
-gcp/bootstrap/                     Protected GCS Terraform-state bucket
-gcp/environments/ai-staging/       Artifact Registry, IAM, budget and Cloud Run
-gcp/services/qwen/                 Pinned Qwen3.5 + vLLM image
-gcp/services/nuextract/            Pinned NuExtract3 4B + vLLM image
-gcp/services/paddleocr/            PP-OCRv6 coordinate service
-gcp/scripts/                       Build, pause, resume and smoke tests
-```
+Use gcp/scripts/smoke-test.ps1, smoke-nuextract.ps1 (ImagePath), and
+smoke-paddleocr.ps1 (DocumentPath), with -ProjectId fiscora-ai.
+Tests can wake a GPU instance and incur charges. They do not certify accounting
+correctness: deterministic controls and human review remain mandatory.
+pause-extraction.ps1 and resume-extraction.ps1 now target NuExtract only.
+They do not stop PaddleOCR or the assistant.
 
-## Build and in-place deployment
+## Backend integration
 
-Authenticate first and keep the existing service URL:
+Keep nuextract_service_url and paddle_ocr_service_url in Azure staging.
+No provider switch or Qwen URL is needed. Images go directly to NuExtract.
+PDFs are rendered and sent in bounded image batches. OCR text never replaces
+extracted values. Image extraction can work without OCR mapping; PDF extraction
+requires the rendering endpoint.
 
-```powershell
-gcloud auth login
-gcloud auth application-default login
-gcloud config set project fiscora-ai
-```
-
-Build the image. The model revision is pinned so the deployment is
-reproducible, and the weights are embedded to avoid downloading them during a
-scale-from-zero cold start.
-
-```powershell
-.\gcp\scripts\build-qwen.ps1 -ProjectId fiscora-ai
-.\gcp\scripts\build-nuextract.ps1 -ProjectId fiscora-ai
-.\gcp\scripts\build-paddleocr.ps1 -ProjectId fiscora-ai
-```
-
-Copy the immutable digests printed by the scripts into
-`gcp/environments/ai-staging/terraform.tfvars`. Qwen uses `extraction_image`,
-NuExtract uses `nuextract_image`, and OCR uses `ocr_image`. Each service has an
-independent enable flag:
-
-```powershell
-cd gcp\environments\ai-staging
-terraform init "-backend-config=backend.hcl"
-terraform validate
-terraform plan "-out=qwen.tfplan"
-terraform apply qwen.tfplan
-```
-
-The change creates a new Cloud Run revision behind the same authenticated service.
-If startup or health checks fail, Cloud Run does not send traffic to it and the
-previous revision remains available for rollback.
-
-## Smoke tests
-
-```powershell
-cd ..\..\..
-.\gcp\scripts\smoke-test.ps1 -ProjectId fiscora-ai
-.\gcp\scripts\smoke-paddleocr.ps1 `
-  -ProjectId fiscora-ai `
-  -DocumentPath C:\path\to\non-sensitive-test-document.pdf
-.\gcp\scripts\smoke-extraction.ps1 `
-  -ProjectId fiscora-ai `
-  -ImagePath C:\path\to\non-sensitive-test-document.jpg
-.\gcp\scripts\smoke-nuextract.ps1 `
-  -ProjectId fiscora-ai `
-  -ImagePath C:\path\to\non-sensitive-test-document.jpg
-```
-
-The extraction test checks authentication, image handling and JSON generation.
-It does not certify accounting accuracy. The NestJS API still applies
-deterministic validation and requires human review.
-
-## Production integration
-
-The Azure API exchanges its managed-identity token through Google Workload
-Identity Federation. No Google service-account key is stored in Azure. Both
-models use vLLM's OpenAI-compatible API. NuExtract receives the selected invoice
-or bank-statement template; generic document categories continue to use Qwen.
-NuExtract receives the original image (or PDF page images), not PaddleOCR text.
-PaddleOCR runs separately for source highlighting. Deploy the updated PaddleOCR
-service exposing `/render` before deploying the image-first PDF backend change.
-NestJS sends PDF images in batches of two by default, capped at the deployed
-six-image limit. The renderer requires the existing authenticated service URL; an
-unavailable renderer fails explicitly rather than falling back to OCR text.
-The API accepts a visual highlight only when an extracted value has one unique,
-high-confidence PaddleOCR match.
-Printed numbers are kept verbatim; Fiscora normalizes and checks them after
-extraction.
-
-After applying GCP, copy the `ocr_service_uri` output into Azure staging as
-`paddle_ocr_service_url`, then apply the Azure stack. If the URL is empty or OCR
-fails for mapping, image extraction still works but the review screen deliberately shows no
-uncertain highlight.
-
-## Provider switch and rollback
-
-The Azure API selects the provider with one setting:
-
-```hcl
-document_extraction_provider = "nuextract" # or "qwen"
-```
-
-Keep both `qwen_service_url` and `nuextract_service_url` configured. Changing the
-provider and applying the Azure stack creates a new API revision; it does not
-delete either model service. Existing jobs keep the model name recorded when
-they started, so a retry does not silently change providers.
+Completed extraction results remain unchanged. Pending legacy Qwen jobs for
+supported categories use NuExtract. Unsupported jobs fail once with a category
+message, without a model call. Reclassify and request extraction if needed.

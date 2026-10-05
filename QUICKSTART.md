@@ -53,13 +53,13 @@ Authenticate to Google Cloud, then choose one service:
 This builds/publishes an image with Cloud Build and can incur charges. It prints
 an immutable digest. It does not update Cloud Run, change enable flags, edit
 tfvars, or apply Terraform. Copy the digest to the corresponding setting in
-Google's existing tfvars (`nuextract_image`, `extraction_image` for Qwen, or
-`ocr_image`), then preview with `plan.ps1 -Cloud Google` and review before apply.
+Google's existing tfvars (`nuextract_image` or `ocr_image`), then preview with `plan.ps1 -Cloud Google` and review before apply.
 
-The existing specialist build/smoke-test scripts remain available. Qwen is kept:
-the backend uses it for generic document categories and pinned-job retries.
+NuExtract is now the only extraction model. Qwen and its build tooling are
+retired. Generic categories are upload-only until categorized as an invoice or
+bank statement. Completed extraction history stays unchanged.
 
-## What became simpler?
+## Earlier grouping refactor (before Qwen retirement)
 
 The Azure application module now receives four grouped objects: `database`,
 `storage`, `smtp`, and `ai`. Secret references remain separate sensitive inputs.
@@ -71,7 +71,7 @@ values have not been intentionally changed.
 For a **new** installation, follow [the full deployment guide](azure/DEPLOYMENT.md).
 Do not use everyday commands to restart bootstrap on an existing deployment.
 
-## Verification of this simplification — 5 October 2026
+## Verification of the earlier grouping refactor — 5 October 2026
 
 All four deployment configurations and the application module validated; ten
 command/workflow tests and three mocked Terraform tests passed. A refreshed

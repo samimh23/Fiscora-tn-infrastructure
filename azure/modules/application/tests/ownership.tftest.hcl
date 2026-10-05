@@ -49,8 +49,6 @@ variables {
 
   ai = {
     extraction_enabled = false
-    provider           = "nuextract"
-    qwen_url           = ""
     nuextract_url      = ""
     ocr_url            = ""
     azure_audience     = "api://test/fiscora-google-wif"
@@ -85,7 +83,7 @@ run "first_image" {
       one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "DB_NAME"]) == var.database.name,
       one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "AZURE_STORAGE_ACCOUNT_URL"]) == var.storage.account_url,
       one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "SMTP_HOST"]) == var.smtp.host,
-      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "DOCUMENT_EXTRACTION_PROVIDER"]) == var.ai.provider,
+      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "NUEXTRACT_SERVICE_URL"]) == var.ai.nuextract_url,
       one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "AI_ASSISTANT_MAX_VECTOR_DISTANCE"]) == "0.8",
     ])
     error_message = "Grouped settings must preserve runtime connection values and defaults."

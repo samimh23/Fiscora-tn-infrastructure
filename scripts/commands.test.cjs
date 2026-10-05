@@ -31,7 +31,7 @@ test('checks use no cloud backend and include mocked ownership tests', () => {
 
 test('AI release preparation selects one build and preserves configuration', () => {
   const source = read('scripts/deploy-ai.ps1');
-  assert.match(source, /ValidateSet\('qwen', 'nuextract', 'paddleocr'\)/);
+  assert.match(source, /ValidateSet\('nuextract', 'paddleocr'\)/);
   assert.match(source, /build-\$Service\.ps1/);
   assert.doesNotMatch(source, /run services update|enable_\w+\s*=|terraform @/);
 });
@@ -48,4 +48,13 @@ test('application wiring uses grouped settings without moving resource addresses
   assert.match(application, /ignore_changes\s*= \[template\[0\]\.container\[0\]\.image\]/);
   assert.match(assembly, /database_name\s*= "accounting_nest"/);
   assert.match(assembly, /name\s*= module\.database\.database_name/);
+});
+
+test('Qwen cannot be deployed or wired back into the active app', () => {
+  const app = read('azure/modules/application/main.tf');
+  assert.doesNotMatch(app, /QWEN_SERVICE_URL|DOCUMENT_EXTRACTION_SERVICE_URL|DOCUMENT_EXTRACTION_PROVIDER|DOCUMENT_EXTRACTION_MODEL|QWEN_CONCURRENCY/);
+  const google = read('gcp/environments/ai-staging/main.tf');
+  assert.doesNotMatch(google, /resource "google_cloud_run_v2_service" "nuextract"\s*\{/);
+  assert.match(google, /resource "google_cloud_run_v2_service" "nuextract_candidate"/);
+  assert.match(google, /resource "google_cloud_run_v2_service" "paddleocr"/);
 });

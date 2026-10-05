@@ -1,7 +1,7 @@
 param(
     [string]$ProjectId = 'fiscora-ai',
     [string]$Region = 'europe-west1',
-    [string]$Service = 'fiscora-nuextract'
+    [string]$Service = 'fiscora-nuextract-v3'
 )
 
 $ErrorActionPreference = 'Stop'
