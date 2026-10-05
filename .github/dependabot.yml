@@ -6,12 +6,21 @@ updates:
       interval: monthly
 
   - package-ecosystem: terraform
-    directory: /bootstrap
+    directory: /azure/bootstrap
     schedule:
       interval: monthly
 
   - package-ecosystem: terraform
-    directory: /environments/staging
+    directory: /azure/environments/staging
     schedule:
       interval: monthly
 
+  - package-ecosystem: terraform
+    directory: /gcp/bootstrap
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: terraform
+    directory: /gcp/environments/ai-staging
+    schedule:
+      interval: monthly

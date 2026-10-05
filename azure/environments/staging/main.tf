@@ -147,40 +147,52 @@ module "application" {
   registry_login_server                  = module.registry.login_server
   deploy_application                     = var.deploy_application
   backend_image                          = var.backend_image
-  database_host                          = module.database.fqdn
-  database_name                          = module.database.database_name
-  database_user                          = module.database.administrator_login
   database_password_secret_id            = module.security.postgres_password_secret_id
   jwt_signing_key_secret_id              = module.security.jwt_signing_key_secret_id
   mfa_encryption_key_secret_id           = module.security.mfa_encryption_key_secret_id
   smtp_password_secret_id                = "${module.security.key_vault_uri}secrets/${var.smtp_password_secret_name}"
-  storage_account_url                    = module.storage.storage_account_url
-  storage_container_name                 = module.storage.container_name
   frontend_public_url                    = var.frontend_public_url
   google_oauth_client_id                 = var.google_oauth_client_id
   cors_allowed_origins                   = join(",", distinct([var.frontend_public_url, "https://${module.frontend.default_hostname}"]))
-  smtp_host                              = var.smtp_host
-  smtp_port                              = var.smtp_port
-  smtp_user                              = var.smtp_user
-  smtp_from                              = var.smtp_from
   malware_scan_enabled                   = var.malware_scan_enabled
   clamav_image                           = var.clamav_image
   application_insights_connection_string = module.monitoring.application_insights_connection_string
-  document_extraction_enabled            = var.document_extraction_enabled
-  document_extraction_provider           = var.document_extraction_provider
-  qwen_service_url                       = var.qwen_service_url
-  nuextract_service_url                  = var.nuextract_service_url
-  paddle_ocr_service_url                 = var.paddle_ocr_service_url
-  azure_gcp_wif_app_id_uri               = module.google_wif.application_id_uri
-  gcp_wif_provider_audience              = var.gcp_wif_provider_audience
-  gcp_wif_service_account                = var.gcp_wif_service_account
-  ai_assistant_enabled                   = var.ai_assistant_enabled
-  gcp_project_id                         = var.gcp_project_id
-  vertex_ai_location                     = var.vertex_ai_location
-  vertex_ai_chat_model                   = var.vertex_ai_chat_model
-  vertex_ai_embedding_model              = var.vertex_ai_embedding_model
-  ai_assistant_max_vector_distance       = var.ai_assistant_max_vector_distance
   tags                                   = local.tags
+
+  database = {
+    host = module.database.fqdn
+    name = module.database.database_name
+    user = module.database.administrator_login
+  }
+
+  storage = {
+    account_url    = module.storage.storage_account_url
+    container_name = module.storage.container_name
+  }
+
+  smtp = {
+    host = var.smtp_host
+    port = var.smtp_port
+    user = var.smtp_user
+    from = var.smtp_from
+  }
+
+  ai = {
+    extraction_enabled  = var.document_extraction_enabled
+    provider            = var.document_extraction_provider
+    qwen_url            = var.qwen_service_url
+    nuextract_url       = var.nuextract_service_url
+    ocr_url             = var.paddle_ocr_service_url
+    azure_audience      = module.google_wif.application_id_uri
+    google_audience     = var.gcp_wif_provider_audience
+    service_account     = var.gcp_wif_service_account
+    assistant_enabled   = var.ai_assistant_enabled
+    project_id          = var.gcp_project_id
+    vertex_location     = var.vertex_ai_location
+    chat_model          = var.vertex_ai_chat_model
+    embedding_model     = var.vertex_ai_embedding_model
+    max_vector_distance = var.ai_assistant_max_vector_distance
+  }
 
   depends_on = [module.database, module.registry, module.storage]
 }

@@ -108,7 +108,7 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "DB_HOST"
-        value = var.database_host
+        value = var.database.host
       }
       env {
         name  = "DB_PORT"
@@ -116,7 +116,7 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "DB_USER"
-        value = var.database_user
+        value = var.database.user
       }
       env {
         name        = "DB_PASSWORD"
@@ -124,7 +124,7 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "DB_NAME"
-        value = var.database_name
+        value = var.database.name
       }
       env {
         name  = "DB_SSL"
@@ -176,11 +176,11 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "AZURE_STORAGE_ACCOUNT_URL"
-        value = var.storage_account_url
+        value = var.storage.account_url
       }
       env {
         name  = "AZURE_STORAGE_CONTAINER"
-        value = var.storage_container_name
+        value = var.storage.container_name
       }
       env {
         name  = "MALWARE_SCAN_ENABLED"
@@ -208,11 +208,11 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "SMTP_HOST"
-        value = var.smtp_host
+        value = var.smtp.host
       }
       env {
         name  = "SMTP_PORT"
-        value = tostring(var.smtp_port)
+        value = tostring(var.smtp.port)
       }
       env {
         name  = "SMTP_SECURE"
@@ -220,7 +220,7 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "SMTP_USER"
-        value = var.smtp_user
+        value = var.smtp.user
       }
       env {
         name        = "SMTP_PASSWORD"
@@ -228,7 +228,7 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "SMTP_FROM"
-        value = var.smtp_from
+        value = var.smtp.from
       }
       env {
         name  = "APPLICATIONINSIGHTS_CONNECTION_STRING"
@@ -236,29 +236,29 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "DOCUMENT_EXTRACTION_ENABLED"
-        value = tostring(var.document_extraction_enabled)
+        value = tostring(var.ai.extraction_enabled)
       }
       env {
         name  = "DOCUMENT_EXTRACTION_PROVIDER"
-        value = var.document_extraction_provider
+        value = var.ai.provider
       }
       env {
         name  = "QWEN_SERVICE_URL"
-        value = var.qwen_service_url
+        value = var.ai.qwen_url
       }
       env {
         name  = "NUEXTRACT_SERVICE_URL"
-        value = var.nuextract_service_url
+        value = var.ai.nuextract_url
       }
 
       env {
         name  = "DOCUMENT_EXTRACTION_SERVICE_URL"
-        value = var.qwen_service_url
+        value = var.ai.qwen_url
       }
 
       env {
         name  = "PADDLE_OCR_SERVICE_URL"
-        value = var.paddle_ocr_service_url
+        value = var.ai.ocr_url
       }
 
       env {
@@ -295,35 +295,35 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "AZURE_GCP_WIF_APP_ID_URI"
-        value = var.azure_gcp_wif_app_id_uri
+        value = var.ai.azure_audience
       }
       env {
         name  = "GCP_WIF_PROVIDER_AUDIENCE"
-        value = var.gcp_wif_provider_audience
+        value = var.ai.google_audience
       }
       env {
         name  = "GCP_WIF_SERVICE_ACCOUNT"
-        value = var.gcp_wif_service_account
+        value = var.ai.service_account
       }
       env {
         name  = "AI_ASSISTANT_ENABLED"
-        value = tostring(var.ai_assistant_enabled)
+        value = tostring(var.ai.assistant_enabled)
       }
       env {
         name  = "GCP_PROJECT_ID"
-        value = var.gcp_project_id
+        value = var.ai.project_id
       }
       env {
         name  = "VERTEX_AI_LOCATION"
-        value = var.vertex_ai_location
+        value = var.ai.vertex_location
       }
       env {
         name  = "VERTEX_AI_CHAT_MODEL"
-        value = var.vertex_ai_chat_model
+        value = var.ai.chat_model
       }
       env {
         name  = "VERTEX_AI_EMBEDDING_MODEL"
-        value = var.vertex_ai_embedding_model
+        value = var.ai.embedding_model
       }
       env {
         name  = "VERTEX_AI_EMBEDDING_DIMENSIONS"
@@ -331,7 +331,7 @@ resource "azurerm_container_app" "api" {
       }
       env {
         name  = "AI_ASSISTANT_MAX_VECTOR_DISTANCE"
-        value = var.ai_assistant_max_vector_distance
+        value = var.ai.max_vector_distance
       }
       env {
         name  = "VERTEX_AI_TIMEOUT_MS"

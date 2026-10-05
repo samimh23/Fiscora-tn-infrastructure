@@ -55,6 +55,7 @@ resource "google_artifact_registry_repository" "ai" {
   depends_on = [google_project_service.required]
 }
 
+# Legacy Terraform address/account ID: runs Qwen and NuExtract3. Keep stable.
 resource "google_service_account" "nuextract" {
   project      = var.project_id
   account_id   = "fiscora-nuextract"
@@ -163,6 +164,8 @@ resource "google_billing_budget" "project" {
   depends_on = [google_project_service.required]
 }
 
+# Qwen runtime. Legacy address/name retained to avoid replacement or URL changes.
+# All Cloud Run services below use public HTTPS ingress with IAM invocation.
 resource "google_cloud_run_v2_service" "nuextract" {
   provider = google-beta
   count    = var.enable_extraction_service ? 1 : 0
@@ -253,6 +256,7 @@ resource "google_cloud_run_v2_service_iam_member" "azure_api_invoker" {
   member   = "serviceAccount:${google_service_account.azure_api.email}"
 }
 
+# NuExtract3 runtime; "candidate" is only the historical Terraform address.
 resource "google_cloud_run_v2_service" "nuextract_candidate" {
   provider = google-beta
   count    = var.enable_nuextract_service ? 1 : 0

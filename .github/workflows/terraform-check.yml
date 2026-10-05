@@ -7,7 +7,7 @@ on:
       - "**/*.tftest.hcl"
       - "**/*.tfvars.example"
       - ".github/workflows/**"
-      - "scripts/deployment-workflows.test.cjs"
+      - "scripts/**"
   push:
     branches:
       - main
@@ -16,7 +16,7 @@ on:
       - "**/*.tftest.hcl"
       - "**/*.tfvars.example"
       - ".github/workflows/**"
-      - "scripts/deployment-workflows.test.cjs"
+      - "scripts/**"
 
 permissions:
   contents: read
@@ -36,7 +36,7 @@ jobs:
           node-version: 24
 
       - name: Check deployment workflow guards
-        run: node --test scripts/deployment-workflows.test.cjs
+        run: node --test scripts/*.test.cjs
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3

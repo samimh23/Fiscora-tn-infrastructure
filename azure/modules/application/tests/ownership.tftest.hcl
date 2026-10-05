@@ -18,38 +18,50 @@ variables {
   registry_login_server                  = "test.azurecr.io"
   deploy_application                     = true
   backend_image                          = "test.azurecr.io/fiscora-backend@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  database_host                          = "test.postgres.database.azure.com"
-  database_name                          = "accounting_nest"
-  database_user                          = "fiscora_admin"
   database_password_secret_id            = "https://kv-test.vault.azure.net/secrets/database-password"
   jwt_signing_key_secret_id              = "https://kv-test.vault.azure.net/secrets/jwt-signing-key"
   mfa_encryption_key_secret_id           = "https://kv-test.vault.azure.net/secrets/mfa-encryption-key"
   smtp_password_secret_id                = "https://kv-test.vault.azure.net/secrets/smtp-password"
-  storage_account_url                    = "https://test.blob.core.windows.net"
-  storage_container_name                 = "accounting-documents"
   frontend_public_url                    = "https://app.test.invalid"
   google_oauth_client_id                 = ""
   cors_allowed_origins                   = "https://app.test.invalid"
-  smtp_host                              = "smtp-relay.brevo.com"
-  smtp_port                              = 587
-  smtp_user                              = "test-smtp-user"
-  smtp_from                              = "test@example.invalid"
   malware_scan_enabled                   = true
   clamav_image                           = "clamav/clamav:1.4"
   application_insights_connection_string = ""
-  document_extraction_enabled            = false
-  document_extraction_provider           = "nuextract"
-  qwen_service_url                       = ""
-  nuextract_service_url                  = ""
-  paddle_ocr_service_url                 = ""
-  azure_gcp_wif_app_id_uri               = "api://test/fiscora-google-wif"
-  gcp_wif_provider_audience              = ""
-  gcp_wif_service_account                = ""
-  ai_assistant_enabled                   = false
-  gcp_project_id                         = "test-project"
-  vertex_ai_location                     = "global"
-  vertex_ai_chat_model                   = "test-chat-model"
-  vertex_ai_embedding_model              = "test-embedding-model"
+
+  database = {
+    host = "test.postgres.database.azure.com"
+    name = "accounting_nest"
+    user = "fiscora_admin"
+  }
+
+  storage = {
+    account_url    = "https://test.blob.core.windows.net"
+    container_name = "accounting-documents"
+  }
+
+  smtp = {
+    host = "smtp-relay.brevo.com"
+    port = 587
+    user = "test-smtp-user"
+    from = "test@example.invalid"
+  }
+
+  ai = {
+    extraction_enabled = false
+    provider           = "nuextract"
+    qwen_url           = ""
+    nuextract_url      = ""
+    ocr_url            = ""
+    azure_audience     = "api://test/fiscora-google-wif"
+    google_audience    = ""
+    service_account    = ""
+    assistant_enabled  = false
+    project_id         = "test-project"
+    vertex_location    = "global"
+    chat_model         = "test-chat-model"
+    embedding_model    = "test-embedding-model"
+  }
 }
 
 run "foundation_without_api" {
@@ -67,6 +79,17 @@ run "foundation_without_api" {
 
 run "first_image" {
   command = apply
+  assert {
+    condition = alltrue([
+      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "DB_HOST"]) == var.database.host,
+      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "DB_NAME"]) == var.database.name,
+      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "AZURE_STORAGE_ACCOUNT_URL"]) == var.storage.account_url,
+      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "SMTP_HOST"]) == var.smtp.host,
+      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "DOCUMENT_EXTRACTION_PROVIDER"]) == var.ai.provider,
+      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "AI_ASSISTANT_MAX_VECTOR_DISTANCE"]) == "0.8",
+    ])
+    error_message = "Grouped settings must preserve runtime connection values and defaults."
+  }
   assert {
     condition     = azurerm_container_app.api[0].template[0].container[0].image == var.backend_image
     error_message = "Terraform must use the supplied image on first creation."

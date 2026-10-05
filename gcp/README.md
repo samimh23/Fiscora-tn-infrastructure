@@ -1,10 +1,12 @@
 # Fiscora document extraction on Google Cloud
 
 This stack keeps `Qwen/Qwen3.5-4B` and official 4B `numind/NuExtract3` in separate,
-private, scale-to-zero Cloud Run services. PP-OCRv6-medium runs on a separate CPU
+IAM-authenticated, scale-to-zero Cloud Run services. PP-OCRv6-medium runs on a separate CPU
 service and supplies trusted text coordinates for visual highlights.
 The web application and API remain on Azure; Google Cloud provides only the
-private financial-document inference endpoint. The existing Cloud Run service
+authenticated financial-document inference endpoints. Cloud Run ingress is public
+HTTPS, but anonymous invocation is not allowed; this is not a private cross-cloud network.
+The existing Cloud Run service
 name remains `fiscora-nuextract` for backward compatibility even though it runs
 Qwen. The actual NuExtract candidate is `fiscora-nuextract-v3`.
 
@@ -12,7 +14,7 @@ Qwen. The actual NuExtract candidate is `fiscora-nuextract-v3`.
 
 - Minimum instances: `0` (scale to zero).
 - Maximum instances: `1` (at most one L4).
-- PaddleOCR is private, CPU-only, scale-to-zero, and limited to one request and
+- PaddleOCR requires IAM authentication, is CPU-only, scale-to-zero, and limited to one request and
   one instance so it cannot create an uncontrolled fleet. It accepts JPEG, PNG
   and PDF documents, and renders PDF pages with PDFium in bounded four-page
   memory batches at 250 DPI before applying PaddleOCR.
@@ -24,7 +26,7 @@ Qwen. The actual NuExtract candidate is `fiscora-nuextract-v3`.
   sequences. Multi-page OCR tokens are mapped in four-page Qwen batches and
   merged deterministically before accounting validation.
 - GPU zonal redundancy: disabled.
-- Public/unauthenticated access: disabled.
+- Public HTTPS ingress: enabled. Anonymous invocation: not granted.
 - Monthly budget alerts: 50%, 80%, 100%, and forecasted 100%.
 - Deletion protection: enabled.
 
@@ -51,7 +53,7 @@ gcp/scripts/                       Build, pause, resume and smoke tests
 
 ## Build and in-place deployment
 
-Authenticate first and keep the existing private service URL:
+Authenticate first and keep the existing service URL:
 
 ```powershell
 gcloud auth login
@@ -82,7 +84,7 @@ terraform plan "-out=qwen.tfplan"
 terraform apply qwen.tfplan
 ```
 
-The change creates a new Cloud Run revision behind the same private service.
+The change creates a new Cloud Run revision behind the same authenticated service.
 If startup or health checks fail, Cloud Run does not send traffic to it and the
 previous revision remains available for rollback.
 
@@ -116,7 +118,7 @@ NuExtract receives the original image (or PDF page images), not PaddleOCR text.
 PaddleOCR runs separately for source highlighting. Deploy the updated PaddleOCR
 service exposing `/render` before deploying the image-first PDF backend change.
 NestJS sends PDF images in batches of two by default, capped at the deployed
-six-image limit. The renderer requires the existing private service URL; an
+six-image limit. The renderer requires the existing authenticated service URL; an
 unavailable renderer fails explicitly rather than falling back to OCR text.
 The API accepts a visual highlight only when an extracted value has one unique,
 high-confidence PaddleOCR match.

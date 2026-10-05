@@ -1,31 +1,28 @@
-project_id         = "fiscora-ai"
-region             = "europe-west1"
+# NEW DEPLOYMENT TEMPLATE ONLY. Never replace an existing terraform.tfvars.
+# One Google configuration; stable technical defaults stay in variables.tf.
+project_id         = "YOUR-GCP-PROJECT"
 billing_account_id = "000000-000000-000000"
-monthly_budget_usd = 50
 
 invoker_members = [
   "user:you@example.com",
 ]
 
-# Cost gate: leave false until build-qwen.ps1 prints an immutable digest.
+# Build with scripts/deploy-ai.ps1. Paste each digest before enabling its service.
+# Qwen remains required for generic documents and jobs pinned to its model.
 enable_extraction_service = false
 extraction_image          = null
 
-# Independent candidate service. Enabling this never replaces Qwen.
+# Separate NuExtract3 service for invoices/statements; it does not replace Qwen.
 enable_nuextract_service      = false
 nuextract_image               = null
-nuextract_service_name        = "fiscora-nuextract-v3"
-nuextract_request_concurrency = 2
-nuextract_max_num_seqs        = 2
 
 # Build with build-paddleocr.ps1, paste its immutable digest, then enable.
 enable_ocr_service = false
 ocr_image          = null
-ocr_service_name   = "fiscora-paddleocr"
-
-request_concurrency = 4
-max_num_seqs        = 4
 
 azure_tenant_id                     = "00000000-0000-0000-0000-000000000000"
 azure_managed_identity_object_id    = "00000000-0000-0000-0000-000000000000"
 azure_application_id_uri            = "api://TENANT_ID/fiscora-google-wif"
+
+# Optional overrides: region, budget, service names and concurrency are in
+# variables.tf. Existing deployments must retain their actual overrides.

@@ -28,7 +28,7 @@ variable "monthly_budget_usd" {
 }
 
 variable "invoker_members" {
-  description = "IAM principals allowed to invoke the private extraction service."
+  description = "Additional IAM principals allowed to invoke the authenticated extraction services."
   type        = set(string)
   default     = []
 }
@@ -55,13 +55,13 @@ variable "extraction_image" {
 }
 
 variable "service_name" {
-  description = "Cloud Run service name."
+  description = "Qwen service name; the legacy fiscora-nuextract name is retained to preserve existing URLs."
   type        = string
   default     = "fiscora-nuextract"
 }
 
 variable "enable_nuextract_service" {
-  description = "Cost gate for the separate NuExtract3 candidate service. The Qwen service is not replaced."
+  description = "Cost gate for the separate NuExtract3 service. The Qwen service is not replaced."
   type        = bool
   default     = false
 }
@@ -82,7 +82,7 @@ variable "nuextract_image" {
 }
 
 variable "nuextract_service_name" {
-  description = "Separate private Cloud Run service name for NuExtract3."
+  description = "Separate IAM-authenticated Cloud Run service name for NuExtract3."
   type        = string
   default     = "fiscora-nuextract-v3"
 }
@@ -105,7 +105,7 @@ variable "nuextract_max_num_seqs" {
 }
 
 variable "enable_ocr_service" {
-  description = "Explicit cost gate for the private PP-OCRv6 CPU service."
+  description = "Explicit cost gate for the IAM-authenticated PP-OCRv6 CPU service."
   type        = bool
   default     = false
 }
@@ -126,7 +126,7 @@ variable "ocr_image" {
 }
 
 variable "ocr_service_name" {
-  description = "Private Cloud Run PP-OCRv6 service name."
+  description = "IAM-authenticated Cloud Run PP-OCRv6 service name."
   type        = string
   default     = "fiscora-paddleocr"
 }

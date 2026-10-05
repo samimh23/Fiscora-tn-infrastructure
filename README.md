@@ -26,11 +26,14 @@ gcp/bootstrap/                    Google Cloud Terraform-state foundation
 gcp/environments/ai-staging/      Qwen/NuExtract Cloud Run, IAM and budgets
 gcp/services/qwen/                Pinned Qwen3.5 + vLLM container
 gcp/services/nuextract/           Pinned NuExtract3 4B + vLLM container
+gcp/services/paddleocr/           OCR and PDF rendering container
 gcp/scripts/                      Build, pause, resume and smoke tests
+scripts/                          Simple check, plan and AI-build entry points
 .github/workflows/                Validation and Azure plan automation
 ```
 
-Start with the [beginner-friendly Azure guide](azure/START-HERE.md). It explains
+Start with [three everyday commands](QUICKSTART.md), then the
+[beginner-friendly Azure guide](azure/START-HERE.md). It explains
 the four sections of staging/main.tf and the safe workflow for an existing deployment.
 The Azure and GCP stacks remain separate.
 
@@ -48,12 +51,12 @@ Detailed deployment instructions live in
 ## Local validation
 
 ```powershell
-.\azure\scripts\validate.ps1
-.\gcp\scripts\validate.ps1
+./scripts/check.ps1
 ```
 
-Validation and planning do not change cloud resources. Only `terraform apply`
-changes infrastructure.
+Checks do not authenticate to the cloud. Plans read the selected deployment;
+they never apply changes. Cloud Build and pause/resume helpers are explicit
+cloud operations; they are not run by check or plan.
 
 ## Generated and sensitive files
 
@@ -72,7 +75,7 @@ store.
 
 ## Change safety
 
-1. Run the Azure and GCP validation scripts.
+1. Run `./scripts/check.ps1`.
 2. Create and review a Terraform plan for the affected environment.
 3. Apply only the reviewed plan from an authenticated operator session.
 4. Run application and extraction smoke tests after deployment.

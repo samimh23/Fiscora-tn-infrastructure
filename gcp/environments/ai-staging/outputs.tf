@@ -4,7 +4,7 @@ output "artifact_repository" {
 }
 
 output "extraction_service_uri" {
-  description = "Private Cloud Run URI, or null while the GPU service is disabled."
+  description = "IAM-authenticated Qwen HTTPS URI; public ingress, no anonymous invocation."
   value = coalesce(
     try(google_cloud_run_v2_service.nuextract[0].uri, null),
     try(google_cloud_run_v2_service.nuextract[0].urls[0], null),
@@ -12,7 +12,7 @@ output "extraction_service_uri" {
 }
 
 output "ocr_service_uri" {
-  description = "Private PaddleOCR Cloud Run URI, or null while disabled."
+  description = "IAM-authenticated PaddleOCR HTTPS URI; public ingress, no anonymous invocation."
   value = coalesce(
     try(google_cloud_run_v2_service.paddleocr[0].uri, null),
     try(google_cloud_run_v2_service.paddleocr[0].urls[0], null),
@@ -20,7 +20,7 @@ output "ocr_service_uri" {
 }
 
 output "nuextract_service_uri" {
-  description = "Private NuExtract 2.0 candidate URI, or null while disabled."
+  description = "IAM-authenticated NuExtract3 HTTPS URI; public ingress, no anonymous invocation."
   value = coalesce(
     try(google_cloud_run_v2_service.nuextract_candidate[0].uri, null),
     try(google_cloud_run_v2_service.nuextract_candidate[0].urls[0], null),
@@ -33,7 +33,7 @@ output "gpu_cost_gate" {
 }
 
 output "runtime_service_account" {
-  description = "Identity used by the private extraction service."
+  description = "Runtime identity shared by the Qwen and NuExtract3 services."
   value       = google_service_account.nuextract.email
 }
 

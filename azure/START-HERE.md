@@ -22,10 +22,18 @@ Le début du fichier prépare les noms, les étiquettes et le groupe de ressourc
 ## Lire une ligne Terraform
 
 ```hcl
-database_host = module.database.fqdn
+database = {
+  host = module.database.fqdn
+  name = module.database.database_name
+  user = module.database.administrator_login
+}
 ```
 
 Cette ligne donne à l'application l'adresse créée par le module `database`.
+
+Le module application reçoit maintenant quatre groupes lisibles : `database`,
+`storage`, `smtp` et `ai`. Les références sensibles des secrets restent séparées.
+Les noms d'entrée dans votre `terraform.tfvars` existant n'ont pas changé.
 
 - `var.xxx` : un paramètre d'entrée défini dans `variables.tf`.
 - `local.xxx` : une valeur calculée dans ce dossier.
@@ -70,6 +78,11 @@ prévoir la suppression de l'API. Ne changez pas le suffixe, les noms de modules
 les noms de ressources ou l'adresse du backend pour un simple rangement.
 
 ## Vérifier l'installation existante sans déployer
+
+Le raccourci recommandé depuis la racine est
+`./scripts/check.ps1`, puis `./scripts/plan.ps1 -Cloud Azure` avec le compte
+opérateur connecté. Voir [les trois commandes courantes](../QUICKSTART.md).
+Les commandes détaillées ci-dessous restent disponibles.
 
 Depuis la racine du dépôt, avec Azure CLI et Terraform installés :
 
