@@ -61,6 +61,13 @@ bank statement. Completed extraction history stays unchanged.
 
 ## Earlier grouping refactor (before Qwen retirement)
 
+Current Azure layout: small components now live directly in staging topic files.
+Only the application module remains. `moved.tf` preserves the 41 former module
+resources without replacement. Application Insights, runtime settings, names,
+inputs and outputs are unchanged. See [the file map](azure/START-HERE.md) and
+[the current verification](azure/SIMPLIFICATION.md). The paragraphs below describe
+the earlier, historical grouping refactor, not today's resource addresses.
+
 The Azure application module now receives four grouped objects: `database`,
 `storage`, `smtp`, and `ai`. Secret references remain separate sensitive inputs.
 Root input names and defaults are unchanged, so local configuration and GitHub's

@@ -1,4 +1,4 @@
-# Inputs for the staging assembly. Defaults are intentionally unchanged.
+# Azure staging settings. Defaults are intentionally unchanged.
 # Existing deployments must retain their private terraform.tfvars values.
 # Azure access, naming and regions.
 

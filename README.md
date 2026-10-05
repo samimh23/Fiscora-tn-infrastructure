@@ -19,8 +19,8 @@ account key is used.
 
 ```text
 azure/bootstrap/                  Azure Terraform-state foundation
-azure/environments/staging/       Deployed Azure staging composition
-azure/modules/                    Reusable Azure infrastructure modules
+azure/environments/staging/       Azure resources grouped in readable topic files
+azure/modules/application/        Tested NestJS/ClamAV runtime (only Azure module)
 azure/scripts/                    Azure validation and secret configuration
 gcp/bootstrap/                    Google Cloud Terraform-state foundation
 gcp/environments/ai-staging/      NuExtract Cloud Run, IAM and budgets
@@ -33,8 +33,13 @@ scripts/                          Simple check, plan and AI-build entry points
 
 Start with [three everyday commands](QUICKSTART.md), then the
 [beginner-friendly Azure guide](azure/START-HERE.md). It explains
-the four sections of staging/main.tf and the safe workflow for an existing deployment.
+the topic files listed in staging/main.tf and the safe workflow for an existing deployment.
 The Azure and GCP stacks remain separate.
+
+The Azure layout now declares small components directly in staging instead of
+ten single-purpose modules. Application Insights and all active services remain.
+Compatibility mappings in `moved.tf` retain existing resources and secrets; see
+[the refactor verification](azure/SIMPLIFICATION.md). A push never applies it.
 
 For the exact first-deployment sequence and Terraform/GitHub responsibilities,
 see [the deployment walkthrough](azure/DEPLOYMENT.md).

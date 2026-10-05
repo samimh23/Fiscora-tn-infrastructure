@@ -1,7 +1,8 @@
+# storage: unchanged services, declared directly in staging.
 resource "azurerm_storage_account" "documents" {
-  name                             = var.name
-  resource_group_name              = var.resource_group_name
-  location                         = var.location
+  name                             = substr("st${local.compact}docs", 0, 24)
+  resource_group_name              = azurerm_resource_group.this.name
+  location                         = azurerm_resource_group.this.location
   account_tier                     = "Standard"
   account_replication_type         = "LRS"
   account_kind                     = "StorageV2"
@@ -27,7 +28,7 @@ resource "azurerm_storage_account" "documents" {
     }
   }
 
-  tags = var.tags
+  tags = local.tags
 
   lifecycle {
     prevent_destroy = true
@@ -35,7 +36,7 @@ resource "azurerm_storage_account" "documents" {
 }
 
 resource "azurerm_storage_container" "documents" {
-  name                  = var.container_name
+  name                  = "accounting-documents"
   storage_account_id    = azurerm_storage_account.documents.id
   container_access_type = "private"
 }
@@ -43,13 +44,13 @@ resource "azurerm_storage_container" "documents" {
 resource "azurerm_role_assignment" "application_documents" {
   scope                = azurerm_storage_account.documents.id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = var.application_principal_id
+  principal_id         = azurerm_user_assigned_identity.application.principal_id
 }
 
 resource "azurerm_role_assignment" "operator_documents" {
   scope                = azurerm_storage_account.documents.id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = var.operator_principal_id
+  principal_id         = var.operator_object_id
 }
 
 resource "azurerm_management_lock" "documents" {

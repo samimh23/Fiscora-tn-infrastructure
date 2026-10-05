@@ -1,146 +1,112 @@
 # Azure Terraform — commencer ici
 
-Ce dossier décrit **où et comment Fiscora est hébergé sur Azure**. Ce n'est pas
-le code métier NestJS ou React. Terraform configure l'infrastructure ; GitHub
-Actions construit et déploie le code ; NestJS exécute la logique métier.
+Ce dossier configure l'hébergement de Fiscora, pas la logique métier.
+Terraform prépare Azure ; GitHub Actions publie React et NestJS.
 
-## Les quatre parties de staging/main.tf
+## Le fichier à ouvrir en premier
 
-Ouvrez [`environments/staging/main.tf`](environments/staging/main.tf).
-Les modules sont les composants réutilisables placés dans `modules/`.
+Ouvrez [staging/main.tf](environments/staging/main.tf). Il définit les noms,
+les étiquettes et le groupe de ressources, puis indique les fichiers à lire.
+Il ne cache plus chaque petit composant derrière trois fichiers de module.
 
-| Partie | Modules | Rôle |
-| --- | --- | --- |
-| 1. Fondation | `network`, `security`, `google_wif`, `ci` | Réseau privé, secrets, identité du backend, authentification Google et droits de déploiement GitHub. |
-| 2. Données | `storage`, `database` | Documents dans Blob Storage ; données métier et vecteurs dans PostgreSQL. |
-| 3. Hébergement | `registry`, `frontend`, `application` | Images Docker dans ACR ; React dans Static Web Apps ; NestJS et ClamAV dans Container Apps. |
-| 4. Exploitation | `monitoring`, `budget` | Logs, erreurs et alertes de dépenses. Le budget ne bloque pas la facture. |
+## Où trouver chaque composant ?
 
-Le début du fichier prépare les noms, les étiquettes et le groupe de ressources
-(le dossier logique qui rassemble les ressources dans Azure).
+Tous ces fichiers sont dans `azure/environments/staging/`.
 
-## Lire une ligne Terraform
+| Fichier | Ce qu'il crée ou raccorde |
+| --- | --- |
+| `main.tf` | Noms communs, tags, groupe de ressources et carte des fichiers. |
+| `hosting.tf` | Registre Docker, frontend React et configuration du backend NestJS/ClamAV. |
+| `database.tf` | PostgreSQL, base métier et extensions uuid/pgvector. |
+| `storage.tf` | Documents privés, droits d'accès et protection contre la suppression. |
+| `security.tf` | Identité du backend, Key Vault et secrets générés. |
+| `network.tf` | Réseau privé, sous-réseaux et DNS PostgreSQL. |
+| `deployment-access.tf` | Identités GitHub et confiance OIDC pour déployer sans mot de passe Azure. |
+| `google-auth.tf` | Authentification Azure vers Google pour NuExtract, OCR et Gemini, sans clé Google permanente. |
+| `monitoring.tf` | **Application Insights conservé**, Log Analytics et alertes de coût. |
+| `variables.tf` / `terraform.tfvars.example` | Paramètres disponibles / exemple pour une nouvelle installation. |
+| `outputs.tf` | Noms et adresses utiles après création. |
+| `moved.tf` | Compatibilité avec l'ancien découpage ; ne pas supprimer. |
+| `backend.tf` / `providers.tf` / `versions.tf` | État distant, accès aux fournisseurs et versions. |
+
+Un seul module reste : `azure/modules/application/`. Il contient la
+Container App NestJS et son antivirus ClamAV, ainsi que les tests qui empêchent
+Terraform de remettre une ancienne image publiée par GitHub. Pour une vue
+d'ensemble, lisez d'abord `hosting.tf` ; ouvrez ce module pour le détail du runtime.
+
+## Comment « ce fichier parle à cet autre fichier » ?
+
+Terraform lit **tous les fichiers .tf du même dossier ensemble**.
+Il suit les références, pas l'ordre des fichiers.
+
+Dans `hosting.tf` :
 
 ```hcl
 database = {
-  host = module.database.fqdn
-  name = module.database.database_name
-  user = module.database.administrator_login
+  host = azurerm_postgresql_flexible_server.postgres.fqdn
+  name = azurerm_postgresql_flexible_server_database.application.name
+  user = azurerm_postgresql_flexible_server.postgres.administrator_login
 }
 ```
 
-Cette ligne donne à l'application l'adresse créée par le module `database`.
+Cela signifie : « donner au backend l'adresse et le nom de la base que
+`database.tf` crée ». Terraform ne copie pas des fichiers entre services.
 
-Le module application reçoit maintenant quatre groupes lisibles : `database`,
-`storage`, `smtp` et `ai`. Les références sensibles des secrets restent séparées.
-Les noms d'entrée dans votre `terraform.tfvars` existant n'ont pas changé.
+- `var.xxx` : paramètre défini dans `variables.tf`.
+- `local.xxx` : nom ou valeur calculée dans `main.tf`.
+- `azurerm_...nom.attribut` : propriété d'une ressource Azure.
+- `module.application.xxx` : résultat du seul module restant.
+- `depends_on` : attendre aussi une préparation nécessaire, par exemple les droits IAM.
 
-- `var.xxx` : un paramètre d'entrée défini dans `variables.tf`.
-- `local.xxx` : une valeur calculée dans ce dossier.
-- `module.xxx.yyy` : un résultat produit par un autre module.
-- `source` : l'emplacement du module.
-- `depends_on` : une dépendance explicite à attendre.
+## Exemple : Key Vault → NestJS
 
-Terraform lit les fichiers `.tf` du même dossier ensemble. Il suit les
-dépendances ; il n'exécute pas `main.tf` ligne par ligne.
+1. `security.tf` crée le coffre, l'identité managée et les secrets générés.
+2. `hosting.tf` transmet leurs références au module application.
+3. Container Apps utilise cette identité pour lire les secrets dans Key Vault.
+4. NestJS reçoit les valeurs dans son environnement, par exemple `DB_PASSWORD`.
 
-## Quels fichiers ouvrir ?
+Les fichiers comptables vont dans Blob Storage, pas dans Key Vault.
+La fédération Google sert à obtenir des jetons d'authentification ; elle ne
+transporte pas les documents.
 
-| Fichier/dossier | Quand l'utiliser |
-| --- | --- |
-| `environments/staging/main.tf` | Comprendre comment les composants sont assemblés. |
-| `environments/staging/variables.tf` | Comprendre les paramètres et leurs valeurs par défaut. |
-| `environments/staging/terraform.tfvars.example` | Préparer une **nouvelle** installation. |
-| `environments/staging/terraform.tfvars` | Paramètres locaux existants : ne pas publier ni remplacer. |
-| `environments/staging/backend.hcl` | Emplacement de l'état distant : ne pas publier ni remplacer. |
-| `environments/staging/outputs.tf` | Adresses et identifiants produits par les modules. |
-| `environments/staging/providers.tf` / `versions.tf` | Fournisseurs Azure et versions compatibles. |
-| `modules/` | Détails de création de chaque composant. |
-| `scripts/` | Validation et configuration complémentaire des secrets/e-mails. |
-| `bootstrap/` | Création initiale du stockage de l'état ; pas à refaire pour une installation existante. |
+## Ce que la simplification ne change pas
 
-## Ne changer que les paramètres nécessaires
+Application Insights, PostgreSQL privé, sauvegardes, ClamAV, secrets, identités,
+stockage des documents, GitHub OIDC et fédération Google sont conservés.
+Les noms Azure, paramètres locaux et outputs restent les mêmes.
 
-Les régions, les tailles PostgreSQL, les noms de secrets, le scanner et les
-modèles IA ont déjà des valeurs par défaut. Elles n'ont pas été changées par
-ce rangement de lisibilité.
+`moved.tf` dit à Terraform : « cette ressource existante a maintenant une autre
+adresse dans le code ». Il évite de recréer les ressources ou de régénérer les
+secrets. Gardez ces mappings tant qu'un ancien état peut être utilisé.
+Le prochain apply approuvé enregistrera ces adresses dans l'état ; aucun apply
+n'est lancé par un push.
 
-Pour une **nouvelle** installation, le modèle regroupe les paramètres propres
-au compte : abonnement Azure, objet Entra de l'opérateur, suffixe unique,
-destinataire des alertes, URI de fédération Entra, identifiants numériques GitHub
-et login SMTP Brevo. Les options IA et domaines personnalisés sont activées après
-leurs prérequis. Les clés Brevo vont dans Key Vault via les scripts, jamais dans Git.
+## Vérifier sans déployer
 
-Pour l'installation **existante**, gardez toutes vos valeurs actuelles, même
-si elles diffèrent des valeurs par défaut. Ne copiez pas le modèle par-dessus
-`terraform.tfvars`. Ne remettez pas `deploy_application` à `false` : cela peut
-prévoir la suppression de l'API. Ne changez pas le suffixe, les noms de modules,
-les noms de ressources ou l'adresse du backend pour un simple rangement.
-
-## Vérifier l'installation existante sans déployer
-
-Le raccourci recommandé depuis la racine est
-`./scripts/check.ps1`, puis `./scripts/plan.ps1 -Cloud Azure` avec le compte
-opérateur connecté. Voir [les trois commandes courantes](../QUICKSTART.md).
-Les commandes détaillées ci-dessous restent disponibles.
-
-Depuis la racine du dépôt, avec Azure CLI et Terraform installés :
+Depuis la racine :
 
 ```powershell
-# Lire la version et vérifier le compte déjà connecté.
-terraform version
-az account show --output table
-
-# Entrer dans le bon environnement sans remplacer ses fichiers locaux.
-Set-Location azure/environments/staging
-terraform init -backend-config=backend.hcl
-terraform fmt -check
-terraform validate
-terraform plan -input=false -detailed-exitcode
+./scripts/check.ps1
+./scripts/plan.ps1 -Cloud Azure
 ```
 
-`init` prépare les fournisseurs et l'accès à l'état ; `validate` vérifie le code ;
-`plan` compare la configuration et les ressources. Ces commandes ne déploient
-pas les ressources de l'application. Elles peuvent accéder au cloud et verrouiller
-temporairement l'état pendant la vérification.
+Le premier vérifie le code et les tests mockés. Le second lit Azure avec votre
+compte opérateur et propose un plan ; il ne l'applique pas.
 
-- Code de sortie `0` du plan : aucun changement proposé.
-- Code `2` : changements proposés ; les examiner avant toute décision.
-- Code `1` : erreur ; corriger le problème avant d'aller plus loin.
+Gardez vos `terraform.tfvars` et `backend.hcl` existants. Ne les remplacez pas
+par les exemples. Gardez `deploy_application=true` pour une API déjà créée.
+Ne changez pas le suffixe, le backend d'état ou les mappings pour une présentation.
+Ne partagez jamais l'état, un plan binaire ou les secrets.
 
-Pour un rangement de fichiers/commentaires, le plan doit rester inchangé. Un
-changement peut aussi venir d'une modification externe (par exemple une nouvelle
-image publiée par GitHub Actions) : ne pas l'appliquer automatiquement.
+Voir [SIMPLIFICATION.md](SIMPLIFICATION.md) pour la vérification avant/après,
+[DEPLOYMENT.md](DEPLOYMENT.md) pour une première installation et
+[README.md](README.md) pour les limites de staging.
 
-`terraform apply` modifie réellement Azure. Il n'est **pas** nécessaire pour
-présenter le projet ni pour valider des commentaires. `terraform destroy`, les
-commandes de modification d'état et les anciens plans enregistrés ne font pas
-partie de ce guide. Ne partagez jamais l'état, un plan binaire ou des secrets.
+## Phrase pour le mentor
 
-## Exemple concret : Key Vault → backend
-
-1. `security` crée le coffre, l'identité managée et les secrets générés.
-2. `main.tf` transmet les références de secrets au module `application`.
-3. Container Apps utilise cette identité pour lire les secrets dans Key Vault.
-4. NestJS lit les valeurs fournies dans son environnement, par exemple `DB_PASSWORD`.
-
-Le backend ne demande pas les secrets à chaque requête utilisateur. Les fichiers
-comptables vont dans Blob Storage, pas dans Key Vault. La fédération Google WIF
-sert à l'authentification, pas au transport des documents.
-
-## Explication courte pour le mentor
-
-> Le fichier staging/main.tf assemble l'infrastructure Azure en quatre parties :
-> fondation, données, hébergement et exploitation. Il réutilise des modules et
-> relie leurs résultats. Par exemple, l'API reçoit l'adresse de PostgreSQL et
-> les références des secrets Key Vault. Terraform prépare l'infrastructure ;
-> GitHub Actions publie le code. Les services IA Google sont gérés par une pile
-> Terraform séparée dans le dossier gcp.
-
-Pour une première installation ou les procédures avancées, suivre
-[`DEPLOYMENT.md`](DEPLOYMENT.md), puis [`README.md`](README.md).
-Après la première création, GitHub gère les versions de l'image API ; Terraform
-continue à gérer les paramètres, les secrets, le réseau et le scanner ClamAV.
-La réception des factures par e-mail est retirée ; les e-mails sortants restent.
-Pour le schéma compact, voir
-[`docs/architecture`](../docs/architecture/README.md).
+> Terraform crée le réseau, la base, le stockage, les identités et l'hébergement.
+> Nous avons un fichier par sujet plutôt qu'un module pour chaque petite ressource.
+> Les références raccordent les composants : le backend reçoit l'adresse de
+> PostgreSQL et les références Key Vault. GitHub Actions déploie ensuite le code.
+> Les services IA restent sur Google Cloud, avec une authentification sans clé
+> permanente. Application Insights permet de suivre les erreurs et les requêtes.

@@ -5,6 +5,14 @@ then [DEPLOYMENT.md](DEPLOYMENT.md) for the first deployment and routine updates
 For an existing installation, preserve `terraform.tfvars`, `backend.hcl`, state,
 resource names and identity IDs. Examples are for new installations only.
 
+The small Azure components are declared directly in staging topic files; only
+the tested Container Apps module remains. Start with `staging/main.tf`, then
+`hosting.tf`, `database.tf`, `storage.tf`, `security.tf` and `monitoring.tf`.
+Network, GitHub deployment access and Google federation each have a dedicated
+file. Application Insights is retained. Keep `moved.tf`: its 41 address mappings
+preserve existing cloud resources and generated secrets. See
+[SIMPLIFICATION.md](SIMPLIFICATION.md) for the before/after plan verification.
+
 ## Architecture kept deliberately small
 
 - Static Web Apps hosts the React frontend.

@@ -27,6 +27,10 @@ try {
             if ($LASTEXITCODE -ne 0) { throw "Terraform init failed in $directory." }
             terraform validate
             if ($LASTEXITCODE -ne 0) { throw "Terraform validation failed in $directory." }
+            if ($directory -eq 'azure/environments/staging') {
+                terraform test
+                if ($LASTEXITCODE -ne 0) { throw 'Mocked Azure layout tests failed.' }
+            }
             if ($directory -eq 'azure/modules/application') {
                 terraform test
                 if ($LASTEXITCODE -ne 0) { throw 'Mocked application ownership tests failed.' }

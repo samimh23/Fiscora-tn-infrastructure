@@ -62,6 +62,10 @@ jobs:
         working-directory: azure/environments/staging
         run: terraform validate
 
+      - name: Test simplified Azure layout without cloud access
+        working-directory: azure/environments/staging
+        run: terraform test
+
       - name: Initialize mocked application tests
         working-directory: azure/modules/application
         run: terraform init -backend=false -input=false

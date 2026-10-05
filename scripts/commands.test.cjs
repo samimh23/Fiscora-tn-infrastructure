@@ -36,8 +36,8 @@ test('AI release preparation selects one build and preserves configuration', () 
   assert.doesNotMatch(source, /run services update|enable_\w+\s*=|terraform @/);
 });
 
-test('application wiring uses grouped settings without moving resource addresses', () => {
-  const assembly = read('azure/environments/staging/main.tf');
+test('application wiring preserves grouped settings and the runtime module address', () => {
+  const assembly = read('azure/environments/staging/hosting.tf');
   const application = read('azure/modules/application/main.tf');
   for (const group of ['database', 'storage', 'smtp', 'ai']) {
     assert.match(assembly, new RegExp(`  ${group} = \\{`));
@@ -46,8 +46,8 @@ test('application wiring uses grouped settings without moving resource addresses
   assert.match(application, /resource "azurerm_container_app" "api"/);
   assert.match(application, /prevent_destroy = true/);
   assert.match(application, /ignore_changes\s*= \[template\[0\]\.container\[0\]\.image\]/);
-  assert.match(assembly, /database_name\s*= "accounting_nest"/);
-  assert.match(assembly, /name\s*= module\.database\.database_name/);
+  assert.match(read('azure/environments/staging/database.tf'), /name\s*= "accounting_nest"/);
+  assert.match(assembly, /name\s*= azurerm_postgresql_flexible_server_database\.application\.name/);
 });
 
 test('Qwen cannot be deployed or wired back into the active app', () => {

@@ -65,9 +65,10 @@ Cloud Run avec ces images.
 
 - `azure/environments/staging/main.tf`
 - `azure/modules/application/main.tf`
-- `azure/modules/network/main.tf`
-- `azure/modules/database/main.tf`
-- `azure/modules/frontend/main.tf`
+- `azure/environments/staging/network.tf`
+- `azure/environments/staging/database.tf`
+- `azure/environments/staging/hosting.tf`
+- `azure/environments/staging/security.tf` et `monitoring.tf`
 - `gcp/environments/ai-staging/main.tf`
 - `gcp/scripts/` et `gcp/services/*/cloudbuild.yaml`
 - Dépôt backend : `src/assistant/assistant.service.ts`,
