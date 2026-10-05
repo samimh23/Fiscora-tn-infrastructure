@@ -9,9 +9,12 @@ git checkout -b feat/short-description
 Before committing:
 
 ```powershell
-.\azure\scripts\validate.ps1
-.\gcp\scripts\validate.ps1
+./scripts/check.ps1
 ```
+
+This single entry point checks both clouds, formatting, workflow guards, Azure
+layout/migration guards and mocked runtime tests. The former cloud-specific
+validation scripts were redundant and have been removed.
 
 Use focused Conventional Commit messages:
 

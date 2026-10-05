@@ -1,9 +1,18 @@
-const { readFileSync } = require('node:fs');
+const { readFileSync, existsSync } = require('node:fs');
 const { join } = require('node:path');
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const root = join(__dirname, '..');
 const read = (file) => readFileSync(join(root, file), 'utf8');
+
+test('one validation entry point replaces the retired duplicate cloud wrappers', () => {
+  for (const file of ['azure/scripts/validate.ps1', 'gcp/scripts/validate.ps1']) {
+    assert.equal(existsSync(join(root, file)), false);
+  }
+  const contributing = read('CONTRIBUTING.md');
+  assert.match(contributing, /\.\/scripts\/check\.ps1/);
+  assert.doesNotMatch(contributing, /scripts[\\/]validate\.ps1/);
+});
 
 test('simple commands never automatically apply or replace live inputs', () => {
   for (const file of ['check.ps1', 'plan.ps1', 'deploy-ai.ps1']) {
