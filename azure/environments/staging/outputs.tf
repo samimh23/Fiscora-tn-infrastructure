@@ -11,6 +11,7 @@ output "postgres_fqdn" {
   sensitive = true
 }
 output "container_app_name" { value = module.application.api_name }
+output "container_app_deployment_name" { value = "ca-${local.name_prefix}-api" }
 output "container_app_fqdn" { value = module.application.api_fqdn }
 output "static_web_app_name" { value = azurerm_static_web_app.frontend.name }
 output "static_web_app_default_hostname" { value = azurerm_static_web_app.frontend.default_host_name }

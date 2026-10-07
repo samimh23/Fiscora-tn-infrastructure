@@ -43,7 +43,8 @@ terraform plan -out bootstrap.tfplan
 terraform apply bootstrap.tfplan
 ```
 
-Le bootstrap crée le stockage du state et l'identité GitHub de lecture/plan.
+Le bootstrap crée seulement le stockage protégé du state et l'accès de votre
+compte opérateur. Aucune identité GitHub n'est nécessaire pour les vérifications.
 Protégez aussi son state local. Le state et les plans peuvent contenir des
 secrets : ne les partagez pas et ne les ajoutez pas à Git.
 
@@ -71,21 +72,20 @@ frontend existent maintenant. L'API n'est pas encore créée.
 
 ### 4. Préparer GitHub et la clé SMTP
 
-Dans les variables Actions des dépôts backend/frontend :
+Depuis la racine du dépôt infrastructure :
 
-| Variable | Backend | Frontend |
-|---|---|---|
-| `AZURE_CLIENT_ID` | output `github_backend_client_id` | output `github_frontend_client_id` |
-| `AZURE_TENANT_ID` / `AZURE_SUBSCRIPTION_ID` | vos IDs Azure | vos IDs Azure |
-| `AZURE_RESOURCE_GROUP` | groupe créé | groupe créé |
-| `AZURE_CONTAINER_REGISTRY_NAME` / `AZURE_CONTAINER_REGISTRY_LOGIN_SERVER` | registre créé | non requis |
-| `AZURE_CONTAINER_APP_NAME` | nom de la future API : `ca-<name_prefix>-api` | non requis |
-| `AZURE_STATIC_WEB_APP_NAME` | non requis | output correspondant |
+```powershell
+./scripts/show-deployment-settings.ps1
+```
 
-Les outputs du staging fournissent les noms/IDs. Les identités de déploiement
-ne sont pas l'identité d'exécution de l'API.
+Copier les variables affichées dans **Settings → Secrets and variables → Actions
+→ Variables** des dépôts backend/frontend correspondants. Ce helper lit seulement
+des noms, IDs et URLs ; il ne modifie ni GitHub ni Azure et n'affiche aucune clé.
+Il affiche le nom de la future API même avant sa création, mais attend sa création
+pour afficher `AZURE_API_URL`. Les identités de déploiement ne sont pas l'identité
+d'exécution de l'API. Aucun paramètre cloud n'est requis dans le dépôt infrastructure.
 
-En restant dans le dossier staging, enregistrer la clé SMTP sans l'inscrire
+Dans le dossier `azure/environments/staging`, enregistrer la clé SMTP sans l'inscrire
 dans l'historique PowerShell :
 
 ```powershell
@@ -115,8 +115,9 @@ vos utilisateurs/dossiers : utilisez ensuite le parcours de l'application.
 
 ### 6. Publier le frontend et raccorder le domaine
 
-Configurer `AZURE_API_URL` dans le dépôt frontend avec l'URL HTTPS de l'API
-(output `container_app_fqdn`). Lancer son workflow de déploiement. Tester
+Relancer `./scripts/show-deployment-settings.ps1` depuis la racine. Configurer
+`AZURE_API_URL` dans le dépôt frontend avec l'URL HTTPS affichée, sans suffixe
+`/api`. Lancer son workflow de déploiement. Tester
 d'abord les URLs Azure, la connexion et le chargement de documents.
 
 Pour le domaine personnalisé, suivre les outputs de validation DNS du staging
@@ -135,21 +136,50 @@ et assistant. Ne remplacez pas les valeurs d'un déploiement existant.
 - **Backend/frontend** : tests, build puis déploiement du code sur `main`.
 - **Infrastructure** : formatting, validation et tests sans accès au cloud.
   Le push n'exécute jamais `terraform apply`.
-- Pour examiner Azure : lancer manuellement **Terraform Azure staging plan** sur
-  `main`. Le workflow nécessite les variables `AZURE_TERRAFORM_CLIENT_ID`
-  (output bootstrap `github_terraform_plan_client_id`), `AZURE_TENANT_ID`,
-  `AZURE_SUBSCRIPTION_ID`, `AZURE_TF_STATE_RESOURCE_GROUP` et
-  `AZURE_TF_STATE_STORAGE_ACCOUNT`.
-- Ce plan GitHub compare la configuration au state existant (`-refresh=false`).
-  Il ne certifie pas l'état réel d'Azure. Avant un apply, faire un plan local
-  avec refresh normal sous votre compte opérateur, qui dispose des droits
-  requis sur Key Vault et Entra. L'identité CI garde des droits limités.
-- Ajouter le secret GitHub `AZURE_TERRAFORM_TFVARS` avec **tous vos paramètres
-  staging revus**, identiques à la configuration locale. Il sert à protéger
-  cette configuration de compte, pas à stocker des mots de passe/clés API.
-  Sans ce secret, le plan échoue au lieu de supposer que l'API est désactivée.
+- Le workflow de plan cloud a été retiré. Les plans et applies sont locaux :
+  une seule configuration staging privée, pas de duplication dans GitHub.
 - Terraform ne modifie plus l'image API après création. GitHub est responsable
   de ses releases ; Terraform garde la configuration et l'image ClamAV.
+
+Depuis la racine du dépôt, avec votre compte opérateur connecté :
+
+```powershell
+./scripts/check.ps1
+./scripts/plan.ps1 -Cloud Azure -OutFile reviewed-azure.tfplan
+# Lire toutes les actions. Puis seulement si elles sont approuvées :
+terraform -chdir=azure/environments/staging apply reviewed-azure.tfplan
+```
+
+Un apply d'un plan enregistré démarre sans nouvelle confirmation. Choisir un
+nouveau nom si le plan existe déjà. Ne pas réutiliser un plan après une modification.
+
+## Installation existante : retirer l'ancien accès GitHub au plan
+
+Cette modification du code n'a pas encore supprimé l'identité de plan dans Azure.
+Ne recréez pas le bootstrap : gardez son state local et ses noms de stockage.
+Retirer seulement les anciens paramètres `github_owner`, `github_owner_id`,
+`github_infrastructure_repository` et `github_infrastructure_repository_id` du
+`terraform.tfvars` du bootstrap. Retirer aussi l'ancien input inutilisé
+`github_infrastructure_repository` du staging s'il y est encore présent.
+Garder `github_owner`, `github_owner_id` et tous les paramètres frontend/backend
+du staging : ils restent nécessaires aux déploiements applicatifs.
+
+```powershell
+./scripts/plan.ps1 -Cloud AzureBootstrap -OutFile retire-plan-identity.tfplan
+```
+
+Le plan doit supprimer uniquement l'identité `terraform_plan`, sa confiance
+`terraform_main` et ses deux rôles `terraform_plan_subscription_reader` /
+`terraform_plan_state`. Aucune suppression/recréation du stockage, du container,
+de l'accès opérateur ou du verrou n'est attendue. Si le verrou Azure bloque un
+retrait de rôle, arrêtez et revoyez l'opération ; ne retirez pas la protection
+automatiquement. Appliquer seulement après une revue et une approbation séparées.
+
+Les anciennes variables/secret Actions du dépôt infrastructure peuvent ensuite
+être retirés : `AZURE_TERRAFORM_CLIENT_ID`, `AZURE_TENANT_ID`,
+`AZURE_SUBSCRIPTION_ID`, `AZURE_TF_STATE_RESOURCE_GROUP`,
+`AZURE_TF_STATE_STORAGE_ACCOUNT` et `AZURE_TERRAFORM_TFVARS`.
+Ne pas supprimer ceux des dépôts backend/frontend : leurs déploiements les utilisent.
 
 ## Nettoyage de l'ancienne réception par email
 
@@ -163,7 +193,8 @@ Ce changement de code prépare, mais n'applique pas, le retrait de six ressource
 DNS (zone `inbox` et cinq enregistrements) et des paramètres API associés.
 Faire un plan staging et vérifier qu'il ne supprime ni base, ni documents,
 ni identités. Un plan bootstrap séparé retire l'ancien credential OIDC pour
-les pull requests ; le credential de plan manuel sur `main` est conservé.
+les pull requests. Le retrait ultérieur de l'identité de plan manuel est décrit
+dans la section précédente ; il n'est pas inclus dans ce nettoyage historique.
 
 Avant l'apply du nettoyage : désactiver le transfert Gmail et le webhook Brevo
 entrant. Ensuite retirer uniquement les NS `inbox` dans Namecheap. Conserver

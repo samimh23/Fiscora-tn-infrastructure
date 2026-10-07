@@ -25,10 +25,22 @@ test('simple commands never automatically apply or replace live inputs', () => {
 test('plan requires existing configuration, refreshes normally and accepts a change proposal', () => {
   const source = read('scripts/plan.ps1');
   assert.match(source, /'backend\.hcl', 'terraform\.tfvars'/);
+  assert.match(source, /'AzureBootstrap' \{ 'azure\/bootstrap' \}/);
   assert.match(source, /-notin @\(0, 2\)/);
   assert.match(source, /plan file already exists/);
   assert.doesNotMatch(source, /-refresh=false|-lock=false|deploy_application\s*=/);
   assert.match(source, /-lock-timeout=60s/);
+});
+
+test('deployment settings helper reads named public outputs and never changes cloud or GitHub', () => {
+  const source = read('scripts/show-deployment-settings.ps1');
+  assert.match(source, /terraform output -json \$Name/);
+  assert.doesNotMatch(source, /terraform\s+(init|apply|plan|destroy)|az\s|gh\s|Set-Content|Copy-Item/i);
+  const names = [...source.matchAll(/Read-DeploymentOutput '([^']+)'/g)].map(([, name]) => name);
+  assert.deepEqual(names, ['azure_tenant_id', 'azure_subscription_id', 'resource_group_name',
+    'github_backend_client_id', 'github_frontend_client_id', 'container_registry_name',
+    'container_registry_login_server', 'container_app_name', 'container_app_deployment_name',
+    'static_web_app_name', 'container_app_fqdn']);
 });
 
 test('checks use no cloud backend and include mocked ownership tests', () => {

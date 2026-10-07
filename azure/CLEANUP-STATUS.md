@@ -3,6 +3,11 @@
 Verified on 2026-10-05 (Africa/Lagos). This is an operation record, not a
 guarantee of future cloud state.
 
+Historical record: on 2026-10-07 the separate GitHub Terraform-plan workflow
+was retired in code. Its identity retirement is a separate bootstrap change,
+not part of the applied incoming-email cleanup recorded below. See
+[SIMPLIFICATION.md](SIMPLIFICATION.md) for the current local-only planning flow.
+
 ## Completed with explicit approval
 
 - Removed the Brevo incoming-email webhook for `inbox.fiscora.me`; a follow-up

@@ -27,8 +27,8 @@ preserve existing cloud resources and generated secrets. See
 - Namecheap handles application DNS. Brevo is used for outgoing emails only.
 - Log Analytics/Application Insights provide monitoring. The resource-group
   budget sends notifications; it is not a hard spending limit.
-- GitHub authenticates through OIDC, with separate frontend, backend and
-  read-only Terraform-plan identities.
+- GitHub application deployments authenticate through OIDC with separate
+  frontend/backend identities. Infrastructure checks need no cloud identity.
 
 Google Cloud AI is a separate stack under `gcp/`; this cleanup does not migrate
 or remove NuExtract, PaddleOCR, Vertex AI or their identity federation.
@@ -47,13 +47,17 @@ the API using the resulting digest and `deploy_application=true`. Keep it true
 afterwards. The API has a `prevent_destroy` guard against accidental removal
 while its resource configuration remains present.
 
-Pull requests run offline formatting/validation and mocked ownership tests.
-Cloud planning is manual on `main`, using the complete reviewed settings in
-`AZURE_TERRAFORM_TFVARS`; it never applies changes. It compares configuration
-with existing state (`-refresh=false`) without granting the CI identity Key
-Vault secret-reading or Entra application permissions. A local operator plan
-with normal refresh is required to check live drift before an apply.
+Pull requests and relevant pushes run offline formatting/validation and mocked
+ownership tests. The separate GitHub cloud-plan workflow has been retired.
+Plan locally with `./scripts/plan.ps1 -Cloud Azure`, review the refreshed plan,
+then apply the saved plan manually. Keep only the local `terraform.tfvars` and
+`backend.hcl`; no duplicated staging settings or Terraform cloud credentials
+are required in the infrastructure repository's Actions settings.
 Application pushes still release the backend/frontend through their own repositories.
+`./scripts/show-deployment-settings.ps1` prints their required Actions variables.
+The bootstrap now manages protected state storage and operator access only.
+Existing installations must review its separate identity-retirement plan before
+applying; this code change does not delete anything in Azure automatically.
 
 ## Retired incoming-email feature
 
@@ -70,7 +74,8 @@ Disable Gmail forwarding and the Brevo incoming webhook separately before
 applying this retirement. Remove only the `inbox` delegation in Namecheap;
 keep outgoing SMTP/DKIM and the website/app DNS. Old Key Vault secrets are not
 deleted by this change. The bootstrap plan separately retires the unused
-pull-request OIDC credential; the manual `main` credential remains.
+pull-request OIDC credential. The later workflow simplification now also prepares
+retirement of the unused manual-plan identity; see [SIMPLIFICATION.md](SIMPLIFICATION.md).
 
 ## Security and staging limits
 

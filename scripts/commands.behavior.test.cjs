@@ -15,13 +15,14 @@ function runPlan({ cloud = 'Azure', code = 0, missing = false, existingPlan = fa
   const fixture = mkdtempSync(join(tmpdir(), 'fiscora-command-test-'));
   try {
     const scripts = join(fixture, 'scripts');
-    const deployment = join(fixture, cloud === 'Azure' ? 'azure/environments/staging' : 'gcp/environments/ai-staging');
+    const directories = { Azure: 'azure/environments/staging', AzureBootstrap: 'azure/bootstrap', Google: 'gcp/environments/ai-staging' };
+    const deployment = join(fixture, directories[cloud]);
     mkdirSync(scripts, { recursive: true });
     mkdirSync(deployment, { recursive: true });
     const command = join(scripts, 'plan.ps1');
     copyFileSync(join(__dirname, 'plan.ps1'), command);
     if (!missing) {
-      writeFileSync(join(deployment, 'backend.hcl'), '# empty test fixture');
+      if (cloud !== 'AzureBootstrap') writeFileSync(join(deployment, 'backend.hcl'), '# empty test fixture');
       writeFileSync(join(deployment, 'terraform.tfvars'), '# empty test fixture');
     }
     if (existingPlan) writeFileSync(join(deployment, 'reviewed.tfplan'), 'do not overwrite');
@@ -65,6 +66,15 @@ test('plan accepts exit 2 but reports exit 1 and restores the working directory'
   assert.equal(failed.ok, false);
   assert.match(failed.message, /plan failed/);
   assert.equal(failed.restored, true);
+});
+
+test('bootstrap planning uses its local state without requiring a backend configuration', { skip }, () => {
+  const result = runPlan({ cloud: 'AzureBootstrap', code: 2 });
+  assert.equal(result.ok, true, result.message);
+  assert.equal(result.restored, true);
+  assert.deepEqual(result.calls[0], ['init', '-backend=false', '-input=false']);
+  assert.deepEqual(result.calls[2], ['plan', '-input=false', '-lock-timeout=60s', '-detailed-exitcode']);
+  assert.equal(runPlan({ cloud: 'AzureBootstrap', missing: true }).calls.length, 0);
 });
 
 test('missing live configuration or an existing saved plan prevents all Terraform calls', { skip }, () => {

@@ -1,24 +1,39 @@
-const { readFileSync } = require('node:fs');
+const { readFileSync, readdirSync, existsSync } = require('node:fs');
 const { join } = require('node:path');
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const root = join(__dirname, '..');
-const plan = readFileSync(join(root, '.github/workflows/terraform-azure-plan.yml'), 'utf8');
+const read = name => readFileSync(join(root, name), 'utf8');
 
-test('cloud planning is manual on main, never forced API removal or automatic apply', () => {
-  assert.match(plan, /workflow_dispatch:/);
-  assert.doesNotMatch(plan, /\n\s+pull_request:|\n\s+push:/);
-  assert.match(plan, /if: github\.ref == 'refs\/heads\/main'/);
-  assert.match(plan, /secrets\.AZURE_TERRAFORM_TFVARS/);
-  assert.doesNotMatch(plan, /TF_VAR_deploy_application|terraform\s+apply/);
-  assert.match(plan, /terraform plan -refresh=false/);
-  assert.match(plan, /if: always\(\)/);
-  assert.match(plan, /rm -f terraform\.tfvars/);
-  assert.match(plan, /"\$result" -eq 2/);
+test('infrastructure CI only validates offline; cloud plans and applies are local', () => {
+  const workflows = join(root, '.github/workflows');
+  assert.deepEqual(readdirSync(workflows).filter(name => /\.ya?ml$/.test(name)), ['terraform-check.yml']);
+  const checks = read('.github/workflows/terraform-check.yml');
+  assert.match(checks, /contents: read/);
+  assert.match(checks, /terraform test/);
+  assert.match(checks, /init -backend=false/);
+  assert.doesNotMatch(checks, /id-token:|azure\/login|AZURE_TERRAFORM|terraform\s+(plan|apply|destroy)/);
+  assert.equal(existsSync(join(workflows, 'terraform-azure-plan.yml')), false);
 });
 
-test('bootstrap keeps main OIDC trust but no longer trusts pull-request code with state', () => {
-  const bootstrap = readFileSync(join(root, 'azure/bootstrap/main.tf'), 'utf8');
-  assert.match(bootstrap, /"terraform_main"/);
-  assert.doesNotMatch(bootstrap, /"terraform_pull_request"/);
+test('bootstrap contains only state storage, operator access and deletion protection', () => {
+  const bootstrap = read('azure/bootstrap/main.tf');
+  const resources = [...bootstrap.matchAll(/resource "([^"]+)" "([^"]+)"/g)]
+    .map(([, type, name]) => `${type}.${name}`);
+  assert.deepEqual(resources, [
+    'azurerm_resource_group.state',
+    'azurerm_storage_account.state',
+    'azurerm_storage_container.state',
+    'azurerm_role_assignment.operator_state',
+    'azurerm_management_lock.state',
+  ]);
+  assert.match(bootstrap, /container_access_type = "private"/);
+  assert.match(bootstrap, /versioning_enabled = true/);
+  assert.match(bootstrap, /lock_level = "CanNotDelete"/);
+  assert.doesNotMatch(read('azure/bootstrap/variables.tf'), /variable "github_/);
+  assert.doesNotMatch(read('azure/bootstrap/outputs.tf'), /github_terraform_plan/);
+  const staging = read('azure/environments/staging/deployment-access.tf');
+  assert.match(staging, /"backend_main"/);
+  assert.match(staging, /"frontend_main"/);
+  assert.match(staging, /token\.actions\.githubusercontent\.com/);
 });

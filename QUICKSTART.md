@@ -30,7 +30,8 @@ Credentials for Google). Then:
 ./scripts/plan.ps1 -Cloud Google
 ```
 
-These are normal refreshed plans, unlike the limited GitHub state-only plan.
+These are normal refreshed plans. GitHub now checks code only; it does not
+authenticate to the cloud or run plans/applies.
 To save a plan for a reviewed manual apply, use a new filename:
 
 ```powershell
@@ -59,31 +60,33 @@ NuExtract is now the only extraction model. Qwen and its build tooling are
 retired. Generic categories are upload-only until categorized as an invoice or
 bank statement. Completed extraction history stays unchanged.
 
-## Earlier grouping refactor (before Qwen retirement)
+## GitHub deployment settings (read-only)
 
-Current Azure layout: small components now live directly in staging topic files.
-Only the application module remains. `moved.tf` preserves the 41 former module
-resources without replacement. Application Insights, runtime settings, names,
-inputs and outputs are unchanged. See [the file map](azure/START-HERE.md) and
-[the current verification](azure/SIMPLIFICATION.md). The paragraphs below describe
-the earlier, historical grouping refactor, not today's resource addresses.
+After staging has been initialized and its foundation applied:
 
-The Azure application module now receives four grouped objects: `database`,
-`storage`, `smtp`, and `ai`. Secret references remain separate sensitive inputs.
-Root input names and defaults are unchanged, so local configuration and GitHub's
-`AZURE_TERRAFORM_TFVARS` remain compatible. Resource/module addresses, cloud
-names, IAM roles, state backends, deletion protections and runtime environment
-values have not been intentionally changed.
+```powershell
+./scripts/show-deployment-settings.ps1
+```
 
-For a **new** installation, follow [the full deployment guide](azure/DEPLOYMENT.md).
-Do not use everyday commands to restart bootstrap on an existing deployment.
+Prints the frontend/backend Actions variables from selected Terraform outputs.
+It changes neither GitHub nor Azure, and does not print passwords or keys.
+Before the first API exists, it prints the planned API name and tells you to
+wait before setting its URL/deploying the frontend. Run it again after API creation.
 
-## Verification of the earlier grouping refactor — 5 October 2026
+## First installation or bootstrap maintenance
 
-All four deployment configurations and the application module validated; ten
-command/workflow tests and three mocked Terraform tests passed. A refreshed
-Azure plan proposed no changes. A refreshed Google plan proposed only existing
-PaddleOCR `client`/`client_version` metadata cleanup (zero creates/deletes); its
-resource configuration in this refactor differs only in comments. No apply or
-AI build was run. Existing local inputs, identities and deployment names remain
-unchanged.
+For a **new** installation, follow [the one deployment guide](azure/DEPLOYMENT.md).
+Do not replace existing inputs or restart bootstrap just to update the app.
+Bootstrap has its own local state; retain it and its backups.
+To preview a deliberate bootstrap change with existing local settings/state:
+
+```powershell
+./scripts/plan.ps1 -Cloud AzureBootstrap -OutFile reviewed-bootstrap.tfplan
+```
+
+Review before manually applying from `azure/bootstrap`. The retired GitHub plan
+identity is removed from the configuration, but its cloud deletion requires a
+separate reviewed bootstrap apply. See [the simplification record](azure/SIMPLIFICATION.md).
+
+Azure resources remain in topic files with only the tested application module.
+Keep all 41 mappings in `moved.tf`; they protect older state snapshots.

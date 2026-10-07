@@ -52,33 +52,6 @@ resource "azurerm_role_assignment" "operator_state" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
-resource "azurerm_user_assigned_identity" "terraform_plan" {
-  name                = "id-fiscora-terraform-plan"
-  resource_group_name = azurerm_resource_group.state.name
-  location            = azurerm_resource_group.state.location
-  tags                = azurerm_resource_group.state.tags
-}
-
-resource "azurerm_federated_identity_credential" "terraform_main" {
-  name                      = "github-infrastructure-main"
-  user_assigned_identity_id = azurerm_user_assigned_identity.terraform_plan.id
-  audience                  = ["api://AzureADTokenExchange"]
-  issuer                    = "https://token.actions.githubusercontent.com"
-  subject                   = "repo:${var.github_owner}@${var.github_owner_id}/${var.github_infrastructure_repository}@${var.github_infrastructure_repository_id}:ref:refs/heads/main"
-}
-
-resource "azurerm_role_assignment" "terraform_plan_subscription_reader" {
-  scope                = "/subscriptions/${var.azure_subscription_id}"
-  role_definition_name = "Reader"
-  principal_id         = azurerm_user_assigned_identity.terraform_plan.principal_id
-}
-
-resource "azurerm_role_assignment" "terraform_plan_state" {
-  scope                = azurerm_storage_account.state.id
-  role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = azurerm_user_assigned_identity.terraform_plan.principal_id
-}
-
 resource "azurerm_management_lock" "state" {
   name       = "protect-fiscora-terraform-state"
   scope      = azurerm_storage_account.state.id

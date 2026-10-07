@@ -92,6 +92,10 @@ Depuis la racine :
 
 Le premier vérifie le code et les tests mockés. Le second lit Azure avec votre
 compte opérateur et propose un plan ; il ne l'applique pas.
+GitHub lance uniquement les vérifications sans accès au cloud. Le workflow de
+plan Azure a été retiré : le plan et l'apply sont locaux, après revue.
+`./scripts/show-deployment-settings.ps1` affiche les variables GitHub nécessaires
+aux déploiements frontend/backend, sans afficher les mots de passe ou les clés.
 
 Gardez vos `terraform.tfvars` et `backend.hcl` existants. Ne les remplacez pas
 par les exemples. Gardez `deploy_application=true` pour une API déjà créée.

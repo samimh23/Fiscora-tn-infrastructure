@@ -21,14 +21,14 @@ account key is used.
 azure/bootstrap/                  Azure Terraform-state foundation
 azure/environments/staging/       Azure resources grouped in readable topic files
 azure/modules/application/        Tested NestJS/ClamAV runtime (only Azure module)
-azure/scripts/                    Azure validation and secret configuration
+azure/scripts/                    Azure provider registration and secret configuration
 gcp/bootstrap/                    Google Cloud Terraform-state foundation
 gcp/environments/ai-staging/      NuExtract Cloud Run, IAM and budgets
 gcp/services/nuextract/           Pinned NuExtract3 4B + vLLM container
 gcp/services/paddleocr/           OCR and PDF rendering container
 gcp/scripts/                      Build, pause, resume and smoke tests
 scripts/                          Simple check, plan and AI-build entry points
-.github/workflows/                Validation and Azure plan automation
+.github/workflows/                Offline infrastructure checks only
 ```
 
 Start with [three everyday commands](QUICKSTART.md), then the
@@ -43,6 +43,11 @@ Compatibility mappings in `moved.tf` retain existing resources and secrets; see
 
 For the exact first-deployment sequence and Terraform/GitHub responsibilities,
 see [the deployment walkthrough](azure/DEPLOYMENT.md).
+There is one deployed environment per cloud. GitHub validates infrastructure
+code without cloud access; refreshed plans and reviewed applies run locally.
+Frontend/backend application workflows still deploy automatically on `main`.
+Use `scripts/show-deployment-settings.ps1` to print only the GitHub application
+deployment variables from staging outputs (names/IDs/URLs, never secret values).
 Incoming invoice email is retired. The configuration no longer includes its
 obsolete DNS resources or API settings; pushing this repository never applies
 infrastructure changes. The existing staging retirement was applied with

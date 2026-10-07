@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [ValidateSet('Azure', 'Google')]
+    [ValidateSet('Azure', 'AzureBootstrap', 'Google')]
     [string]$Cloud,
 
     [ValidatePattern('^[a-zA-Z0-9][a-zA-Z0-9._-]*\.tfplan$')]
@@ -11,13 +11,18 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$directory = if ($Cloud -eq 'Azure') { 'azure/environments/staging' } else { 'gcp/environments/ai-staging' }
+$directory = switch ($Cloud) {
+    'Azure' { 'azure/environments/staging' }
+    'AzureBootstrap' { 'azure/bootstrap' }
+    'Google' { 'gcp/environments/ai-staging' }
+}
 $deployment = Join-Path $root $directory
 
 if (-not (Get-Command terraform -ErrorAction SilentlyContinue)) {
     throw 'Terraform >= 1.10 is required.'
 }
-foreach ($file in @('backend.hcl', 'terraform.tfvars')) {
+$requiredFiles = if ($Cloud -eq 'AzureBootstrap') { @('terraform.tfvars') } else { @('backend.hcl', 'terraform.tfvars') }
+foreach ($file in $requiredFiles) {
     if (-not (Test-Path -LiteralPath (Join-Path $deployment $file) -PathType Leaf)) {
         throw "Missing $directory/$file. Follow the first-installation guide; existing settings are never replaced by examples."
     }
@@ -28,7 +33,12 @@ if ($OutFile -and (Test-Path -LiteralPath (Join-Path $deployment $OutFile))) {
 
 Push-Location $deployment
 try {
-    terraform init '-backend-config=backend.hcl' -input=false
+    if ($Cloud -eq 'AzureBootstrap') {
+        terraform init -backend=false -input=false
+    }
+    else {
+        terraform init '-backend-config=backend.hcl' -input=false
+    }
     if ($LASTEXITCODE -ne 0) { throw 'Terraform backend initialization failed.' }
     terraform validate
     if ($LASTEXITCODE -ne 0) { throw 'Terraform validation failed.' }

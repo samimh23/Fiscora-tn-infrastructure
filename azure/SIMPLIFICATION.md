@@ -1,5 +1,41 @@
 # Azure layout simplification — 5 October 2026
 
+## Workflow simplification — 7 October 2026
+
+GitHub infrastructure CI now performs offline checks only. The separate
+`terraform-azure-plan.yml` workflow and duplicated staging configuration are
+no longer needed. Refreshed plans and reviewed applies run locally with one
+private `terraform.tfvars` and `backend.hcl` per deployment.
+
+Bootstrap now contains only the state resource group, protected storage,
+private container, operator role and deletion lock. Four retired resources
+have been removed from its configuration: `azurerm_user_assigned_identity.terraform_plan`,
+`azurerm_federated_identity_credential.terraform_main`,
+`azurerm_role_assignment.terraform_plan_subscription_reader` and
+`azurerm_role_assignment.terraform_plan_state`. Their Azure deletion is pending
+a separately reviewed bootstrap plan/apply; no cloud resources are deleted by
+this code change or a push. Preserve the bootstrap's existing local state.
+
+Application hosting, database, documents, runtime secrets, Application Insights,
+frontend/backend OIDC deployment identities and Google federation are unchanged.
+Existing staging input values and all 41 state migrations remain intact.
+Only an unused compatibility input was retired and one non-secret planned API
+name output was added for first-installation guidance.
+
+Use `./scripts/show-deployment-settings.ps1` after initialization/foundation
+creation to print only the named GitHub application deployment variables.
+It does not dump state, display passwords/keys, or change cloud/GitHub settings.
+The single installation guide is [DEPLOYMENT.md](DEPLOYMENT.md).
+
+Verification on 7 October: all 21 Node guards and four mocked Terraform tests
+passed; every Azure/GCP configuration validated. The read-only settings helper
+successfully read the existing staging state. A refreshed bootstrap plan verified
+exactly the four identity/access deletions above, with no changes to the remaining
+five state-foundation resources. This reviewed plan has not been applied.
+
+The verification below is the historical 5 October layout refactor, not an
+assertion that this later identity retirement has been applied.
+
 ## Scope
 
 This is a Terraform code-layout refactor, not a cloud migration or a service

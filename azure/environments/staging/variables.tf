@@ -100,12 +100,6 @@ variable "github_owner_id" {
   type        = string
 }
 
-variable "github_infrastructure_repository" {
-  description = "Infrastructure repository name retained for compatibility; Azure application CI uses the frontend/backend repositories."
-  type        = string
-  default     = "Fiscora-tn-infrastructure"
-}
-
 variable "github_backend_repository" {
   description = "Repository whose main branch can deploy the NestJS backend."
   type        = string
