@@ -155,7 +155,10 @@ nouveau nom si le plan existe déjà. Ne pas réutiliser un plan après une modi
 
 ## Installation existante : retirer l'ancien accès GitHub au plan
 
-Cette modification du code n'a pas encore supprimé l'identité de plan dans Azure.
+Pour une installation existante, le retrait du workflow ne supprime pas à lui
+seul l'identité dans Azure. Notre staging a été nettoyé avec approbation le
+7 octobre ; voir [SIMPLIFICATION.md](SIMPLIFICATION.md). La procédure ci-dessous
+est conservée pour les autres installations.
 Ne recréez pas le bootstrap : gardez son state local et ses noms de stockage.
 Retirer seulement les anciens paramètres `github_owner`, `github_owner_id`,
 `github_infrastructure_repository` et `github_infrastructure_repository_id` du

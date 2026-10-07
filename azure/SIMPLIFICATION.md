@@ -12,9 +12,9 @@ private container, operator role and deletion lock. Four retired resources
 have been removed from its configuration: `azurerm_user_assigned_identity.terraform_plan`,
 `azurerm_federated_identity_credential.terraform_main`,
 `azurerm_role_assignment.terraform_plan_subscription_reader` and
-`azurerm_role_assignment.terraform_plan_state`. Their Azure deletion is pending
-a separately reviewed bootstrap plan/apply; no cloud resources are deleted by
-this code change or a push. Preserve the bootstrap's existing local state.
+`azurerm_role_assignment.terraform_plan_state`. Their Azure deletion was applied
+on 7 October after separate user approval of the exact plan. A push still never
+applies changes. Preserve the bootstrap's existing local state.
 
 Application hosting, database, documents, runtime secrets, Application Insights,
 frontend/backend OIDC deployment identities and Google federation are unchanged.
@@ -31,7 +31,15 @@ Verification on 7 October: all 21 Node guards and four mocked Terraform tests
 passed; every Azure/GCP configuration validated. The read-only settings helper
 successfully read the existing staging state. A refreshed bootstrap plan verified
 exactly the four identity/access deletions above, with no changes to the remaining
-five state-foundation resources. This reviewed plan has not been applied.
+five state-foundation resources. The initial apply removed the trust and Reader
+role but the storage lock blocked the state-access role deletion. After separate
+approval, only that lock was temporarily removed; a fresh plan deleted the two
+remaining retired resources. A `finally` safeguard restored the original lock,
+and its ID, CanNotDelete level and notes were verified unchanged. No storage,
+state contents, operator role or application infrastructure was removed.
+The final refreshed bootstrap plan exited 0: all five foundation resources were
+unchanged, no retired identity resources remained, and the deletion lock was
+CanNotDelete. Application resources were not applied or redeployed by this cleanup.
 
 The verification below is the historical 5 October layout refactor, not an
 assertion that this later identity retirement has been applied.
