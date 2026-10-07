@@ -26,6 +26,23 @@ run "pfe_foundation_preserves_services" {
   command = plan
 
   assert {
+    # Mock providers do not execute the real provider's defaulting logic.
+    # Check explicit security choices here; omitted defaults were verified
+    # against the pinned AzureRM 4.81.0 schema/documentation.
+    condition = (
+      azurerm_container_registry.backend.admin_enabled == false &&
+      azurerm_container_registry.backend.anonymous_pull_enabled == false
+    )
+    error_message = "Hosting cleanup must keep registry admin and anonymous access disabled."
+  }
+  assert {
+    condition = (
+      azurerm_static_web_app.frontend.sku_tier == "Free" &&
+      azurerm_static_web_app.frontend.preview_environments_enabled == false
+    )
+    error_message = "Hosting cleanup must preserve the Free frontend with preview environments disabled."
+  }
+  assert {
     condition     = azurerm_application_insights.api.application_type == "web" && azurerm_application_insights.api.sampling_percentage == 25
     error_message = "Application Insights must be retained, with the original sampling."
   }

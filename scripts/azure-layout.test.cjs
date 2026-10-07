@@ -42,6 +42,26 @@ test('Application Insights and its backend connection stay enabled and unchanged
   assert.match(read('hosting.tf'), /application_insights_connection_string\s*= azurerm_application_insights\.api\.connection_string/);
 });
 
+test('application waits for runtime IAM and document protection, not unrelated deployment access', () => {
+  const hosting = read('hosting.tf');
+  const dependencies = hosting.match(/depends_on\s*=\s*\[([\s\S]*?)\]/)?.[1];
+  assert.ok(dependencies, 'application preparation dependencies must remain explicit');
+  assert.deepEqual(dependencies.split(',').map(value => value.trim()).filter(Boolean).sort(), [
+    'azurerm_postgresql_flexible_server_configuration.extensions',
+    'azurerm_role_assignment.application_pull',
+    'azurerm_role_assignment.application_documents',
+    'azurerm_role_assignment.application_key_vault_reader',
+    'azurerm_management_lock.documents',
+  ].sort());
+  assert.match(hosting, /name\s*= azurerm_postgresql_flexible_server_database\.application\.name/);
+  for (const name of ['postgres_password', 'jwt_signing_key', 'mfa_encryption_key']) {
+    assert.match(hosting, new RegExp(`= azurerm_key_vault_secret\\.${name}\\.versionless_id`));
+  }
+  // Removing a wait must not remove the actual roles used by GitHub or the operator.
+  assert.match(hosting, /resource "azurerm_role_assignment" "deployment_push"/);
+  assert.match(read('storage.tf'), /resource "azurerm_role_assignment" "operator_documents"/);
+});
+
 test('data protection, secret generators, private networking and OIDC survive flattening', () => {
   const database = read('database.tf');
   const storage = read('storage.tf');

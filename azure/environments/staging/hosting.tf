@@ -1,14 +1,13 @@
 # registry: unchanged services, declared directly in staging.
 resource "azurerm_container_registry" "backend" {
-  name                          = substr("acr${local.compact}", 0, 50)
-  resource_group_name           = azurerm_resource_group.this.name
-  location                      = azurerm_resource_group.this.location
-  sku                           = "Basic"
-  admin_enabled                 = false
-  anonymous_pull_enabled        = false
-  public_network_access_enabled = true
-  zone_redundancy_enabled       = false
-  tags                          = local.tags
+  name                = substr("acr${local.compact}", 0, 50)
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  sku                 = "Basic"
+  # Keep authentication choices explicit; use provider defaults for networking/HA.
+  admin_enabled          = false
+  anonymous_pull_enabled = false
+  tags                   = local.tags
 }
 
 resource "azurerm_role_assignment" "application_pull" {
@@ -25,14 +24,12 @@ resource "azurerm_role_assignment" "deployment_push" {
 
 # frontend: unchanged services, declared directly in staging.
 resource "azurerm_static_web_app" "frontend" {
-  name                               = "swa-${local.name_prefix}-${var.deployment_suffix}"
-  resource_group_name                = azurerm_resource_group.this.name
-  location                           = var.static_web_app_location
-  sku_tier                           = "Free"
-  sku_size                           = "Free"
-  preview_environments_enabled       = false
-  configuration_file_changes_enabled = true
-  tags                               = local.tags
+  name                         = "swa-${local.name_prefix}-${var.deployment_suffix}"
+  resource_group_name          = azurerm_resource_group.this.name
+  location                     = var.static_web_app_location
+  sku_tier                     = "Free"
+  preview_environments_enabled = false
+  tags                         = local.tags
 
   lifecycle {
     # The Static Web Apps deployment service records the source repository
@@ -114,18 +111,14 @@ module "application" {
     max_vector_distance = var.ai_assistant_max_vector_distance
   }
 
-  # Wait for database setup, IAM grants, document protection and runtime secrets,
-  # just as the former module-wide dependencies did.
+  # Inputs already depend on the database and generated secrets.
+  # Wait only for runtime preparation not referenced by those inputs.
+  # Retain the intentional policy: protect document storage before starting the API.
   depends_on = [
-    azurerm_postgresql_flexible_server_database.application,
     azurerm_postgresql_flexible_server_configuration.extensions,
     azurerm_role_assignment.application_pull,
-    azurerm_role_assignment.deployment_push,
     azurerm_role_assignment.application_documents,
-    azurerm_role_assignment.operator_documents,
+    azurerm_role_assignment.application_key_vault_reader,
     azurerm_management_lock.documents,
-    azurerm_key_vault_secret.postgres_password,
-    azurerm_key_vault_secret.jwt_signing_key,
-    azurerm_key_vault_secret.mfa_encryption_key,
   ]
 }

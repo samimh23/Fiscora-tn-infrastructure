@@ -56,6 +56,28 @@ for the NestJS image deployed by GitHub, runtime configuration and ClamAV.
 `main.tf` is the entry point and file map; [START-HERE.md](START-HERE.md) explains
 the files in plain language for a project presentation.
 
+## Hosting declaration cleanup — 7 October 2026
+
+`hosting.tf` now omits repeated provider defaults for registry public networking
+and zone redundancy, and for Static Web App SKU size and configuration-file
+changes. These defaults were verified against AzureRM 4.81.0; the mocked provider
+does not execute the real provider's defaulting logic. The mocked foundation plan
+checks the retained explicit authentication, Free-tier and preview settings.
+
+The application module no longer explicitly waits for the database and three
+generated secrets already referenced in its inputs, nor for the GitHub image-push
+role or the operator's document-access role. Those roles/resources are retained;
+only unnecessary startup ordering was removed. Hidden runtime prerequisites
+remain: PostgreSQL extensions, image-pull access, document access, and now the
+API's Key Vault read permission. The intentional document-protection lock is
+still established before the application starts. A Node guard checks this list.
+
+Static Web App lifecycle exclusions, CORS deduplication, SMTP configuration,
+Application Insights, resource names, images and secrets are unchanged. This
+cleanup is code-only: no Terraform apply or application deployment is performed.
+IAM dependency ordering does not guarantee instantaneous role propagation in
+Azure, so first-deployment health checks remain necessary.
+
 ## Compatibility
 
 - `moved.tf` contains 41 explicit old-to-new resource address mappings.
