@@ -36,6 +36,15 @@ try {
     if (-not $app) { $app = Read-DeploymentOutput 'container_app_deployment_name' }
     $frontend = Read-DeploymentOutput 'static_web_app_name'
     $hostname = Read-DeploymentOutput 'container_app_fqdn' -Optional
+    $hosting = Read-DeploymentOutput 'backend_hosting' -Optional
+    if ($hosting -eq 'app-service') {
+        $app = Read-DeploymentOutput 'app_service_name'
+        $apiUrl = Read-DeploymentOutput 'app_service_url'
+    }
+    else {
+        $hosting = 'container-app'
+        $apiUrl = if ($hostname) { "https://$hostname" } else { '' }
+    }
 
     Write-Output 'GitHub Actions variables — backend repository:'
     Write-Output "AZURE_CLIENT_ID=$backendClient"
@@ -44,7 +53,9 @@ try {
     Write-Output "AZURE_RESOURCE_GROUP=$group"
     Write-Output "AZURE_CONTAINER_REGISTRY_NAME=$registry"
     Write-Output "AZURE_CONTAINER_REGISTRY_LOGIN_SERVER=$registryServer"
-    Write-Output "AZURE_CONTAINER_APP_NAME=$app"
+    Write-Output "AZURE_BACKEND_HOSTING=$hosting"
+    if ($hosting -eq 'app-service') { Write-Output "AZURE_WEB_APP_NAME=$app" }
+    else { Write-Output "AZURE_CONTAINER_APP_NAME=$app" }
     Write-Output ''
     Write-Output 'GitHub Actions variables — frontend repository:'
     Write-Output "AZURE_CLIENT_ID=$frontendClient"
@@ -52,7 +63,7 @@ try {
     Write-Output "AZURE_SUBSCRIPTION_ID=$subscription"
     Write-Output "AZURE_RESOURCE_GROUP=$group"
     Write-Output "AZURE_STATIC_WEB_APP_NAME=$frontend"
-    if ($hostname) { Write-Output "AZURE_API_URL=https://$hostname" }
+    if ($apiUrl) { Write-Output "AZURE_API_URL=$apiUrl" }
     else { Write-Output 'AZURE_API_URL: run this helper again after creating the API; do not deploy the frontend yet.' }
     Write-Output ''
     Write-Output 'Configuration only. No GitHub settings or cloud resources were changed.'

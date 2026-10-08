@@ -1,8 +1,12 @@
 # App Service cutover — actual architecture change
 
-Status: code prepared, migration not executed. The current application remains
-on Container Apps and PostgreSQL remains private. Default inputs change no live
-resource. Do not interpret a successful mock test as a completed cloud migration.
+Status: live traffic cutover completed on 8 October 2026. PostgreSQL completed its
+in-place network migration; NestJS/ClamAV run on App Service behind an exact-IP
+database firewall, and the real frontend serves the new API URL. The old API
+revisions are stopped. Legacy resource deletion remains separately reviewed.
+See [the execution record](CUTOVER-2026-10-08.md). Keep the ignored local cutover
+inputs for every plan/apply now that candidate resources exist. Do not interpret
+a successful mock test as a completed cloud migration.
 
 ## Target and cost
 
@@ -41,8 +45,8 @@ there is no AzureRM/AzAPI competition for its configuration.
 
 ## Phase 1 — additive, quarantined hosting
 
-After budget approval, **edit the existing private terraform.tfvars**, keeping
-all current values. Add:
+After budget approval, keep the existing private `terraform.tfvars` unchanged and
+put the following temporary controls in ignored `cutover.auto.tfvars` beside it:
 
 ```hcl
 app_service_stage         = "prepare"
@@ -51,7 +55,10 @@ postgres_network_migrated = false
 legacy_backend_stopped   = false
 ```
 
-Do not replace the private file with an example. Do not change `deploy_application`
+During this cutover, update that same `cutover.auto.tfvars` for later phases;
+automatic variable files override `terraform.tfvars`. Never maintain conflicting
+copies of the migration controls. Do not replace the private file with an example.
+Do not change `deploy_application`
 or the existing image to tear down the current backend. Persist these settings;
 using a one-off CLI flag and then omitting it on later plans would propose removal
 of the candidate (blocked by destroy guards).
@@ -93,13 +100,14 @@ terraform -chdir=azure/environments/staging output -json app_service_database_ip
 3. Recheck eligibility and Microsoft's
    [Preview migration documentation](https://learn.microsoft.com/en-us/azure/postgresql/network/how-to-migrate-vnet-private-endpoint-capable-server).
    The documented operation is `az postgres flexible-server migrate-network` for
-   `rg-fiscora-staging` / `psql-fiscora-staging-sami090`. It has **not** been run.
+   `rg-fiscora-staging` / `psql-fiscora-staging-sami090`. See the dated execution
+   record for what was actually run; this procedure is not current status.
    Microsoft estimates about 20 minutes overall and about 10 minutes of database
    unavailability. Backups remain available; reconnecting still requires setup.
 4. Only after explicit approval, execute the external Azure migration and wait
    for `Ready`. Never try to perform it by applying a Terraform replacement plan.
-5. Copy the exact candidate IP output into `app_service_database_ips` in the same
-   private tfvars and set `postgres_network_migrated = true`. Keep stage `prepare`.
+5. Copy the exact candidate IP output into `app_service_database_ips` in
+   `cutover.auto.tfvars` and set `postgres_network_migrated = true`. Keep stage `prepare`.
    A normal refreshed Terraform plan must show the same database and password,
    no replacement, and only the reviewed public-access/firewall reconciliation.
    Stop on replacement. Do not bypass `prevent_destroy` or edit state to hide it.
@@ -108,12 +116,20 @@ terraform -chdir=azure/environments/staging output -json app_service_database_ip
    TLS and database authentication remain mandatory. Restricting shared App Service
    outbound IPs is not equivalent to a private-only database.
 
+For an approved single-window cutover, phases 2 and 3 may share one refreshed plan
+after the external migration returns Ready and candidate preflight/legacy-stop
+checks pass. The API container explicitly depends on all firewall rules, so the
+real startup command cannot be activated before they complete. Expect AzureRM to
+serialize the rules; allow substantial extra maintenance time beyond the network
+migration itself. The 8 October execution uses this reviewed combined plan.
+
 If the Preview operation fails, stop and use the reviewed recovery procedure.
 Do not delete the old database or create an empty replacement as a shortcut.
 
 ## Phase 3 — activate, test and redirect
 
-With old API/workers confirmed stopped and firewall rules verified, set:
+With old API/workers confirmed stopped and firewall rules verified, update
+`cutover.auto.tfvars`:
 
 ```hcl
 app_service_stage       = "active"
@@ -137,7 +153,8 @@ Keep existing OIDC and registry variables. The backend CI then calls
 `deploy-azure-app-service.yml` instead of the Container Apps deployment. API images
 remain digest-pinned; Terraform ignores only the API image, not its startup command
 or the ClamAV image. The workflow verifies the actually served Git commit SHA.
-No GitHub variables have been changed by preparing this code.
+Preparing code alone changes no GitHub variables. Actual cutover configuration
+changes are recorded in the execution record.
 
 Update the frontend repository's `AZURE_API_URL` to the verified App Service URL,
 then deploy and verify HTTPS, CORS, authentication and WebSockets. Avoid running
@@ -157,7 +174,7 @@ Never remove database/password/storage/state protections to make a plan succeed.
 
 ## Verification record
 
-Verified on 8 October 2026, without applying infrastructure changes:
+Verified before hosting creation on 8 October 2026:
 
 - Terraform formatting and validation passed for all four roots.
 - 30 infrastructure guards and 12 mocked Terraform tests passed.
@@ -170,4 +187,6 @@ Verified on 8 October 2026, without applying infrastructure changes:
 
 The mock target networking run uses isolated fake state; it does not test the
 external Azure migration or prove the existing server will migrate successfully.
-Live cutover, restore verification and cleanup are still pending.
+Restore verification and the production network migration have since passed.
+Hosting activation, traffic verification and cleanup status belong to the dated
+execution record, not the historical mock/preparation results above.

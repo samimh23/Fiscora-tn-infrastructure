@@ -40,7 +40,7 @@ test('deployment settings helper reads named public outputs and never changes cl
   assert.deepEqual(names, ['azure_tenant_id', 'azure_subscription_id', 'resource_group_name',
     'github_backend_client_id', 'github_frontend_client_id', 'container_registry_name',
     'container_registry_login_server', 'container_app_name', 'container_app_deployment_name',
-    'static_web_app_name', 'container_app_fqdn']);
+    'static_web_app_name', 'container_app_fqdn', 'backend_hosting', 'app_service_name', 'app_service_url']);
 });
 
 test('checks use no cloud backend and include mocked ownership tests', () => {

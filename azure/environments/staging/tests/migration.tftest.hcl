@@ -103,6 +103,10 @@ mock_provider "random" {
 }
 
 variables {
+  app_service_stage             = "off"
+  postgres_network_migrated     = false
+  legacy_backend_stopped        = false
+  app_service_database_ips      = []
   azure_subscription_id         = "00000000-0000-0000-0000-000000000002"
   operator_object_id            = "00000000-0000-0000-0000-000000000003"
   deployment_suffix             = "test123"

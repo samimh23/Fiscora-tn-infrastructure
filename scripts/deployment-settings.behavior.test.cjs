@@ -23,7 +23,10 @@ function runSettings(mode) {
         $name = $args[2]
         $global:LASTEXITCODE = 0
         if ('${mode}' -eq 'failure') { $global:LASTEXITCODE = 1; return }
-        if ($name -eq 'container_app_name' -and '${mode}' -eq 'legacy') {
+        if ($name -eq 'backend_hosting') { ConvertTo-Json -InputObject $(if ('${mode}' -eq 'app-service') { 'app-service' } else { 'container-app' }) -Compress }
+        elseif ($name -eq 'app_service_name') { ConvertTo-Json -InputObject 'app-test-staging' -Compress }
+        elseif ($name -eq 'app_service_url') { ConvertTo-Json -InputObject 'https://app-test-staging.azurewebsites.net' -Compress }
+        elseif ($name -eq 'container_app_name' -and '${mode}' -eq 'legacy') {
           ConvertTo-Json -InputObject 'ca-test-staging-api' -Compress
         }
         elseif ($name -in @('container_app_name', 'container_app_fqdn')) {
@@ -69,6 +72,16 @@ test('foundation settings print the planned API name but do not invent its URL',
   assert.ok(result.output.includes('AZURE_CONTAINER_APP_NAME=ca-test-staging-api'));
   assert.ok(!result.output.some(line => line.startsWith('AZURE_API_URL=')));
   assert.ok(result.output.some(line => line.includes('do not deploy the frontend yet')));
+});
+
+test('active App Service settings never direct deployments back to retired hosting', { skip }, () => {
+  const result = runSettings('app-service');
+  assert.equal(result.ok, true, result.message);
+  assert.equal(result.restored, true);
+  assert.ok(result.output.includes('AZURE_BACKEND_HOSTING=app-service'));
+  assert.ok(result.output.includes('AZURE_WEB_APP_NAME=app-test-staging'));
+  assert.ok(result.output.includes('AZURE_API_URL=https://app-test-staging.azurewebsites.net'));
+  assert.ok(!result.output.some(line => line.startsWith('AZURE_CONTAINER_APP_NAME=')));
 });
 
 test('unavailable state fails before printing deployment settings and restores location', { skip }, () => {

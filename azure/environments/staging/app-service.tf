@@ -93,9 +93,11 @@ resource "azapi_resource" "app_service" {
     identity_ids = [azurerm_user_assigned_identity.application.id]
   }
   body = {
-    kind = "app,linux,container"
+    # sitecontainers uses app,linux; Azure removes the legacy container kind.
+    kind = "app,linux"
     properties = {
-      serverFarmId              = azurerm_service_plan.backend[0].id
+      # App Service returns this path segment lowercase; avoid a casing-only plan.
+      serverFarmId              = replace(azurerm_service_plan.backend[0].id, "serverFarms", "serverfarms")
       reserved                  = true
       enabled                   = local.activate_app_service
       httpsOnly                 = true
@@ -151,7 +153,7 @@ resource "azapi_resource" "app_service_api" {
       userManagedIdentityClientId = azurerm_user_assigned_identity.application.client_id
       targetPort                  = "3000"
       # Defense in depth: even if the prepared site is started, NestJS cannot run.
-      startUpCommand = local.activate_app_service ? "" : "node -e \"setInterval(() => {}, 60000)\""
+      startUpCommand = local.activate_app_service ? "" : "node -e setInterval(Function(),60000)"
     }
   }
   lifecycle {
@@ -167,7 +169,8 @@ resource "azapi_resource" "app_service_api" {
   ]
 }
 
-resource "azapi_resource" "app_service_basic_auth" {
+# Azure creates these policies with the site; update them rather than create duplicates.
+resource "azapi_update_resource" "app_service_basic_auth" {
   for_each  = local.prepare_app_service ? toset(["ftp", "scm"]) : toset([])
   type      = "Microsoft.Web/sites/basicPublishingCredentialsPolicies@2024-04-01"
   name      = each.key

@@ -1,5 +1,10 @@
 # Azure simplification history
 
+This file records historical code refactors, not live migration status. For the
+later Container Apps to App Service change and PostgreSQL network migration, see
+[the execution record](CUTOVER-2026-10-08.md). Statements about private networking
+below describe the earlier refactor baseline.
+
 ## Direct runtime configuration — 8 October 2026
 
 Azure staging now has no child modules. `application.tf` directly declares the

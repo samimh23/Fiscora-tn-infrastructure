@@ -21,6 +21,7 @@ account key is used.
 azure/bootstrap/                  Azure Terraform-state foundation
 azure/environments/staging/       Azure resources grouped in readable topic files
 azure/environments/staging/application.tf  Direct NestJS/ClamAV runtime and connections
+azure/environments/staging/app-service.tf  Live App Service NestJS/ClamAV hosting
 azure/scripts/                    Azure provider registration and secret configuration
 gcp/bootstrap/                    Google Cloud Terraform-state foundation
 gcp/environments/ai-staging/      NuExtract Cloud Run, IAM and budgets
@@ -43,10 +44,15 @@ Application Insights and all active services remain.
 Compatibility mappings in `moved.tf` retain existing resources and secrets; see
 [the refactor verification](azure/SIMPLIFICATION.md). A push never applies it.
 
-An actual [App Service architecture migration](azure/APP-SERVICE-CUTOVER.md) is
-prepared but **off by default and not deployed**. It preserves the existing data
-and requires separately reviewed paid-hosting creation, database networking
-migration, cutover and cleanup. Current hosting remains Container Apps until then.
+The actual [App Service architecture migration](azure/APP-SERVICE-CUTOVER.md)
+completed its traffic switch on 8 October 2026. React remains on Static Web Apps;
+NestJS/ClamAV now run on App Service, using the same PostgreSQL server and data with
+TLS and exact-IP firewall access. Application Insights remains configured. Old
+Container Apps hosting is stopped and its private network is retained for recovery
+until a separately reviewed cleanup. Migration controls remain **off by default in
+code**, so keep the ignored local cutover inputs with the private deployment
+configuration for every plan/apply. See the
+[execution record](azure/CUTOVER-2026-10-08.md) for verification and remaining cleanup.
 
 For the exact first-deployment sequence and Terraform/GitHub responsibilities,
 see [the deployment walkthrough](azure/DEPLOYMENT.md).

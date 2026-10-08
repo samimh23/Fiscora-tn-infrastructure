@@ -3,6 +3,11 @@
 Ce dossier configure l'hébergement de Fiscora, pas la logique métier.
 Terraform prépare Azure ; GitHub Actions publie React et NestJS.
 
+La migration réelle vers App Service est suivie dans
+[le journal du 8 octobre](CUTOVER-2026-10-08.md). Les fichiers Container Apps et
+réseau privé restent temporairement pour la récupération ; leur présence ne veut
+pas dire que deux backends doivent tourner en même temps.
+
 ## Le fichier à ouvrir en premier
 
 Ouvrez [staging/main.tf](environments/staging/main.tf). Il définit les noms,
@@ -17,11 +22,14 @@ Tous ces fichiers sont dans `azure/environments/staging/`.
 | --- | --- |
 | `main.tf` | Noms communs, tags, groupe de ressources et carte des fichiers. |
 | `hosting.tf` | Registre Docker et frontend React. |
-| `application.tf` | Runtime NestJS/ClamAV, secrets, variables d'environnement et probes. |
-| `database.tf` | Subnet/DNS PostgreSQL, serveur, base métier et extensions uuid/pgvector. |
+| `app-service.tf` | Nouvel hébergement NestJS/ClamAV, identité et références Key Vault. |
+| `application.tf` | Ancien runtime Container Apps, conservé pour récupération. |
+| `database.tf` | Même serveur PostgreSQL, même base et extensions ; ancien subnet/DNS conservés temporairement. |
+| `database-firewall.tf` | Accès PostgreSQL limité aux IP de sortie exactes d'App Service. |
+| `migration-settings.tf` | Contrôles temporaires de préparation et activation. |
 | `storage.tf` | Documents privés, droits d'accès et protection contre la suppression. |
 | `security.tf` | Identité du backend, Key Vault et secrets générés. |
-| `network.tf` | Réseau partagé et subnet Container Apps. |
+| `network.tf` | Ancien réseau Container Apps, conservé jusqu'à la revue de nettoyage. |
 | `deployment-access.tf` | Identités GitHub et confiance OIDC pour déployer sans mot de passe Azure. |
 | `google-auth.tf` | Authentification Azure vers Google pour NuExtract, OCR et Gemini, sans clé Google permanente. |
 | `monitoring.tf` | **Application Insights conservé**, Log Analytics et alertes de coût. |
@@ -30,8 +38,9 @@ Tous ces fichiers sont dans `azure/environments/staging/`.
 | `moved.tf` | Compatibilité avec l'ancien découpage ; ne pas supprimer. |
 | `backend.tf` / `providers.tf` / `versions.tf` | État distant, accès aux fournisseurs et versions. |
 
-`application.tf` contient directement la Container App NestJS et son antivirus
-ClamAV. Les tests dans `staging/tests/` empêchent Terraform de remettre une ancienne
+`app-service.tf` contient le nouveau site, son conteneur NestJS et son antivirus
+ClamAV. `application.tf` conserve l'ancien hôte jusqu'à la fin de la migration.
+Les tests dans `staging/tests/` empêchent Terraform de remettre une ancienne
 image publiée par GitHub. Aucun module enfant ne reste : les références montrent
 directement les connexions avec la base, le stockage, Key Vault et l'IA.
 
@@ -40,13 +49,10 @@ directement les connexions avec la base, le stockage, Key Vault et l'IA.
 Terraform lit **tous les fichiers .tf du même dossier ensemble**.
 Il suit les références, pas l'ordre des fichiers.
 
-Dans `application.tf` :
+Dans les paramètres d'application de `app-service.tf` :
 
 ```hcl
-env {
-  name  = "DB_HOST"
-  value = azurerm_postgresql_flexible_server.postgres.fqdn
-}
+DB_HOST = azurerm_postgresql_flexible_server.postgres.fqdn
 ```
 
 Cela signifie : « donner au backend l'adresse du serveur PostgreSQL que
@@ -61,8 +67,8 @@ Cela signifie : « donner au backend l'adresse du serveur PostgreSQL que
 ## Exemple : Key Vault → NestJS
 
 1. `security.tf` crée le coffre, l'identité managée et les secrets générés.
-2. `application.tf` référence directement ces secrets et cette identité.
-3. Container Apps utilise cette identité pour lire les secrets dans Key Vault.
+2. `app-service.tf` référence directement ces secrets et cette identité.
+3. App Service utilise cette identité pour résoudre les références Key Vault.
 4. NestJS reçoit les valeurs dans son environnement, par exemple `DB_PASSWORD`.
 
 Les fichiers comptables vont dans Blob Storage, pas dans Key Vault.
@@ -71,9 +77,11 @@ transporte pas les documents.
 
 ## Ce que la simplification ne change pas
 
-Application Insights, PostgreSQL privé, sauvegardes, ClamAV, secrets, identités,
+Application Insights, données PostgreSQL, sauvegardes, ClamAV, secrets, identités,
 stockage des documents, GitHub OIDC et fédération Google sont conservés.
-Les noms Azure, paramètres locaux et outputs restent les mêmes.
+La connexion PostgreSQL devient publique-capable avec pare-feu IP exact et TLS,
+pas ouverte à tout Internet. Le même serveur et le même mot de passe restent.
+Le nom et l'URL du nouvel hôte changent ; le helper de paramètres suit l'hôte actif.
 
 `moved.tf` dit à Terraform : « cette ressource existante a maintenant une autre
 adresse dans le code ». Il évite de recréer les ressources ou de régénérer les
