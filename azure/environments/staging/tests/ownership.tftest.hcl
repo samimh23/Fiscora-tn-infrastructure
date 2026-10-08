@@ -1,5 +1,12 @@
 # Mock providers only. No cloud authentication, live state or real resource changes.
-mock_provider "azapi" {}
+mock_provider "azapi" {
+  mock_resource "azapi_resource" {
+    defaults = {
+      id     = "/subscriptions/00000000-0000-0000-0000-000000000002/resourceGroups/rg-test/providers/Microsoft.Web/sites/test"
+      output = { properties = { defaultHostName = "test.azurewebsites.net", possibleOutboundIpAddresses = "203.0.113.10", state = "Stopped" } }
+    }
+  }
+}
 mock_provider "azurerm" {
   # Valid synthetic IDs let downstream provider validators run after mock apply.
   mock_resource "azurerm_resource_group" {
@@ -93,7 +100,7 @@ mock_provider "random" {
 }
 
 variables {
-  app_service_stage             = "off"
+  app_service_stage             = "prepare"
   postgres_network_migrated     = false
   legacy_backend_stopped        = false
   app_service_database_ips      = []
@@ -118,9 +125,10 @@ run "foundation_without_api" {
   variables {
     deploy_application = false
     backend_image      = ""
+    app_service_stage  = "off"
   }
   assert {
-    condition     = length(azurerm_container_app.api) == 0
+    condition     = length(azapi_resource.app_service_api) == 0
     error_message = "The foundation must be plannable before a backend image exists."
   }
 }
@@ -129,27 +137,27 @@ run "first_image" {
   command = apply
   assert {
     condition = alltrue([
-      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "DB_HOST"]) == azurerm_postgresql_flexible_server.postgres.fqdn,
-      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "DB_NAME"]) == azurerm_postgresql_flexible_server_database.application.name,
-      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "AZURE_STORAGE_ACCOUNT_URL"]) == azurerm_storage_account.documents.primary_blob_endpoint,
-      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "SMTP_HOST"]) == var.smtp_host,
-      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "NUEXTRACT_SERVICE_URL"]) == var.nuextract_service_url,
-      one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "AI_ASSISTANT_MAX_VECTOR_DISTANCE"]) == "0.8",
+      local.app_service_settings.DB_HOST == azurerm_postgresql_flexible_server.postgres.fqdn,
+      local.app_service_settings.DB_NAME == azurerm_postgresql_flexible_server_database.application.name,
+      local.app_service_settings.AZURE_STORAGE_ACCOUNT_URL == azurerm_storage_account.documents.primary_blob_endpoint,
+      local.app_service_settings.SMTP_HOST == var.smtp_host,
+      local.app_service_settings.NUEXTRACT_SERVICE_URL == var.nuextract_service_url,
+      local.app_service_settings.AI_ASSISTANT_MAX_VECTOR_DISTANCE == "0.8",
     ])
     error_message = "Direct resource references must preserve runtime connection values and defaults."
   }
   assert {
-    condition     = azurerm_container_app.api[0].template[0].container[0].image == var.backend_image
+    condition     = azapi_resource.app_service_api[0].body.properties.image == var.backend_image
     error_message = "Terraform must use the supplied image on first creation."
   }
   assert {
-    condition = !anytrue([for env in azurerm_container_app.api[0].template[0].container[0].env :
-      contains(["EMAIL_INGESTION_DOMAIN", "EMAIL_INGESTION_MAX_ATTACHMENT_BYTES", "BREVO_API_KEY", "INBOUND_EMAIL_WEBHOOK_SECRET"], env.name)
+    condition = !anytrue([for name in keys(local.app_service_settings) :
+      contains(["EMAIL_INGESTION_DOMAIN", "EMAIL_INGESTION_MAX_ATTACHMENT_BYTES", "BREVO_API_KEY", "INBOUND_EMAIL_WEBHOOK_SECRET"], name)
     ])
     error_message = "Retired incoming-email settings must not return."
   }
   assert {
-    condition     = contains([for secret in azurerm_container_app.api[0].secret : secret.name], "smtp-password") && length(azurerm_container_app.api[0].secret) == 4
+    condition     = alltrue([for name in ["DB_PASSWORD", "JWT_SIGNING_KEY", "MFA_ENCRYPTION_KEY", "SMTP_PASSWORD"] : startswith(local.app_service_settings[name], "@Microsoft.KeyVault(")])
     error_message = "Keep outgoing SMTP and the three core secrets, not incoming-email secrets."
   }
 }
@@ -162,15 +170,15 @@ run "infrastructure_update_preserves_api_release" {
     clamav_image        = "clamav/clamav:1.5"
   }
   assert {
-    condition     = azurerm_container_app.api[0].template[0].container[0].image == "test.azurecr.io/fiscora-backend@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    condition     = azapi_resource.app_service_api[0].body.properties.image == "test.azurecr.io/fiscora-backend@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     error_message = "An infrastructure plan must not revert the API image owned by GitHub."
   }
   assert {
-    condition     = azurerm_container_app.api[0].template[0].container[1].image == var.clamav_image
+    condition     = azapi_resource.app_service_clamav[0].body.properties.image == var.clamav_image
     error_message = "ClamAV image changes must remain managed by Terraform."
   }
   assert {
-    condition     = one([for env in azurerm_container_app.api[0].template[0].container[0].env : env.value if env.name == "APP_PUBLIC_URL"]) == var.frontend_public_url
+    condition     = local.app_service_settings.APP_PUBLIC_URL == var.frontend_public_url
     error_message = "Ignoring the API image must not ignore API configuration changes."
   }
 }

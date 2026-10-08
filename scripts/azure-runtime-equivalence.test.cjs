@@ -18,13 +18,13 @@ test('flattened runtime matches every original setting after explicit input subs
     .replaceAll('azurerm_container_app_environment.this', 'azurerm_container_app_environment.application')
     .replace('resource "azurerm_container_app_environment" "this"', 'resource "azurerm_container_app_environment" "application"');
   // The former module-level waits are now on both direct runtime resources.
-  const after = read('azure/environments/staging/application.tf')
+  const after = read('scripts/fixtures/application-retired.tf.txt')
     .replace(/depends_on\s*=\s*\[[\s\S]*?\]/g, '');
   assert.deepEqual(tokens(after), tokens(before));
 });
 
 test('both direct resources retain the original module-wide preparation waits', () => {
-  const runtime = read('azure/environments/staging/application.tf');
+  const runtime = read('scripts/fixtures/application-retired.tf.txt');
   const dependencies = [...runtime.matchAll(/depends_on\s*=\s*\[([\s\S]*?)\]/g)]
     .map(match => match[1].split(',').map(value => value.trim()).filter(Boolean).sort());
   const expected = [
@@ -37,10 +37,9 @@ test('both direct resources retain the original module-wide preparation waits', 
   assert.deepEqual(dependencies, [expected, expected]);
 });
 
-test('new state mappings cover the environment and all counted API instances', () => {
+test('retired runtime mappings are gone but data and password addresses remain', () => {
   const moves = read('azure/environments/staging/moved.tf');
-  assert.match(moves, /from\s*= module\.application\.azurerm_container_app_environment\.this\s+to\s*= azurerm_container_app_environment\.application/);
-  assert.match(moves, /from\s*= module\.application\.azurerm_container_app\.api\s+to\s*= azurerm_container_app\.api/);
+  assert.doesNotMatch(moves, /module\.(application|network)\./);
   // Generated passwords and the PostgreSQL server retain their existing addresses.
   assert.match(read('azure/environments/staging/database.tf'), /resource "azurerm_postgresql_flexible_server" "postgres"/);
   assert.match(read('azure/environments/staging/security.tf'), /resource "random_password" "postgres"/);

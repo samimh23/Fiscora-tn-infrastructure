@@ -20,7 +20,6 @@ account key is used.
 ```text
 azure/bootstrap/                  Azure Terraform-state foundation
 azure/environments/staging/       Azure resources grouped in readable topic files
-azure/environments/staging/application.tf  Direct NestJS/ClamAV runtime and connections
 azure/environments/staging/app-service.tf  Live App Service NestJS/ClamAV hosting
 azure/scripts/                    Azure provider registration and secret configuration
 gcp/bootstrap/                    Google Cloud Terraform-state foundation
@@ -38,8 +37,8 @@ the topic files listed in staging/main.tf and the safe workflow for an existing 
 The Azure and GCP stacks remain separate.
 
 The Azure layout declares all components directly in staging topic files, with
-no child modules or module-input forwarding. `application.tf` shows the backend's
-connections directly; `database.tf` groups PostgreSQL and its private networking.
+no child modules or module-input forwarding. `app-service.tf` shows the backend's
+connections directly; `database.tf` manages the same PostgreSQL server and database.
 Application Insights and all active services remain.
 Compatibility mappings in `moved.tf` retain existing resources and secrets; see
 [the refactor verification](azure/SIMPLIFICATION.md). A push never applies it.
@@ -48,11 +47,12 @@ The actual [App Service architecture migration](azure/APP-SERVICE-CUTOVER.md)
 completed its traffic switch on 8 October 2026. React remains on Static Web Apps;
 NestJS/ClamAV now run on App Service, using the same PostgreSQL server and data with
 TLS and exact-IP firewall access. Application Insights remains configured. Old
-Container Apps hosting is stopped and its private network is retained for recovery
-until a separately reviewed cleanup. Migration controls remain **off by default in
+Container Apps hosting and its unused private network have been removed by the
+approved eight-deletion cleanup; see [the cleanup record](azure/LEGACY-HOSTING-CLEANUP-2026-10-08.md).
+Migration controls remain **off by default in
 code**, so keep the ignored local cutover inputs with the private deployment
 configuration for every plan/apply. See the
-[execution record](azure/CUTOVER-2026-10-08.md) for verification and remaining cleanup.
+[execution record](azure/CUTOVER-2026-10-08.md) for the historical cutover verification.
 
 For the exact first-deployment sequence and Terraform/GitHub responsibilities,
 see [the deployment walkthrough](azure/DEPLOYMENT.md).

@@ -10,10 +10,7 @@ output "postgres_fqdn" {
   value     = azurerm_postgresql_flexible_server.postgres.fqdn
   sensitive = true
 }
-output "container_app_name" { value = try(azurerm_container_app.api[0].name, null) }
-output "container_app_deployment_name" { value = "ca-${local.name_prefix}-api" }
-output "container_app_fqdn" { value = try(azurerm_container_app.api[0].ingress[0].fqdn, null) }
-output "backend_hosting" { value = local.activate_app_service ? "app-service" : "container-app" }
+output "backend_hosting" { value = "app-service" }
 output "static_web_app_name" { value = azurerm_static_web_app.frontend.name }
 output "static_web_app_default_hostname" { value = azurerm_static_web_app.frontend.default_host_name }
 output "static_web_app_custom_domain_validation_token" {

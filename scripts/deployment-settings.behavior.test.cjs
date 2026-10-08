@@ -23,18 +23,10 @@ function runSettings(mode) {
         $name = $args[2]
         $global:LASTEXITCODE = 0
         if ('${mode}' -eq 'failure') { $global:LASTEXITCODE = 1; return }
-        if ($name -eq 'backend_hosting') { ConvertTo-Json -InputObject $(if ('${mode}' -eq 'app-service') { 'app-service' } else { 'container-app' }) -Compress }
+        if ('${mode}' -eq 'foundation' -and $name -in @('app_service_name', 'app_service_url')) { ConvertTo-Json -InputObject $null -Compress; return }
+        if ($name -eq 'backend_hosting') { ConvertTo-Json -InputObject 'app-service' -Compress }
         elseif ($name -eq 'app_service_name') { ConvertTo-Json -InputObject 'app-test-staging' -Compress }
         elseif ($name -eq 'app_service_url') { ConvertTo-Json -InputObject 'https://app-test-staging.azurewebsites.net' -Compress }
-        elseif ($name -eq 'container_app_name' -and '${mode}' -eq 'legacy') {
-          ConvertTo-Json -InputObject 'ca-test-staging-api' -Compress
-        }
-        elseif ($name -in @('container_app_name', 'container_app_fqdn')) {
-          if ('${mode}' -eq 'foundation') { $global:LASTEXITCODE = 1; return }
-          if ($name -eq 'container_app_fqdn') { ConvertTo-Json -InputObject 'api.test.example' -Compress }
-          else { ConvertTo-Json -InputObject 'ca-test-staging-api' -Compress }
-        }
-        elseif ($name -eq 'container_app_deployment_name') { ConvertTo-Json -InputObject 'ca-test-staging-api' -Compress }
         else { ConvertTo-Json -InputObject $name -Compress }
       }
       $before = (Get-Location).Path
@@ -56,20 +48,20 @@ function runSettings(mode) {
 }
 
 test('settings show existing deployment IDs and API URL without requesting all outputs', { skip }, () => {
-  const result = runSettings('legacy');
+  const result = runSettings('app-service');
   assert.equal(result.ok, true, result.message);
   assert.equal(result.restored, true);
-  assert.ok(result.output.includes('AZURE_CONTAINER_APP_NAME=ca-test-staging-api'));
-  assert.ok(result.output.includes('AZURE_API_URL=https://api.test.example'));
+  assert.ok(result.output.includes('AZURE_WEB_APP_NAME=app-test-staging'));
+  assert.ok(result.output.includes('AZURE_API_URL=https://app-test-staging.azurewebsites.net'));
   assert.ok(result.calls.every(args => args.length === 3 && args[0] === 'output' && args[1] === '-json'));
-  assert.ok(!result.calls.some(args => args[2] === 'container_app_deployment_name'));
+  assert.ok(!result.calls.some(args => args[2].startsWith('container_app')));
 });
 
-test('foundation settings print the planned API name but do not invent its URL', { skip }, () => {
+test('foundation settings do not invent an API name or URL', { skip }, () => {
   const result = runSettings('foundation');
   assert.equal(result.ok, true, result.message);
   assert.equal(result.restored, true);
-  assert.ok(result.output.includes('AZURE_CONTAINER_APP_NAME=ca-test-staging-api'));
+  assert.ok(!result.output.some(line => line.startsWith('AZURE_WEB_APP_NAME=')));
   assert.ok(!result.output.some(line => line.startsWith('AZURE_API_URL=')));
   assert.ok(result.output.some(line => line.includes('do not deploy the frontend yet')));
 });

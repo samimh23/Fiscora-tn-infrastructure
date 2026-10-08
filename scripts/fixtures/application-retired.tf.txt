@@ -1,5 +1,5 @@
-# NestJS + ClamAV runtime. Direct resource references replace module input forwarding.
-# Existing Azure resources are retained through moved.tf; GitHub still owns API releases.
+# Historical Container Apps runtime fixture, retained for equivalence tests only.
+# This .txt file is NOT loaded by Terraform. Live hosting is in app-service.tf.
 
 resource "azurerm_container_app_environment" "application" {
   # Preserve the former module-wide preparation order for both runtime resources.

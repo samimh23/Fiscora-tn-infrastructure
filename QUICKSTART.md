@@ -89,5 +89,6 @@ identity is removed from the configuration, but its cloud deletion requires a
 separate reviewed bootstrap apply. See [the simplification record](azure/SIMPLIFICATION.md).
 
 Azure resources are in staging topic files with no child modules. Start with
-`application.tf` for the backend and `database.tf` for PostgreSQL and its network.
-Keep all 43 mappings in `moved.tf`; they protect older state snapshots.
+`app-service.tf` for the backend and `database.tf` / `database-firewall.tf` for PostgreSQL.
+Keep the 35 surviving mappings in `moved.tf`; they protect existing service addresses.
+Retain ignored `cutover.auto.tfvars` alongside the private deployment inputs.

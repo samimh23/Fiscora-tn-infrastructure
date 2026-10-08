@@ -28,9 +28,3 @@ resource "azurerm_federated_identity_credential" "frontend_main" {
   issuer                    = "https://token.actions.githubusercontent.com"
   subject                   = "repo:${var.github_owner}@${var.github_owner_id}/${var.github_frontend_repository}@${var.github_frontend_repository_id}:ref:refs/heads/main"
 }
-
-resource "azurerm_role_assignment" "backend_container_apps" {
-  scope                = azurerm_resource_group.this.id
-  role_definition_name = "Container Apps Contributor"
-  principal_id         = azurerm_user_assigned_identity.backend.principal_id
-}

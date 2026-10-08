@@ -53,7 +53,7 @@ run "pfe_foundation_preserves_services" {
   }
   assert {
     condition     = azurerm_postgresql_flexible_server.postgres.public_network_access_enabled == false && azurerm_postgresql_flexible_server.postgres.backup_retention_days == 7
-    error_message = "Keep private PostgreSQL networking and backups."
+    error_message = "Keep public access disabled in the foundation until reviewed App Service IPs are supplied; retain backups."
   }
   assert {
     condition     = azurerm_storage_container.documents.container_access_type == "private" && azurerm_storage_account.documents.shared_access_key_enabled == false
@@ -64,7 +64,7 @@ run "pfe_foundation_preserves_services" {
     error_message = "The database and document container names must not change."
   }
   assert {
-    condition     = length(azurerm_container_app.api) == 0
+    condition     = length(azapi_resource.app_service_api) == 0
     error_message = "First installation must still work before an API image exists."
   }
 }

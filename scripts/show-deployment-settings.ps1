@@ -32,19 +32,9 @@ try {
     $frontendClient = Read-DeploymentOutput 'github_frontend_client_id'
     $registry = Read-DeploymentOutput 'container_registry_name'
     $registryServer = Read-DeploymentOutput 'container_registry_login_server'
-    $app = Read-DeploymentOutput 'container_app_name' -Optional
-    if (-not $app) { $app = Read-DeploymentOutput 'container_app_deployment_name' }
     $frontend = Read-DeploymentOutput 'static_web_app_name'
-    $hostname = Read-DeploymentOutput 'container_app_fqdn' -Optional
-    $hosting = Read-DeploymentOutput 'backend_hosting' -Optional
-    if ($hosting -eq 'app-service') {
-        $app = Read-DeploymentOutput 'app_service_name'
-        $apiUrl = Read-DeploymentOutput 'app_service_url'
-    }
-    else {
-        $hosting = 'container-app'
-        $apiUrl = if ($hostname) { "https://$hostname" } else { '' }
-    }
+    $app = Read-DeploymentOutput 'app_service_name' -Optional
+    $apiUrl = Read-DeploymentOutput 'app_service_url' -Optional
 
     Write-Output 'GitHub Actions variables — backend repository:'
     Write-Output "AZURE_CLIENT_ID=$backendClient"
@@ -53,9 +43,9 @@ try {
     Write-Output "AZURE_RESOURCE_GROUP=$group"
     Write-Output "AZURE_CONTAINER_REGISTRY_NAME=$registry"
     Write-Output "AZURE_CONTAINER_REGISTRY_LOGIN_SERVER=$registryServer"
-    Write-Output "AZURE_BACKEND_HOSTING=$hosting"
-    if ($hosting -eq 'app-service') { Write-Output "AZURE_WEB_APP_NAME=$app" }
-    else { Write-Output "AZURE_CONTAINER_APP_NAME=$app" }
+    Write-Output 'AZURE_BACKEND_HOSTING=app-service'
+    if ($app) { Write-Output "AZURE_WEB_APP_NAME=$app" }
+    else { Write-Output 'AZURE_WEB_APP_NAME: create the prepared App Service before deploying the API.' }
     Write-Output ''
     Write-Output 'GitHub Actions variables — frontend repository:'
     Write-Output "AZURE_CLIENT_ID=$frontendClient"

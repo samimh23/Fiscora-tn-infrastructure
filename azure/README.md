@@ -6,19 +6,20 @@ For an existing installation, preserve `terraform.tfvars`, `backend.hcl`, state,
 resource names and identity IDs. Examples are for new installations only.
 
 All Azure components are declared directly in staging topic files; no child
-modules remain. Start with `staging/main.tf`, then `application.tf` for NestJS and
+modules remain. Start with `staging/main.tf`, then `app-service.tf` for NestJS and
 ClamAV, `hosting.tf` for registry/frontend, and `database.tf` for PostgreSQL
-including its subnet and private DNS. Storage, security, monitoring, the shared
-network, GitHub access and Google federation each have a topic file.
-Application Insights is retained. Keep `moved.tf`: its 43 address mappings
+and `database-firewall.tf` for its exact-IP access rules. Storage, security,
+monitoring, GitHub access and Google federation each have a topic file.
+Application Insights is retained. Keep `moved.tf`: its 35 surviving address mappings
 preserve existing cloud resources and generated secrets. See
 [SIMPLIFICATION.md](SIMPLIFICATION.md) for the before/after plan verification.
 
 ## Architecture kept deliberately small
 
 - Static Web Apps hosts the React frontend.
-- Container Apps hosts the NestJS API and its ClamAV sidecar.
-- PostgreSQL Flexible Server stores relational data on a private subnet.
+- Linux App Service hosts the NestJS API and its local ClamAV sidecar.
+- The same PostgreSQL Flexible Server stores relational data with TLS and
+  firewall rules restricted to exact App Service outbound IPs.
 - Blob Storage stores documents with versioning and 30-day soft deletion;
   public containers and storage account keys are disabled.
 - A user-assigned managed identity gives the API access to Blob Storage and
@@ -36,23 +37,25 @@ or remove NuExtract, PaddleOCR, Vertex AI or their identity federation.
 
 ## Deployment ownership
 
-Terraform owns resource creation, network, identities, secrets references,
+Terraform owns resource creation, firewall, identities, secrets references,
 API settings and the ClamAV image. GitHub builds, publishes and releases the
 **API image**. Terraform uses `backend_image` on first creation, then ignores
-only `template[0].container[0].image` so an infrastructure update cannot revert
-a GitHub release. A postcondition checks that this container is still `api`.
+only `body.properties.image` on the `api` sidecar so an infrastructure update
+cannot revert a GitHub release. Terraform still manages its startup/configuration.
 
 For a new installation, deploy the foundation with `deploy_application=false`,
 run **Backend CI** manually with **bootstrap_image_only** checked, then create
-the API using the resulting digest and `deploy_application=true`. Keep it true
-afterwards. The API has a `prevent_destroy` guard against accidental removal
+the prepared App Service using the resulting digest, `deploy_application=true`
+and `app_service_stage="prepare"`. Review its outbound IPs before activation;
+see the staged sequence in DEPLOYMENT.md. Keep the live cutover inputs afterwards.
+The API has a `prevent_destroy` guard against accidental removal
 while its resource configuration remains present.
 
 Pull requests and relevant pushes run offline formatting/validation and mocked
 ownership tests. The separate GitHub cloud-plan workflow has been retired.
 Plan locally with `./scripts/plan.ps1 -Cloud Azure`, review the refreshed plan,
-then apply the saved plan manually. Keep only the local `terraform.tfvars` and
-`backend.hcl`; no duplicated staging settings or Terraform cloud credentials
+then apply the saved plan manually. Keep the local `terraform.tfvars`,
+`backend.hcl` and the ignored live `cutover.auto.tfvars`; no Terraform cloud credentials
 are required in the infrastructure repository's Actions settings.
 Application pushes still release the backend/frontend through their own repositories.
 `./scripts/show-deployment-settings.ps1` prints their required Actions variables.

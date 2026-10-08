@@ -52,4 +52,4 @@ resource "azurerm_static_web_app_custom_domain" "frontend" {
   validation_type   = "cname-delegation"
 }
 
-# NestJS/ClamAV hosting is declared directly in application.tf.
+# NestJS/ClamAV hosting is declared directly in app-service.tf.

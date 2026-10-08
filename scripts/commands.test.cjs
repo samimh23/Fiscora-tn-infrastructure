@@ -39,8 +39,7 @@ test('deployment settings helper reads named public outputs and never changes cl
   const names = [...source.matchAll(/Read-DeploymentOutput '([^']+)'/g)].map(([, name]) => name);
   assert.deepEqual(names, ['azure_tenant_id', 'azure_subscription_id', 'resource_group_name',
     'github_backend_client_id', 'github_frontend_client_id', 'container_registry_name',
-    'container_registry_login_server', 'container_app_name', 'container_app_deployment_name',
-    'static_web_app_name', 'container_app_fqdn', 'backend_hosting', 'app_service_name', 'app_service_url']);
+    'container_registry_login_server', 'static_web_app_name', 'app_service_name', 'app_service_url']);
 });
 
 test('checks use no cloud backend and include mocked ownership tests', () => {
@@ -58,18 +57,18 @@ test('AI release preparation selects one build and preserves configuration', () 
 });
 
 test('direct application wiring preserves existing data connections and release ownership', () => {
-  const application = read('azure/environments/staging/application.tf');
-  assert.match(application, /resource "azurerm_container_app" "api"/);
+  const application = read('azure/environments/staging/app-service.tf');
+  assert.match(application, /resource "azapi_resource" "app_service_api"/);
   assert.match(application, /prevent_destroy = true/);
-  assert.match(application, /ignore_changes\s*= \[template\[0\]\.container\[0\]\.image\]/);
-  assert.match(application, /value\s*= azurerm_postgresql_flexible_server\.postgres\.fqdn/);
-  assert.match(application, /value\s*= azurerm_postgresql_flexible_server_database\.application\.name/);
+  assert.match(application, /ignore_changes\s*= \[body.properties.image\]/);
+  assert.match(application, /DB_HOST\s*= azurerm_postgresql_flexible_server\.postgres\.fqdn/);
+  assert.match(application, /DB_NAME\s*= azurerm_postgresql_flexible_server_database\.application\.name/);
   assert.match(read('azure/environments/staging/database.tf'), /name\s*= "accounting_nest"/);
   assert.doesNotMatch(read('azure/environments/staging/hosting.tf'), /module "application"/);
 });
 
 test('Qwen cannot be deployed or wired back into the active app', () => {
-  const app = read('azure/environments/staging/application.tf');
+  const app = read('azure/environments/staging/app-service.tf');
   assert.doesNotMatch(app, /QWEN_SERVICE_URL|DOCUMENT_EXTRACTION_SERVICE_URL|DOCUMENT_EXTRACTION_PROVIDER|DOCUMENT_EXTRACTION_MODEL|QWEN_CONCURRENCY/);
   const google = read('gcp/environments/ai-staging/main.tf');
   assert.doesNotMatch(google, /resource "google_cloud_run_v2_service" "nuextract"\s*\{/);

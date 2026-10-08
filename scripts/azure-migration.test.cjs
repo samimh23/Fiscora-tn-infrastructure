@@ -15,7 +15,7 @@ test('migration defaults leave the live architecture unchanged', () => {
 });
 
 test('all existing runtime settings reach App Service with Key Vault references', () => {
-  const source = read('application.tf');
+  const source = readFileSync(join(__dirname, 'fixtures/application-retired.tf.txt'), 'utf8');
   const target = read('app-service.tf');
   const names = [...source.matchAll(/env\s*\{\s*name\s*=\s*"([^"]+)"/g)].map(m => m[1]);
   for (const name of names) assert.match(target, new RegExp(`\\b${name}\\s*=`), name);

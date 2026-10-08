@@ -37,13 +37,13 @@ resource "azurerm_resource_group" "this" {
 }
 
 # File map:
-# network.tf: virtual network and Container Apps subnet
 # security.tf: API identity, Key Vault and generated secrets
 # deployment-access.tf: GitHub OIDC deployment identities
 # google-auth.tf: keyless Azure -> Google authentication (AI still uses GCP)
-# database.tf: PostgreSQL subnet/DNS, server, database and extensions
+# database.tf: same PostgreSQL server, database and extensions
+# database-firewall.tf: exact App Service IP access to PostgreSQL
 # storage.tf: uploaded documents
 # hosting.tf: image registry and React frontend
-# application.tf: NestJS/ClamAV runtime and direct service connections
+# app-service.tf: live NestJS/ClamAV runtime and direct service connections
 # monitoring.tf: Log Analytics, Application Insights and cost alerts
 # moved.tf: backward-compatible addresses; never delete these mappings casually

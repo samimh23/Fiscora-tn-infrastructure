@@ -4,9 +4,10 @@ Ce dossier configure l'hébergement de Fiscora, pas la logique métier.
 Terraform prépare Azure ; GitHub Actions publie React et NestJS.
 
 La migration réelle vers App Service est suivie dans
-[le journal du 8 octobre](CUTOVER-2026-10-08.md). Les fichiers Container Apps et
-réseau privé restent temporairement pour la récupération ; leur présence ne veut
-pas dire que deux backends doivent tourner en même temps.
+[le journal du 8 octobre](CUTOVER-2026-10-08.md). Le nettoyage de l'ancien
+Container Apps et du réseau privé est suivi dans
+[le journal de nettoyage](LEGACY-HOSTING-CLEANUP-2026-10-08.md).
+Le seul backend actif est App Service.
 
 ## Le fichier à ouvrir en premier
 
@@ -23,23 +24,21 @@ Tous ces fichiers sont dans `azure/environments/staging/`.
 | `main.tf` | Noms communs, tags, groupe de ressources et carte des fichiers. |
 | `hosting.tf` | Registre Docker et frontend React. |
 | `app-service.tf` | Nouvel hébergement NestJS/ClamAV, identité et références Key Vault. |
-| `application.tf` | Ancien runtime Container Apps, conservé pour récupération. |
-| `database.tf` | Même serveur PostgreSQL, même base et extensions ; ancien subnet/DNS conservés temporairement. |
+| `database.tf` | Même serveur PostgreSQL, même base et extensions ; accès TLS avec IP exactes dans `database-firewall.tf`. |
 | `database-firewall.tf` | Accès PostgreSQL limité aux IP de sortie exactes d'App Service. |
 | `migration-settings.tf` | Contrôles temporaires de préparation et activation. |
 | `storage.tf` | Documents privés, droits d'accès et protection contre la suppression. |
 | `security.tf` | Identité du backend, Key Vault et secrets générés. |
-| `network.tf` | Ancien réseau Container Apps, conservé jusqu'à la revue de nettoyage. |
 | `deployment-access.tf` | Identités GitHub et confiance OIDC pour déployer sans mot de passe Azure. |
 | `google-auth.tf` | Authentification Azure vers Google pour NuExtract, OCR et Gemini, sans clé Google permanente. |
 | `monitoring.tf` | **Application Insights conservé**, Log Analytics et alertes de coût. |
 | `variables.tf` / `terraform.tfvars.example` | Paramètres disponibles / exemple pour une nouvelle installation. |
 | `outputs.tf` | Noms et adresses utiles après création. |
-| `moved.tf` | Compatibilité avec l'ancien découpage ; ne pas supprimer. |
+| `moved.tf` | Compatibilité des ressources conservées avec l'ancien découpage ; ne pas supprimer. |
 | `backend.tf` / `providers.tf` / `versions.tf` | État distant, accès aux fournisseurs et versions. |
 
 `app-service.tf` contient le nouveau site, son conteneur NestJS et son antivirus
-ClamAV. `application.tf` conserve l'ancien hôte jusqu'à la fin de la migration.
+ClamAV. Les anciens fichiers `application.tf` et `network.tf` ne sont plus actifs.
 Les tests dans `staging/tests/` empêchent Terraform de remettre une ancienne
 image publiée par GitHub. Aucun module enfant ne reste : les références montrent
 directement les connexions avec la base, le stockage, Key Vault et l'IA.
@@ -106,7 +105,8 @@ plan Azure a été retiré : le plan et l'apply sont locaux, après revue.
 aux déploiements frontend/backend, sans afficher les mots de passe ou les clés.
 
 Gardez vos `terraform.tfvars` et `backend.hcl` existants. Ne les remplacez pas
-par les exemples. Gardez `deploy_application=true` pour une API déjà créée.
+par les exemples. Gardez `deploy_application=true` et les paramètres actifs dans
+`cutover.auto.tfvars` pour une API déjà créée.
 Ne changez pas le suffixe, le backend d'état ou les mappings pour une présentation.
 Ne partagez jamais l'état, un plan binaire ou les secrets.
 
@@ -116,7 +116,7 @@ Voir [SIMPLIFICATION.md](SIMPLIFICATION.md) pour la vérification avant/après,
 
 ## Phrase pour le mentor
 
-> Terraform crée le réseau, la base, le stockage, les identités et l'hébergement.
+> Terraform crée la base, son pare-feu, le stockage, les identités et l'hébergement.
 > Nous avons un fichier par sujet plutôt qu'un module pour chaque petite ressource.
 > Les références raccordent les composants : le backend reçoit l'adresse de
 > PostgreSQL et les références Key Vault. GitHub Actions déploie ensuite le code.

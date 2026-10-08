@@ -81,8 +81,9 @@ Depuis la racine du dépôt infrastructure :
 Copier les variables affichées dans **Settings → Secrets and variables → Actions
 → Variables** des dépôts backend/frontend correspondants. Ce helper lit seulement
 des noms, IDs et URLs ; il ne modifie ni GitHub ni Azure et n'affiche aucune clé.
-Il affiche le nom de la future API même avant sa création, mais attend sa création
-pour afficher `AZURE_API_URL`. Les identités de déploiement ne sont pas l'identité
+Il attend la création d'App Service pour afficher son nom et `AZURE_API_URL`.
+Il affiche `AZURE_BACKEND_HOSTING=app-service`, sans ancien hôte Container Apps.
+Les identités de déploiement ne sont pas l'identité
 d'exécution de l'API. Aucun paramètre cloud n'est requis dans le dépôt infrastructure.
 
 Dans le dossier `azure/environments/staging`, enregistrer la clé SMTP sans l'inscrire
@@ -102,12 +103,21 @@ de passe, etc.). Aucun transfert Gmail ni webhook de réception n'est requis.
 
 Dans GitHub du backend : **Actions → Backend CI → Run workflow → main**,
 cocher **bootstrap_image_only**. Les contrôles s'exécutent puis l'image est
-envoyée au registre. Aucune Container App n'est mise à jour dans ce mode.
+envoyée au registre. Aucun hébergement n'est mis à jour dans ce mode.
 
 Copier le digest affiché dans le résumé, par exemple
 `registre.azurecr.io/fiscora-backend@sha256:...`, dans `backend_image`.
-Mettre `deploy_application=true`, créer et vérifier un **nouveau** plan,
-puis l'appliquer. Ne réutilisez pas le plan de l'étape 3.
+Mettre `deploy_application=true` et `app_service_stage="prepare"`, créer et vérifier
+un **nouveau** plan, puis l'appliquer. Le site reste désactivé, sans migrations ni
+workers. Ne réutilisez pas le plan de l'étape 3.
+
+Lire `terraform output -json app_service_database_ips` et conserver cette liste
+exacte dans `app_service_database_ips`. Pour une nouvelle base créée sans ancien
+subnet, revoir un plan avec `postgres_network_migrated=true`,
+`legacy_backend_stopped=true` (aucun ancien worker), puis `app_service_stage="active"`.
+Les règles doivent correspondre exactement aux IP du site. Appliquer seulement
+après revue, puis vérifier la santé de l'API. Pour une base existante encore privée,
+ne jamais activer ce drapeau sans une migration séparée et approuvée.
 
 Garder `deploy_application=true` après cette création. Le backend applique
 ses migrations au démarrage (`DB_MIGRATIONS_RUN=true`). Terraform ne crée pas

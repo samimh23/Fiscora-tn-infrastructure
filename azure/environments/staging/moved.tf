@@ -1,31 +1,8 @@
 # Address migration only: existing Azure IDs, secrets and data are retained.
-# Keep these blocks so older staging state can upgrade without recreation.
+# Keep surviving-resource moves so older staging state can upgrade without recreation.
+# Retired network/Container Apps moves were removed only after the live state
+# completed flattening and the user accepted the App Service cutover.
 # New installations ignore moves whose source address is absent.
-
-moved {
-  from = module.network.azurerm_virtual_network.this
-  to   = azurerm_virtual_network.network
-}
-
-moved {
-  from = module.network.azurerm_subnet.container_apps
-  to   = azurerm_subnet.container_apps
-}
-
-moved {
-  from = module.network.azurerm_subnet.postgres
-  to   = azurerm_subnet.postgres
-}
-
-moved {
-  from = module.network.azurerm_private_dns_zone.postgres
-  to   = azurerm_private_dns_zone.postgres
-}
-
-moved {
-  from = module.network.azurerm_private_dns_zone_virtual_network_link.postgres
-  to   = azurerm_private_dns_zone_virtual_network_link.postgres
-}
 
 moved {
   from = module.security.azurerm_user_assigned_identity.application
@@ -95,11 +72,6 @@ moved {
 moved {
   from = module.ci.azurerm_federated_identity_credential.frontend_main
   to   = azurerm_federated_identity_credential.frontend_main
-}
-
-moved {
-  from = module.ci.azurerm_role_assignment.backend_container_apps
-  to   = azurerm_role_assignment.backend_container_apps
 }
 
 moved {
@@ -205,15 +177,4 @@ moved {
 moved {
   from = module.budget.azurerm_consumption_budget_resource_group.this
   to   = azurerm_consumption_budget_resource_group.monthly
-}
-
-# Final module flattening: preserve environment and counted API resource instances.
-moved {
-  from = module.application.azurerm_container_app_environment.this
-  to   = azurerm_container_app_environment.application
-}
-
-moved {
-  from = module.application.azurerm_container_app.api
-  to   = azurerm_container_app.api
 }
