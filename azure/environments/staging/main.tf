@@ -16,7 +16,7 @@ locals {
   name_prefix = "${var.project_name}-${var.environment}"
   # Join the three naming inputs, remove hyphens, lowercase, keep 19 characters.
   # Current result: "fiscorastagingsami0" (used for storage/registry names).
-  compact     = substr(lower(replace("${var.project_name}${var.environment}${var.deployment_suffix}", "-", "")), 0, 19)
+  compact = substr(lower(replace("${var.project_name}${var.environment}${var.deployment_suffix}", "-", "")), 0, 19)
   # Azure labels: Project = "fiscora", Environment = "staging".
   tags = {
     Project     = var.project_name
@@ -29,19 +29,21 @@ locals {
 
 resource "azurerm_resource_group" "this" {
   # Azure name: "rg-fiscora-staging". "this" is only Terraform's internal label.
-  name     = "rg-${local.name_prefix}"
+  name = "rg-${local.name_prefix}"
   # Current region: "francecentral" (France Central).
   location = var.location
   # Apply the labels defined in locals.tags above.
-  tags     = local.tags
+  tags = local.tags
 }
 
 # File map:
-# network.tf: private network and database DNS
+# network.tf: virtual network and Container Apps subnet
 # security.tf: API identity, Key Vault and generated secrets
 # deployment-access.tf: GitHub OIDC deployment identities
 # google-auth.tf: keyless Azure -> Google authentication (AI still uses GCP)
-# database.tf / storage.tf: business data and uploaded documents
-# hosting.tf: image registry, React frontend and NestJS/ClamAV runtime
+# database.tf: PostgreSQL subnet/DNS, server, database and extensions
+# storage.tf: uploaded documents
+# hosting.tf: image registry and React frontend
+# application.tf: NestJS/ClamAV runtime and direct service connections
 # monitoring.tf: Log Analytics, Application Insights and cost alerts
 # moved.tf: backward-compatible addresses; never delete these mappings casually

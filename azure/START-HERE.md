@@ -7,7 +7,7 @@ Terraform prépare Azure ; GitHub Actions publie React et NestJS.
 
 Ouvrez [staging/main.tf](environments/staging/main.tf). Il définit les noms,
 les étiquettes et le groupe de ressources, puis indique les fichiers à lire.
-Il ne cache plus chaque petit composant derrière trois fichiers de module.
+Tous les composants sont directement dans staging, sans module enfant.
 
 ## Où trouver chaque composant ?
 
@@ -16,11 +16,12 @@ Tous ces fichiers sont dans `azure/environments/staging/`.
 | Fichier | Ce qu'il crée ou raccorde |
 | --- | --- |
 | `main.tf` | Noms communs, tags, groupe de ressources et carte des fichiers. |
-| `hosting.tf` | Registre Docker, frontend React et configuration du backend NestJS/ClamAV. |
-| `database.tf` | PostgreSQL, base métier et extensions uuid/pgvector. |
+| `hosting.tf` | Registre Docker et frontend React. |
+| `application.tf` | Runtime NestJS/ClamAV, secrets, variables d'environnement et probes. |
+| `database.tf` | Subnet/DNS PostgreSQL, serveur, base métier et extensions uuid/pgvector. |
 | `storage.tf` | Documents privés, droits d'accès et protection contre la suppression. |
 | `security.tf` | Identité du backend, Key Vault et secrets générés. |
-| `network.tf` | Réseau privé, sous-réseaux et DNS PostgreSQL. |
+| `network.tf` | Réseau partagé et subnet Container Apps. |
 | `deployment-access.tf` | Identités GitHub et confiance OIDC pour déployer sans mot de passe Azure. |
 | `google-auth.tf` | Authentification Azure vers Google pour NuExtract, OCR et Gemini, sans clé Google permanente. |
 | `monitoring.tf` | **Application Insights conservé**, Log Analytics et alertes de coût. |
@@ -29,39 +30,38 @@ Tous ces fichiers sont dans `azure/environments/staging/`.
 | `moved.tf` | Compatibilité avec l'ancien découpage ; ne pas supprimer. |
 | `backend.tf` / `providers.tf` / `versions.tf` | État distant, accès aux fournisseurs et versions. |
 
-Un seul module reste : `azure/modules/application/`. Il contient la
-Container App NestJS et son antivirus ClamAV, ainsi que les tests qui empêchent
-Terraform de remettre une ancienne image publiée par GitHub. Pour une vue
-d'ensemble, lisez d'abord `hosting.tf` ; ouvrez ce module pour le détail du runtime.
+`application.tf` contient directement la Container App NestJS et son antivirus
+ClamAV. Les tests dans `staging/tests/` empêchent Terraform de remettre une ancienne
+image publiée par GitHub. Aucun module enfant ne reste : les références montrent
+directement les connexions avec la base, le stockage, Key Vault et l'IA.
 
 ## Comment « ce fichier parle à cet autre fichier » ?
 
 Terraform lit **tous les fichiers .tf du même dossier ensemble**.
 Il suit les références, pas l'ordre des fichiers.
 
-Dans `hosting.tf` :
+Dans `application.tf` :
 
 ```hcl
-database = {
-  host = azurerm_postgresql_flexible_server.postgres.fqdn
-  name = azurerm_postgresql_flexible_server_database.application.name
-  user = azurerm_postgresql_flexible_server.postgres.administrator_login
+env {
+  name  = "DB_HOST"
+  value = azurerm_postgresql_flexible_server.postgres.fqdn
 }
 ```
 
-Cela signifie : « donner au backend l'adresse et le nom de la base que
+Cela signifie : « donner au backend l'adresse du serveur PostgreSQL que
 `database.tf` crée ». Terraform ne copie pas des fichiers entre services.
 
 - `var.xxx` : paramètre défini dans `variables.tf`.
 - `local.xxx` : nom ou valeur calculée dans `main.tf`.
 - `azurerm_...nom.attribut` : propriété d'une ressource Azure.
-- `module.application.xxx` : résultat du seul module restant.
+- Une référence directe évite le passage par des inputs/outputs de module.
 - `depends_on` : attendre aussi une préparation nécessaire, par exemple les droits IAM.
 
 ## Exemple : Key Vault → NestJS
 
 1. `security.tf` crée le coffre, l'identité managée et les secrets générés.
-2. `hosting.tf` transmet leurs références au module application.
+2. `application.tf` référence directement ces secrets et cette identité.
 3. Container Apps utilise cette identité pour lire les secrets dans Key Vault.
 4. NestJS reçoit les valeurs dans son environnement, par exemple `DB_PASSWORD`.
 

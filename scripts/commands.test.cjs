@@ -57,22 +57,19 @@ test('AI release preparation selects one build and preserves configuration', () 
   assert.doesNotMatch(source, /run services update|enable_\w+\s*=|terraform @/);
 });
 
-test('application wiring preserves grouped settings and the runtime module address', () => {
-  const assembly = read('azure/environments/staging/hosting.tf');
-  const application = read('azure/modules/application/main.tf');
-  for (const group of ['database', 'storage', 'smtp', 'ai']) {
-    assert.match(assembly, new RegExp(`  ${group} = \\{`));
-    assert.match(application, new RegExp(`var\\.${group}\\.`));
-  }
+test('direct application wiring preserves existing data connections and release ownership', () => {
+  const application = read('azure/environments/staging/application.tf');
   assert.match(application, /resource "azurerm_container_app" "api"/);
   assert.match(application, /prevent_destroy = true/);
   assert.match(application, /ignore_changes\s*= \[template\[0\]\.container\[0\]\.image\]/);
+  assert.match(application, /value\s*= azurerm_postgresql_flexible_server\.postgres\.fqdn/);
+  assert.match(application, /value\s*= azurerm_postgresql_flexible_server_database\.application\.name/);
   assert.match(read('azure/environments/staging/database.tf'), /name\s*= "accounting_nest"/);
-  assert.match(assembly, /name\s*= azurerm_postgresql_flexible_server_database\.application\.name/);
+  assert.doesNotMatch(read('azure/environments/staging/hosting.tf'), /module "application"/);
 });
 
 test('Qwen cannot be deployed or wired back into the active app', () => {
-  const app = read('azure/modules/application/main.tf');
+  const app = read('azure/environments/staging/application.tf');
   assert.doesNotMatch(app, /QWEN_SERVICE_URL|DOCUMENT_EXTRACTION_SERVICE_URL|DOCUMENT_EXTRACTION_PROVIDER|DOCUMENT_EXTRACTION_MODEL|QWEN_CONCURRENCY/);
   const google = read('gcp/environments/ai-staging/main.tf');
   assert.doesNotMatch(google, /resource "google_cloud_run_v2_service" "nuextract"\s*\{/);

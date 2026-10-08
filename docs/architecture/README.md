@@ -64,7 +64,7 @@ Cloud Run avec ces images.
 ## Sources de configuration
 
 - `azure/environments/staging/main.tf`
-- `azure/modules/application/main.tf`
+- `azure/environments/staging/application.tf`
 - `azure/environments/staging/network.tf`
 - `azure/environments/staging/database.tf`
 - `azure/environments/staging/hosting.tf`

@@ -88,5 +88,6 @@ Review before manually applying from `azure/bootstrap`. The retired GitHub plan
 identity is removed from the configuration, but its cloud deletion requires a
 separate reviewed bootstrap apply. See [the simplification record](azure/SIMPLIFICATION.md).
 
-Azure resources remain in topic files with only the tested application module.
-Keep all 41 mappings in `moved.tf`; they protect older state snapshots.
+Azure resources are in staging topic files with no child modules. Start with
+`application.tf` for the backend and `database.tf` for PostgreSQL and its network.
+Keep all 43 mappings in `moved.tf`; they protect older state snapshots.

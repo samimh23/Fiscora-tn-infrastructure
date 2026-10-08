@@ -20,7 +20,7 @@ try {
     node --test @tests
     if ($LASTEXITCODE -ne 0) { throw 'Command/workflow guard tests failed.' }
 
-    foreach ($directory in @('azure/bootstrap', 'azure/environments/staging', 'gcp/bootstrap', 'gcp/environments/ai-staging', 'azure/modules/application')) {
+    foreach ($directory in @('azure/bootstrap', 'azure/environments/staging', 'gcp/bootstrap', 'gcp/environments/ai-staging')) {
         Push-Location $directory
         try {
             terraform init -backend=false -input=false
@@ -30,10 +30,6 @@ try {
             if ($directory -eq 'azure/environments/staging') {
                 terraform test
                 if ($LASTEXITCODE -ne 0) { throw 'Mocked Azure layout tests failed.' }
-            }
-            if ($directory -eq 'azure/modules/application') {
-                terraform test
-                if ($LASTEXITCODE -ne 0) { throw 'Mocked application ownership tests failed.' }
             }
         }
         finally { Pop-Location }

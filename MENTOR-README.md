@@ -38,7 +38,7 @@ Reproduire موش معناها copier les comptes et données automatiquement. �
 
 ### C. Organisation
 
-> « Le bootstrap prépare le stockage protégé de l'état Terraform. Le dossier staging décrit l'environnement applicatif. Nous avons simplifié Azure avec un fichier par sujet et conservé un seul module pour le runtime NestJS/ClamAV. »
+> « Le bootstrap prépare le stockage protégé de l'état Terraform. Le dossier staging décrit l'environnement applicatif, directement dans un fichier par sujet. Il n'y a plus de module enfant Azure à parcourir. »
 
 `bootstrap` و`staging` أسماء اخترناهم للتنظيم، موش خدمات Azure ولا أسماء مفروضة من Terraform.
 
@@ -80,7 +80,6 @@ Fiscora-tn-infrastructure/
 ├── azure/
 │   ├── bootstrap/                 Fondation du state Azure
 │   ├── environments/staging/      Configuration Azure principale, par sujet
-│   ├── modules/application/       Runtime NestJS + ClamAV : seul module Azure
 │   └── scripts/                  Registration Azure et configuration SMTP
 ├── gcp/
 │   ├── bootstrap/                 Fondation du state Google
@@ -96,7 +95,7 @@ Fiscora-tn-infrastructure/
 
 - **Bootstrap:** يجهّز البلاصة اللي Terraform يخزّن فيها ذاكرته. Azure bootstrap state يبقى محليّاً في setup هذا، ويلزم نحافظوا عليه. ما نخلقوش storage كل مرة.
 - **Staging:** يصف infrastructure متاع Fiscora. عندو state distant في storage اللي bootstrap جهّزو.
-- **Module:** جزء من configuration يستدعيه staging. موش service مستقل وموش يلزم نمشيو نعملولو `apply` وحدو.
+- **Module enfant:** جزء من configuration ينجم يستدعيه staging. موش service مستقل. في Azure الحالي نحّينا آخر module enfant: الموارد الكل موجودة مباشرة في staging.
 - Azure et Google عندهم configurations وstates منفصلين. `apply` في Azure ما يشغّلش stack Google تلقائياً.
 
 ## 5. Carte des fichiers — où aller pour prouver une réponse
@@ -109,11 +108,11 @@ Les liens ouvrent les fichiers locaux sur ce PC. Dans VS Code, **Ctrl+P** permet
 | --- | --- | --- |
 | A1 | [bootstrap/main.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/bootstrap/main.tf>) | Resource Group du state, storage, container `tfstate`, rôle opérateur, lock `CanNotDelete`. |
 | A2 | [staging/main.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/main.tf>) | `locals`, tags, `azurerm_resource_group.this`, carte des fichiers. |
-| A3 | [staging/hosting.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/hosting.tf>) | ACR, Static Web App, `module "application"`, paramètres database/storage/secrets. |
-| A4 | [modules/application/main.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/modules/application/main.tf>) | Container App, ingress, images, CPU/RAM, env, Key Vault references, health probes, lifecycle. |
+| A3 | [staging/hosting.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/hosting.tf>) | ACR et Static Web App. |
+| A4 | [staging/application.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/application.tf>) | Container Apps Environment, NestJS/ClamAV, connexions directes à PostgreSQL/storage/secrets, ingress, images, CPU/RAM, probes, lifecycle. |
 | A5 | [staging/database.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/database.tf>) | PostgreSQL, database `accounting_nest`, extensions, backups, réseau privé, `prevent_destroy`. |
 | A6 | [staging/security.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/security.tf>) | Identité runtime `application`, random secrets, Key Vault et permissions. |
-| A7 | [staging/network.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/network.tf>) | VNet, subnets Container Apps/PostgreSQL, private DNS et link. |
+| A7 | [staging/network.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/network.tf>) | VNet et subnet Container Apps. Le subnet PostgreSQL et son DNS sont regroupés dans A5. |
 | A8 | [staging/storage.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/storage.tf>) | Documents privés, permissions, versioning, soft delete, protection. |
 | A9 | [staging/deployment-access.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/deployment-access.tf>) | Identités frontend/backend GitHub, federated credentials, sujet repo/main et rôle Container Apps. |
 | A10 | [staging/google-auth.tf](<C:/Users/Sami Mahjoub/Downloads/sams/Fiscora-tn-infrastructure/azure/environments/staging/google-auth.tf>) | Côté Azure de la fédération avec Google. |
@@ -154,7 +153,7 @@ Les liens ouvrent les fichiers locaux sur ce PC. Dans VS Code, **Ctrl+P** permet
 | `var.location` | Paramètre دخلناه عن طريق variable. |
 | `local.name_prefix` | Valeur محسوبة داخل configuration. |
 | `resource_name.attribute` | Propriété متاع resource أخرى: مثلاً adresse PostgreSQL. |
-| `module "application"` | نستدعيوا مجموعة configuration موجودة في folder آخر. |
+| `module "..."` | نستدعيوا مجموعة configuration موجودة في folder آخر؛ Azure الحالي ما عادش يستعمل module enfant. |
 | `output "..."` | نخرجوا نتيجة نافعة، مثلاً URL ولا ID. |
 | `depends_on` | Dépendance إضافية: استنى المورد/الصلاحية هاذي قبل هاذي. |
 | `count = condition ? 1 : 0` | نخلقوا المورد كان الشرط true. موش شرط تنفّذو أثناء présentation. |
@@ -209,7 +208,7 @@ React ما يتصلش مباشرة بـ PostgreSQL. GitHub ما يشاركش ف�
 
 1. A6 crée les secrets générés et l'identité runtime.
 2. A6 accorde à cette identité `Key Vault Secrets User`.
-3. A3 transmet les références de secrets au module.
+3. A4 référence directement les secrets créés dans A6.
 4. A4 configure Container Apps pour les lire avec cette identité et les associer aux variables telles que `DB_PASSWORD`.
 5. NestJS reçoit la valeur via son environnement.
 
@@ -293,13 +292,13 @@ La fédération transporte la preuve d'identité, **pas le document**. Les appel
 
 **Réponse:** لا. يقرا ملفات نفس module مع بعضهم ويبني ordre حسب dépendances. أسماء الملفات للتنظيم فقط.
 
-**Montrer:** A3: `database.host = ...postgres.fqdn`, et A5.
+**Montrer:** A4: `DB_HOST` référence `azurerm_postgresql_flexible_server.postgres.fqdn`, créé dans A5.
 
-### Q12. Pourquoi garder un module application ?
+### Q12. Pourquoi ne plus utiliser de module application ?
 
-**Réponse:** يجمع runtime NestJS/ClamAV والـ probes/secrets/settings. عندو inputs وtests. البقية صارت topic files باش projet PFE يكون أسهل.
+**Réponse:** باش ما نتنقّلوش بين inputs وvariables وfolder آخر. `application.tf` يصف NestJS/ClamAV ويربطهم مباشرة بالـ database والـ secrets. نفس الموارد ونفس tests؛ `moved.tf` يحافظ على tracking متاع الموارد القديمة.
 
-**Montrer:** A3 `source = "../../modules/application"`, puis A4. Un module n'est pas une VM ni un microservice en soi.
+**Montrer:** A4 et A17: deux nouveaux mappings déplacent les adresses Terraform du runtime, sans demander sa recréation.
 
 ### Q13. Que veut dire staging ?
 
@@ -407,7 +406,7 @@ La fédération transporte la preuve d'identité, **pas le document**. Les appel
 
 **Réponse:** يخزّن secrets runtime. Container Apps يقرى references باستعمال managed identity ويعطي القيم للـ env متاع NestJS. Documents يمشيو Blob، موش Key Vault.
 
-**Montrer:** A6 secrets+role → A3 references → A4 `secret_name = "database-password"`.
+**Montrer:** A6 secrets+role → A4 références directes et `secret_name = "database-password"`.
 
 ### Q31. Les secrets sont-ils absents du state ?
 
@@ -419,7 +418,7 @@ La fédération transporte la preuve d'identité, **pas le document**. Les appel
 
 **Réponse:** Terraform ياخذ host/name/user من resource database، ويعطيهم للـ API مع password secret وSSL. NestJS/TypeORM يستعمل settings هاذم.
 
-**Montrer:** A3 `database = { ... }` → A4 `DB_HOST`, `DB_NAME`, `DB_PASSWORD`, `DB_SSL` → B7.
+**Montrer:** A5 PostgreSQL → A4 `DB_HOST`, `DB_NAME`, `DB_PASSWORD`, `DB_SSL` → B7.
 
 ### Q33. Qui crée les tables et comptes Fiscora ?
 
@@ -526,7 +525,7 @@ Objectif: expliquer le code, **pas modifier l'infrastructure live**.
 3. Ouvrir A1 pour montrer seulement la fondation du state. Ne pas ouvrir `terraform.tfstate`.
 4. Ouvrir A12 et `backend.hcl.example` pour expliquer l'emplacement du state.
 5. Ouvrir A3 puis A4 pour distinguer registry et runtime.
-6. Ouvrir A5 puis A3 pour montrer comment l'adresse DB est transmise.
+6. Ouvrir A5 puis A4 pour montrer comment l'adresse DB est transmise directement.
 7. Ouvrir A6 puis A4 pour montrer identité, permission et secret reference, jamais le secret value.
 8. Ouvrir B1 puis B2/B3: recette Docker → checks → push → update.
 9. Ouvrir B4/B5 pour montrer comment React connaît l'URL NestJS.

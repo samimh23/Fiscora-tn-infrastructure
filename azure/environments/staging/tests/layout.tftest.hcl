@@ -59,7 +59,7 @@ run "pfe_foundation_preserves_services" {
     error_message = "The database and document container names must not change."
   }
   assert {
-    condition     = module.application.api_name == null
+    condition     = length(azurerm_container_app.api) == 0
     error_message = "First installation must still work before an API image exists."
   }
 }

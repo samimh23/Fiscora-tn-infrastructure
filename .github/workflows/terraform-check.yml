@@ -66,14 +66,6 @@ jobs:
         working-directory: azure/environments/staging
         run: terraform test
 
-      - name: Initialize mocked application tests
-        working-directory: azure/modules/application
-        run: terraform init -backend=false -input=false
-
-      - name: Test deployment ownership without cloud access
-        working-directory: azure/modules/application
-        run: terraform test
-
       - name: Initialize Google Cloud state bootstrap
         working-directory: gcp/bootstrap
         run: terraform init -backend=false -input=false

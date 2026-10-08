@@ -1,4 +1,34 @@
-# Azure layout simplification — 5 October 2026
+# Azure simplification history
+
+## Direct runtime configuration — 8 October 2026
+
+Azure staging now has no child modules. `application.tf` directly declares the
+Container Apps Environment and NestJS/ClamAV Container App, with direct references
+to PostgreSQL, Key Vault, document storage and Application Insights. The obsolete
+`azure/modules/application` source and duplicate input declarations are removed.
+Its ownership tests now run in staging beside the layout test.
+
+`database.tf` groups PostgreSQL's subnet, private DNS, server, database and
+extensions. Moving these existing root declarations between files does not
+change their Terraform addresses. The private network is retained because the
+existing PostgreSQL server uses it; this is not a public-database migration.
+
+Two additional `moved` blocks migrate the runtime's module addresses to direct
+staging addresses; all 41 earlier mappings remain, for 43 total. Database names,
+addresses, generated passwords, state backend, secrets, hosting configuration,
+Application Insights and GitHub's API-image ownership are preserved. Existing
+private `terraform.tfvars` and `backend.hcl` files remain compatible.
+
+A source-equivalence test compares every runtime configuration token against
+the previous module after input substitution. Verification on 8 October passed:
+recursive formatting, all 26 Node guards, validation of all four Azure/GCP roots,
+and all four mocked Terraform ownership/layout tests. A refreshed, read-only
+Azure staging plan showed only the two runtime address moves and **0 to add,
+0 to change, 0 to destroy**. PostgreSQL and its generated password were unchanged.
+No Terraform apply was run. Review a fresh plan before a later apply; the saved
+review plan is local, ignored by Git and may become stale.
+
+The sections below are dated historical records, not the current file layout.
 
 ## Workflow simplification — 7 October 2026
 

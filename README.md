@@ -20,7 +20,7 @@ account key is used.
 ```text
 azure/bootstrap/                  Azure Terraform-state foundation
 azure/environments/staging/       Azure resources grouped in readable topic files
-azure/modules/application/        Tested NestJS/ClamAV runtime (only Azure module)
+azure/environments/staging/application.tf  Direct NestJS/ClamAV runtime and connections
 azure/scripts/                    Azure provider registration and secret configuration
 gcp/bootstrap/                    Google Cloud Terraform-state foundation
 gcp/environments/ai-staging/      NuExtract Cloud Run, IAM and budgets
@@ -36,8 +36,10 @@ Start with [three everyday commands](QUICKSTART.md), then the
 the topic files listed in staging/main.tf and the safe workflow for an existing deployment.
 The Azure and GCP stacks remain separate.
 
-The Azure layout now declares small components directly in staging instead of
-ten single-purpose modules. Application Insights and all active services remain.
+The Azure layout declares all components directly in staging topic files, with
+no child modules or module-input forwarding. `application.tf` shows the backend's
+connections directly; `database.tf` groups PostgreSQL and its private networking.
+Application Insights and all active services remain.
 Compatibility mappings in `moved.tf` retain existing resources and secrets; see
 [the refactor verification](azure/SIMPLIFICATION.md). A push never applies it.
 

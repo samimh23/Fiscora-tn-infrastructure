@@ -206,3 +206,14 @@ moved {
   from = module.budget.azurerm_consumption_budget_resource_group.this
   to   = azurerm_consumption_budget_resource_group.monthly
 }
+
+# Final module flattening: preserve environment and counted API resource instances.
+moved {
+  from = module.application.azurerm_container_app_environment.this
+  to   = azurerm_container_app_environment.application
+}
+
+moved {
+  from = module.application.azurerm_container_app.api
+  to   = azurerm_container_app.api
+}
