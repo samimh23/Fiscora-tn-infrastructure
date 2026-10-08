@@ -12,3 +12,10 @@ provider "azurerm" {
 }
 
 provider "azuread" {}
+
+# AzureRM does not expose App Service's sitecontainers API; AzAPI owns those resources.
+provider "azapi" {
+  subscription_id            = var.azure_subscription_id
+  skip_provider_registration = true
+  enable_preflight           = false
+}

@@ -43,6 +43,11 @@ Application Insights and all active services remain.
 Compatibility mappings in `moved.tf` retain existing resources and secrets; see
 [the refactor verification](azure/SIMPLIFICATION.md). A push never applies it.
 
+An actual [App Service architecture migration](azure/APP-SERVICE-CUTOVER.md) is
+prepared but **off by default and not deployed**. It preserves the existing data
+and requires separately reviewed paid-hosting creation, database networking
+migration, cutover and cleanup. Current hosting remains Container Apps until then.
+
 For the exact first-deployment sequence and Terraform/GitHub responsibilities,
 see [the deployment walkthrough](azure/DEPLOYMENT.md).
 There is one deployed environment per cloud. GitHub validates infrastructure

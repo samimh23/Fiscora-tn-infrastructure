@@ -20,7 +20,7 @@ test('each former small-module resource has a unique migration to a declared roo
     assert.equal(moves.filter(move => move.from.startsWith(`module.${module}.`)).length, count, module);
   }
   const resources = [...all.matchAll(/resource "([^"]+)" "([^"]+)"\s*\{/g)].map(([, type, name]) => `${type}.${name}`);
-  assert.equal(resources.length, 44); // 43 migrated + the existing resource group.
+  assert.equal(resources.length, 51); // 44 existing + 7 gated migration declarations.
   assert.equal(new Set(resources).size, resources.length);
   for (const move of moves) assert.ok(resources.includes(move.to), move.to);
 });
@@ -65,7 +65,8 @@ test('data protection, secret generators, private networking and OIDC survive fl
   const database = read('database.tf');
   const storage = read('storage.tf');
   const security = read('security.tf');
-  assert.match(database, /public_network_access_enabled\s*= false/);
+  assert.match(database, /public_network_access_enabled\s*= var\.postgres_network_migrated/);
+  assert.match(read('migration-settings.tf'), /variable "postgres_network_migrated"[\s\S]*?default\s*= false/);
   assert.match(database, /backup_retention_days\s*= 7/);
   assert.match(database, /prevent_destroy = true/);
   assert.match(database, /azurerm_private_dns_zone_virtual_network_link\.postgres/);

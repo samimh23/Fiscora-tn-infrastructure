@@ -1,6 +1,8 @@
 # Architecture simplification — review before implementation
 
-Status: proposed, not deployed. Inspected on 8 October 2026.
+Status: networking direction approved; implementation prepared, not deployed.
+Inspected on 8 October 2026. See [APP-SERVICE-CUTOVER.md](APP-SERVICE-CUTOVER.md)
+for the actual gated configuration, current cost estimate and remaining approvals.
 
 This is a change to the actual hosting/network architecture, not another file
 layout refactor. No application, database, firewall or network change has been

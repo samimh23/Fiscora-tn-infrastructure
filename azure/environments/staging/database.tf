@@ -37,13 +37,15 @@ resource "azurerm_private_dns_zone_virtual_network_link" "postgres" {
 resource "azurerm_postgresql_flexible_server" "postgres" {
   depends_on = [azurerm_private_dns_zone_virtual_network_link.postgres, azurerm_subnet.container_apps]
   # Current Azure server: psql-fiscora-staging-sami090.
-  name                          = substr("psql-${local.name_prefix}-${var.deployment_suffix}", 0, 63)
-  resource_group_name           = azurerm_resource_group.this.name
-  location                      = azurerm_resource_group.this.location
-  version                       = var.postgres_version
-  delegated_subnet_id           = azurerm_subnet.postgres.id
-  private_dns_zone_id           = azurerm_private_dns_zone.postgres.id
-  public_network_access_enabled = false
+  name                = substr("psql-${local.name_prefix}-${var.deployment_suffix}", 0, 63)
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  version             = var.postgres_version
+  # Set the migration flag only AFTER the separately approved Azure CLI migration.
+  # Before that operation, removing the subnet fields can propose replacement.
+  delegated_subnet_id           = var.postgres_network_migrated ? null : azurerm_subnet.postgres.id
+  private_dns_zone_id           = var.postgres_network_migrated ? null : azurerm_private_dns_zone.postgres.id
+  public_network_access_enabled = var.postgres_network_migrated
   administrator_login           = "fiscora_admin"
   administrator_password        = random_password.postgres.result
   sku_name                      = var.postgres_sku_name
@@ -67,6 +69,10 @@ resource "azurerm_postgresql_flexible_server" "postgres" {
   lifecycle {
     prevent_destroy = true
     ignore_changes  = [zone]
+    precondition {
+      condition     = !var.postgres_network_migrated || local.prepare_app_service
+      error_message = "Prepare App Service before reconciling migrated database networking."
+    }
   }
 }
 

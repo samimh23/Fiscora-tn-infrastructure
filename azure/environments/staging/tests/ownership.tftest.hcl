@@ -1,4 +1,5 @@
 # Mock providers only. No cloud authentication, live state or real resource changes.
+mock_provider "azapi" {}
 mock_provider "azurerm" {
   # Valid synthetic IDs let downstream provider validators run after mock apply.
   mock_resource "azurerm_resource_group" {

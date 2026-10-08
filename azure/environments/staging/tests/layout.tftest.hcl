@@ -9,6 +9,7 @@ mock_provider "azurerm" {
 }
 mock_provider "azuread" {}
 mock_provider "random" {}
+mock_provider "azapi" {}
 
 variables {
   azure_subscription_id         = "00000000-0000-0000-0000-000000000002"
