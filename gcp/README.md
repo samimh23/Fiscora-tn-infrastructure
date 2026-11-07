@@ -7,7 +7,12 @@ The former Qwen service and its build tooling are retired.
 ## Services
 
 - fiscora-nuextract-v3: NuExtract3 + vLLM, minimum zero instances, maximum one
-  L4 GPU instance, request concurrency two.
+  L4 GPU instance, request concurrency eight and vLLM scheduler ceiling eight.
+  Azure extraction workers and NuExtract request slots are also set to eight.
+  The 7 November 2026 isolated benchmark processed 32 fictional documents at
+  14.83 valid documents/minute versus 6.39 at concurrency two, with a higher
+  p95 request latency (62.6s versus 47.1s). This is a throughput setting, not
+  a guarantee of lower per-request latency or performance on every document.
 - fiscora-paddleocr: CPU OCR supplies trusted highlight coordinates. Its PDFium
   POST /render endpoint supplies original PDF page images without OCR.
 - Vertex AI provides the separate assistant and embeddings.

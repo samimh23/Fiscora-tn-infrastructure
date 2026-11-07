@@ -63,18 +63,23 @@ variable "nuextract_service_name" {
 variable "nuextract_request_concurrency" {
   description = "Requests admitted per NuExtract L4 instance."
   type        = number
-  default     = 2
+  default     = 8
 
   validation {
-    condition     = contains([1, 2, 4], var.nuextract_request_concurrency)
-    error_message = "Use a reviewed NuExtract concurrency value: 1, 2, or 4."
+    condition     = contains([1, 2, 4, 8], var.nuextract_request_concurrency)
+    error_message = "Use a reviewed NuExtract concurrency value: 1, 2, 4, or 8."
   }
 }
 
 variable "nuextract_max_num_seqs" {
   description = "NuExtract vLLM scheduler ceiling. Keep aligned with request concurrency."
   type        = number
-  default     = 2
+  default     = 8
+
+  validation {
+    condition     = contains([1, 2, 4, 8], var.nuextract_max_num_seqs)
+    error_message = "Use a reviewed vLLM scheduler ceiling: 1, 2, 4, or 8."
+  }
 }
 
 variable "enable_ocr_service" {

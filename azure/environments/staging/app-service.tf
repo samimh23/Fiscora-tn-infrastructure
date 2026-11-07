@@ -41,8 +41,8 @@ locals {
     NUEXTRACT_SERVICE_URL                     = var.nuextract_service_url
     PADDLE_OCR_SERVICE_URL                    = var.paddle_ocr_service_url
     NUEXTRACT_MODEL                           = "numind/NuExtract3"
-    DOCUMENT_EXTRACTION_WORKER_CONCURRENCY    = "4"
-    DOCUMENT_EXTRACTION_NUEXTRACT_CONCURRENCY = "2"
+    DOCUMENT_EXTRACTION_WORKER_CONCURRENCY    = "8"
+    DOCUMENT_EXTRACTION_NUEXTRACT_CONCURRENCY = "8"
     DOCUMENT_EXTRACTION_OCR_BATCH_PAGES       = "4"
     DOCUMENT_EXTRACTION_OCR_BATCH_MAX_CHARS   = "28000"
     PADDLE_OCR_TIMEOUT_MS                     = "900000"

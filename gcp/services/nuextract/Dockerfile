@@ -15,7 +15,7 @@ COPY start.sh /opt/fiscora/start.sh
 RUN chmod 0555 /opt/fiscora/start.sh
 
 ENV MODEL_PATH=/models/nuextract3 \
-    MAX_NUM_SEQS=2 \
+    MAX_NUM_SEQS=8 \
     PORT=8080 \
     OMP_NUM_THREADS=1 \
     HF_HUB_OFFLINE=1 \
