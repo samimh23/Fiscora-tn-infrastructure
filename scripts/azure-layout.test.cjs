@@ -20,7 +20,14 @@ test('each former small-module resource has a unique migration to a declared roo
     assert.equal(moves.filter(move => move.from.startsWith(`module.${module}.`)).length, count, module);
   }
   const resources = [...all.matchAll(/resource "([^"]+)" "([^"]+)"\s*\{/g)].map(([, type, name]) => `${type}.${name}`);
-  assert.equal(resources.length, 43); // Surviving services plus App Service; eight retired declarations removed.
+  // 35 migrated resources, eight existing root/hosting resources, and the
+  // intentionally new private dataset container (which needs no moved block).
+  assert.equal(resources.length, 44);
+  assert.ok(resources.includes('azurerm_storage_container.training_datasets'));
+  const trainingStorage = read('training-storage.tf');
+  assert.match(trainingStorage, /container_access_type\s*=\s*"private"/);
+  assert.match(trainingStorage, /storage_account_id\s*=\s*azurerm_storage_account\.documents\.id/);
+  assert.ok(!moves.some(move => move.to === 'azurerm_storage_container.training_datasets'));
   assert.equal(new Set(resources).size, resources.length);
   for (const move of moves) assert.ok(resources.includes(move.to), move.to);
 });
