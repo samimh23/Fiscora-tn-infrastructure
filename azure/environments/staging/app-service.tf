@@ -57,6 +57,8 @@ locals {
     VERTEX_AI_EMBEDDING_DIMENSIONS            = "768"
     AI_ASSISTANT_MAX_VECTOR_DISTANCE          = var.ai_assistant_max_vector_distance
     VERTEX_AI_TIMEOUT_MS                      = "60000"
+    RAG_RERANKER                              = var.rag_reranker
+    RAG_RERANK_TIMEOUT_MS                     = "2500"
     DOCUMENT_EXTRACTION_MAX_ATTEMPTS          = "4"
     DOCUMENT_EXTRACTION_LEASE_MINUTES         = "30"
     }, {
