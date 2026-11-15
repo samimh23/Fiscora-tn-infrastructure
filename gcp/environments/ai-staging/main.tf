@@ -6,6 +6,7 @@ locals {
     "cloudbuild.googleapis.com",
     "logging.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "discoveryengine.googleapis.com",
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "run.googleapis.com",
@@ -118,6 +119,17 @@ resource "google_service_account_iam_member" "azure_api_workload_identity" {
 resource "google_project_iam_member" "azure_api_vertex_user" {
   project = var.project_id
   role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.azure_api.email}"
+
+  depends_on = [google_project_service.required]
+}
+
+# The assistant reranks retrieved chunks with the Vertex AI Ranking API
+# (discoveryengine rankingConfigs.rank). Viewer is the least-privileged role
+# that allows it; the API falls back to its own order if the call is denied.
+resource "google_project_iam_member" "azure_api_ranking_viewer" {
+  project = var.project_id
+  role    = "roles/discoveryengine.viewer"
   member  = "serviceAccount:${google_service_account.azure_api.email}"
 
   depends_on = [google_project_service.required]

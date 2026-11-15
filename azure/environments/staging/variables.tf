@@ -291,6 +291,17 @@ variable "vertex_ai_embedding_model" {
   default     = "gemini-embedding-001"
 }
 
+variable "rag_reranker" {
+  description = "Assistant reranker: \"vertex\" uses the Vertex AI Ranking API, \"none\" keeps the hybrid-search order (instant rollback switch)."
+  type        = string
+  default     = "vertex"
+
+  validation {
+    condition     = contains(["vertex", "none"], var.rag_reranker)
+    error_message = "rag_reranker must be \"vertex\" or \"none\"."
+  }
+}
+
 variable "ai_assistant_max_vector_distance" {
   description = "Maximum cosine distance accepted for semantic context before the assistant refuses to answer."
   type        = string

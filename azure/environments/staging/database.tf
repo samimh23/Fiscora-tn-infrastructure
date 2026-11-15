@@ -51,5 +51,6 @@ resource "azurerm_postgresql_flexible_server_database" "application" {
 resource "azurerm_postgresql_flexible_server_configuration" "extensions" {
   name      = "azure.extensions"
   server_id = azurerm_postgresql_flexible_server.postgres.id
-  value     = "uuid-ossp,vector"
+  # unaccent and pg_trgm: accent-insensitive and typo-tolerant assistant search.
+  value = "uuid-ossp,vector,unaccent,pg_trgm"
 }
