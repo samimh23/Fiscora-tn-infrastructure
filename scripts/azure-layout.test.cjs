@@ -72,7 +72,7 @@ test('data protection, secret generators, exact-IP networking and OIDC survive c
   assert.match(database, /prevent_destroy = true/);
   assert.match(database, /delegated_subnet_id\s*= null/);
   assert.match(database, /private_dns_zone_id\s*= null/);
-  assert.match(database, /"uuid-ossp,vector"/);
+  assert.match(database, /"uuid-ossp,vector,unaccent,pg_trgm"/);
   assert.match(storage, /shared_access_key_enabled\s*= false/);
   assert.match(storage, /versioning_enabled = true/);
   assert.match(storage, /container_access_type = "private"/);
